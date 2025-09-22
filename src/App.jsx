@@ -1,9 +1,19 @@
 import "./index.css";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+import Signup from "./pages/Signup"
+import Login from "./pages/Login"
 
 function App() {
   return (
-    <>
-      <div>
+    <div>
+      
+    <Router>
+      <Routes>
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<Login />} />
+      </Routes>
+    </Router>
+    <div>
         <h1 className="text-5xl font-bold text-center text-blue-500 mt-50 underline">
           BULKWALA
         </h1>
@@ -11,8 +21,12 @@ function App() {
           Coming Soon!
         </h1>
       </div>
-    </>
-  );
+    </div>
+  )
 }
 
-export default App;
+export default App
+
+
+
+     
