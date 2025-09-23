@@ -1,32 +1,25 @@
-import "./index.css";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
-import Signup from "./pages/Signup"
-import Login from "./pages/Login"
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Toaster } from "sonner";
+import { AuthProvider } from "./Context/AuthContext";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import Header from "./components/Header";
 
 function App() {
   return (
-    <div>
-      
-    <Router>
-      <Routes>
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/login" element={<Login />} />
-      </Routes>
-    </Router>
-    <div>
-        <h1 className="text-5xl font-bold text-center text-blue-500 mt-50 underline">
-          BULKWALA
-        </h1>
-        <h1 className="text-5xl font-bold text-center text-red-500 underline">
-          Coming Soon!
-        </h1>
-      </div>
-    </div>
-  )
+    <AuthProvider>
+      <Toaster position="top-center" richColors />
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
+  );
 }
 
-export default App
-
-
-
-     
+export default App;
