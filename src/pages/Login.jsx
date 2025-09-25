@@ -1,7 +1,6 @@
-import React, { useContext } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
@@ -15,30 +14,30 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { AuthContext } from "../context/AuthContext";
-
-const loginSchema = z.object({
-  email: z.string().email("Invalid email address."),
-  password: z.string().min(6, { message: "Password must be at least 6 characters." }),
-});
+import useAuthStore from "@/store/auth.store";
+import LoginSchema from "@/schemas/LoginSchema";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useContext(AuthContext);
+  const login = useAuthStore((state) => state.login);
+
   const form = useForm({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(LoginSchema),
     defaultValues: {
       email: "",
       password: "",
     },
   });
 
-  function onSubmit(values) {
-    const userData = { name: "div", email: values.email };
-    login(userData);
-    toast.success("Login Successful!");
-    navigate("/");
-  }
+  const onSubmit = async (values) => {
+    const res = await login(values);
+    if (res.success && res.user?._id) {
+      toast.success("Login successful!");
+      navigate("/");
+    } else {
+      toast.error(res.error || "Invalid email or password");
+    }
+  };
 
   return (
     <div className="flex justify-center items-center h-screen bg-gray-100">
@@ -66,13 +65,23 @@ const Login = () => {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Enter your password" {...field} />
+                      <Input
+                        type="password"
+                        placeholder="Enter your password"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">Login</Button>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={form.formState.isSubmitting}
+              >
+                {form.formState.isSubmitting ? "Logging in..." : "Login"}
+              </Button>
             </form>
           </Form>
         </CardContent>

@@ -1,9 +1,9 @@
-import React, { useContext } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
+import useAuthStore from "@/store/auth.store";
 
 export default function Header() {
-  const { user, logout } = useContext(AuthContext);
+  const { user } = useAuthStore();
 
   return (
     <header className="w-full border-b border-gray-300 bg-white">
@@ -13,13 +13,19 @@ export default function Header() {
         </div>
 
         <div className="flex items-center w-full md:w-[450px] bg-gray-100 rounded-md px-4 py-2 mb-2 md:mb-0">
-          <ion-icon name="search-outline" class="text-xl text-gray-500 mr-2"></ion-icon>
+          <ion-icon
+            name="search-outline"
+            class="text-xl text-gray-500 mr-2"
+          ></ion-icon>
           <input
             type="search"
             placeholder="Search Your Products Here"
             className="bg-transparent flex-1 outline-none text-sm md:text-base"
           />
-          <ion-icon name="mic-outline" class="text-xl text-gray-500 ml-2"></ion-icon>
+          <ion-icon
+            name="mic-outline"
+            class="text-xl text-gray-500 ml-2"
+          ></ion-icon>
         </div>
 
         <div className="flex items-center space-x-8">
@@ -31,18 +37,29 @@ export default function Header() {
             <ion-icon name="person-circle-outline" class="text-xl"></ion-icon>
             {user ? (
               <>
-                <span className="ml-1 text-base font-medium">Hello, {user.name}</span>
-                <button onClick={logout} className="ml-2 underline text-red-500">
+                <span className="ml-1 text-base font-medium">
+                  Hello, {user.name}
+                </span>
+                <button
+                  onClick={logout}
+                  className="ml-2 underline text-red-500"
+                >
                   Logout
                 </button>
               </>
             ) : (
               <>
-                <Link to="/login" className="text-base font-medium hover:underline">
+                <Link
+                  to="/login"
+                  className="text-base font-medium hover:underline"
+                >
                   Login
                 </Link>
                 <span>/</span>
-                <Link to="/signup" className="text-base font-medium hover:underline">
+                <Link
+                  to="/signup"
+                  className="text-base font-medium hover:underline"
+                >
                   Signup
                 </Link>
               </>

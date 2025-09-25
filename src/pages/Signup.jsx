@@ -1,7 +1,6 @@
-import React, { useContext } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
@@ -15,19 +14,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { AuthContext } from "../context/AuthContext";
-
-const formSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  email: z.string().email("Invalid email address."),
-  password: z.string().min(6, { message: "Password must be at least 6 characters." }),
-});
+import useAuthStore from "@/store/auth.store";
+import SignupSchema from "@/schemas/SignupSchema";
 
 const Signup = () => {
-  const navigate = useNavigate();
-  const { login } = useContext(AuthContext);
   const form = useForm({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(SignupSchema),
     defaultValues: {
       name: "",
       email: "",
@@ -35,11 +27,19 @@ const Signup = () => {
     },
   });
 
-  function onSubmit(values) {
-    login({ name: values.name, email: values.email });
-    toast.success("Signup Successful!");
-    navigate("/");
-  }
+  const signup = useAuthStore((state) => state.signup);
+  const navigate = useNavigate();
+
+  const onSubmit = async (values) => {
+    const res = await signup(values);
+    if (res.success && res.user?._id) {
+      toast.success("Account created successfully! Please verify your email.");
+      form.reset();
+      navigate(`/verify/${res.user._id}`);
+    } else {
+      toast.error(res.error || "Signup failed");
+    }
+  };
 
   return (
     <div className="flex justify-center items-center h-screen bg-gray-100">
@@ -60,6 +60,7 @@ const Signup = () => {
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name="email"
@@ -73,6 +74,7 @@ const Signup = () => {
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name="password"
@@ -80,13 +82,24 @@ const Signup = () => {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Enter your password" {...field} />
+                      <Input
+                        type="password"
+                        placeholder="Enter your password"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">Sign Up</Button>
+
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={form.formState.isSubmitting}
+              >
+                {form.formState.isSubmitting ? "Signing up..." : "Sign Up"}
+              </Button>
             </form>
           </Form>
         </CardContent>
