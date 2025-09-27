@@ -4,6 +4,8 @@ import Mainlayout from "./components/layout/Mainlayout";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import VerificationPage from "./pages/VerificationPage";
+import AdminDashboard from "./Admin/pages/AdminDashboard";
 
 const App = createBrowserRouter([
   {
@@ -22,14 +24,14 @@ const App = createBrowserRouter([
         path: "signup",
         element: <Signup />,
       },
-      // {
-      //   path: "verify/:userid",
-      //   element: <VerificationPage />,
-      // },
-      // {
-      //   path: "reset-password/:userid/:token",
-      //   element: <ResetPasswordPage />,
-      // },
+      {
+        path: "verify/:userid",
+        element: <VerificationPage />,
+      },
+      {
+        path: "/admin",
+        element: <AdminDashboard />,
+      },
     ],
   },
 ]);

@@ -40,12 +40,7 @@ export default function Header() {
                 <span className="ml-1 text-base font-medium">
                   Hello, {user.name}
                 </span>
-                <button
-                  onClick={logout}
-                  className="ml-2 underline text-red-500"
-                >
-                  Logout
-                </button>
+                <button className="ml-2 underline text-red-500">Logout</button>
               </>
             ) : (
               <>

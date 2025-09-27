@@ -22,22 +22,16 @@ export const useAuthStore = create((set) => ({
     try {
       const newRegisterUser = await registerService(userData);
       set({
-        user: newRegisterUser,
+        pendingVerificationUser: newRegisterUser,
         isLoading: false,
-        isLoggedIn: true,
-        error: null,
       });
       return { success: true, user: newRegisterUser };
-    } catch (apiError) {
-      const errorMessage =
-        apiError.message || "Failed to register. Please try again.";
-      set({
-        user: null,
-        isLoggedIn: false,
-        isLoading: false,
-        error: errorMessage,
-      });
-      return { success: false, error: errorMessage };
+    } catch (error) {
+      let message =
+        error.response?.data?.message || error.message || "Signup failed";
+      set({ error: message, isLoading: false });
+
+      return { success: false, error: message };
     }
   },
 
