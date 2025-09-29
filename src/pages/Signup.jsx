@@ -14,8 +14,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import useAuthStore from "@/store/auth.store";
-import SignupSchema from "@/schemas/SignupSchema";
+import useAuthStore from "@/store/auth.store.js";
+import {SignupSchema} from "@/schemas/usersSchema.js";
 
 const Signup = () => {
   const form = useForm({
