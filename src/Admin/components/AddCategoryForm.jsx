@@ -10,22 +10,13 @@ const AddCategoryForm = ({ onSuccess }) => {
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
-    img_url: "",
-    banner: [""],
+    image: null,
+    previewUrl: "",
+    banner: [],
   });
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleBannerChange = (index, value) => {
-    const updated = [...formData.banner];
-    updated[index] = value;
-    setFormData({ ...formData, banner: updated });
-  };
-
-  const addBannerField = () => {
-    setFormData({ ...formData, banner: [...formData.banner, ""] });
   };
 
   const handleSubmit = async (e) => {
@@ -52,7 +43,6 @@ const AddCategoryForm = ({ onSuccess }) => {
             placeholder="Slug (auto-lowercased)"
             value={formData.slug}
             onChange={handleChange}
-            required
           />
 
           {/* Image Upload (for img_url) */}
@@ -66,43 +56,23 @@ const AddCategoryForm = ({ onSuccess }) => {
               onChange={(e) => {
                 const file = e.target.files[0];
                 if (file) {
-                  // You’ll integrate with your ImageKit upload API here
-                  // for now we use fake local URL
                   setFormData({
                     ...formData,
-                    img_url: URL.createObjectURL(file),
+                    image: file,
+                    previewUrl: URL.createObjectURL(file),
                   });
                 }
               }}
               required
             />
-            {formData.img_url && (
+
+            {formData.previewUrl && (
               <img
-                src={formData.img_url}
+                src={formData.previewUrl}
                 alt="Preview"
                 className="mt-2 h-20 object-cover rounded-md border"
               />
             )}
-          </div>
-
-          {/* Banner Images */}
-          <div>
-            <label className="block mb-1 text-sm text-gray-600">
-              Banner Images
-            </label>
-            {formData.banner.map((b, i) => (
-              <Input
-                key={i}
-                type="text"
-                placeholder={`Banner Image URL ${i + 1}`}
-                value={b}
-                onChange={(e) => handleBannerChange(i, e.target.value)}
-                className="mb-2"
-              />
-            ))}
-            <Button type="button" variant="outline" onClick={addBannerField}>
-              + Add Another Banner
-            </Button>
           </div>
 
           <Button type="submit">Add Category</Button>

@@ -19,7 +19,9 @@ import {
 import AddProductForm from "../components/AddProductForm.jsx";
 import AddCategoryForm from "../components/AddCategoryForm.jsx";
 import AddSubCategoryForm from "../components/AddSubCategoryForm.jsx";
-
+import { useEffect } from "react";
+import { useCategoryStore } from "../../store/category.store.js";
+import { useSubcategoryStore } from "@/store/subcategory.store.js";
 // ------------------------- Dashboard Cards -------------------------
 const DashboardContent = () => (
   <>
@@ -81,6 +83,10 @@ const ProductsContent = () => {
 
 const CategoriesContent = () => {
   const [showAddForm, setShowAddForm] = useState(false);
+  const { fetchCategories, categories } = useCategoryStore();
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
   return (
     <>
@@ -92,11 +98,16 @@ const CategoriesContent = () => {
         <AddCategoryForm onSuccess={() => setShowAddForm(false)} />
       )}
 
-      <Card>
-        <CardContent>
-          <p className="text-gray-500">
-            List of all categories will appear here.
-          </p>
+      <Card className="bg-gray-200">
+        <CardContent className="flex gap-4">
+          {categories.map((category) => (
+            <Card className="w-1/4">
+              <CardContent className="p-2">
+                <p className="font-semibold">{category.name}</p>
+                <img src={category.img_url} alt={category.name} />
+              </CardContent>
+            </Card>
+          ))}
         </CardContent>
       </Card>
     </>
@@ -107,6 +118,11 @@ const CategoriesContent = () => {
 
 const SubcategoriesContent = () => {
   const [showAddForm, setShowAddForm] = useState(false);
+  const { fetchSubcategories, subcategories } = useSubcategoryStore();
+
+  useEffect(() => {
+    fetchSubcategories();
+  }, []);
 
   return (
     <>
@@ -117,12 +133,16 @@ const SubcategoriesContent = () => {
       {showAddForm && (
         <AddSubCategoryForm onSuccess={() => setShowAddForm(false)} />
       )}
-
-      <Card>
-        <CardContent>
-          <p className="text-gray-500">
-            List of all subcategories will appear here.
-          </p>
+      <Card className="bg-gray-200">
+        <CardContent className="flex gap-4">
+          {subcategories.map((subcategory) => (
+            <Card className="w-1/4">
+              <CardContent className="p-2">
+                <p className="font-semibold">{subcategory.name}</p>
+                <img src={subcategory.img_url} alt={subcategory.name} />
+              </CardContent>
+            </Card>
+          ))}
         </CardContent>
       </Card>
     </>

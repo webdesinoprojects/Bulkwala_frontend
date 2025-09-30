@@ -19,7 +19,8 @@ const AddSubCategoryForm = ({ onSuccess }) => {
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
-    img_url: "",
+    image: null,
+    previewUrl: "",
     description: "",
     category: "",
   });
@@ -34,6 +35,13 @@ const AddSubCategoryForm = ({ onSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const payload = { ...formData };
+
+    // Remove slug if empty
+    if (!payload.slug || payload.slug.trim() === "") {
+      delete payload.slug;
+    }
+
     await addSubcategory(formData);
     onSuccess?.();
   };
@@ -56,7 +64,6 @@ const AddSubCategoryForm = ({ onSuccess }) => {
             placeholder="Slug (auto-lowercased)"
             value={formData.slug}
             onChange={handleChange}
-            required
           />
 
           {/* Image Upload */}
@@ -72,15 +79,16 @@ const AddSubCategoryForm = ({ onSuccess }) => {
                 if (file) {
                   setFormData({
                     ...formData,
-                    img_url: URL.createObjectURL(file),
+                    image: file,
+                    previewUrl: URL.createObjectURL(file),
                   });
                 }
               }}
               required
             />
-            {formData.img_url && (
+            {formData.previewUrl && (
               <img
-                src={formData.img_url}
+                src={formData.previewUrl}
                 alt="Preview"
                 className="mt-2 h-20 object-cover rounded-md border"
               />
