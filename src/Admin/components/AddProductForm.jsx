@@ -129,7 +129,7 @@ const AddProductForm = ({ onSuccess }) => {
               multiple
               onChange={(e) => {
                 const files = Array.from(e.target.files);
-                setValue("images", files); // RHF value
+                setValue("images", files); 
                 setPreviewUrls(files.map((file) => URL.createObjectURL(file)));
               }}
             />

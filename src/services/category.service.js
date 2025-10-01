@@ -6,11 +6,12 @@ export const getCategories = async () => {
 };
 
 export const createCategory = async (categoryData) => {
-  console.log(categoryData.image);
   const formData = new FormData();
 
   formData.append("name", categoryData.name);
-  formData.append("slug", categoryData.slug);
+  if (categoryData.slug) {
+    formData.append("slug", categoryData.slug);
+  }
 
   if (categoryData.image) {
     formData.append("image", categoryData.image);

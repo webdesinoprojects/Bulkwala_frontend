@@ -1,9 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+
+import { subcategorySchema } from "../../schemas/subcategorySchema.js";
+import { useSubcategoryStore } from "../../store/subcategory.store.js";
+import { useCategoryStore } from "../../store/category.store.js";
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useSubcategoryStore } from "../../store/subcategory.store.js";
-import { useCategoryStore } from "../../store/category.store.js";
 import {
   Select,
   SelectTrigger,
@@ -13,58 +19,70 @@ import {
 } from "@/components/ui/select";
 
 const AddSubCategoryForm = ({ onSuccess }) => {
-  const { addSubcategory } = useSubcategoryStore();
+  const { addSubcategory, loading } = useSubcategoryStore();
   const { categories, fetchCategories } = useCategoryStore();
 
-  const [formData, setFormData] = useState({
-    name: "",
-    slug: "",
-    image: null,
-    previewUrl: "",
-    description: "",
-    category: "",
+  const [previewUrl, setPreviewUrl] = useState("");
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(subcategorySchema),
+    defaultValues: {
+      name: "",
+      slug: "",
+      description: "",
+      image: null,
+      category: "",
+    },
   });
 
   useEffect(() => {
     fetchCategories();
   }, [fetchCategories]);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const payload = { ...formData };
-
-    // Remove slug if empty
-    if (!payload.slug || payload.slug.trim() === "") {
-      delete payload.slug;
+  const onSubmit = async (data) => {
+    try {
+      await addSubcategory(data);
+      toast.success("Subcategory added successfully!");
+      onSuccess?.();
+    } catch (err) {
+      toast.error(err.message || "Failed to add subcategory");
     }
-
-    await addSubcategory(formData);
-    onSuccess?.();
   };
 
   return (
     <Card className="mb-6">
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Name */}
           <Input
             type="text"
-            name="name"
             placeholder="Subcategory Name"
-            value={formData.name}
-            onChange={handleChange}
-            required
+            {...register("name")}
           />
+          {errors.name && <p className="text-red-500">{errors.name.message}</p>}
+
+          {/* Slug */}
           <Input
             type="text"
-            name="slug"
             placeholder="Slug (auto-lowercased)"
-            value={formData.slug}
-            onChange={handleChange}
+            {...register("slug")}
           />
+          {errors.slug && <p className="text-red-500">{errors.slug.message}</p>}
+
+          {/* Description */}
+          <Input
+            type="text"
+            placeholder="Description"
+            {...register("description")}
+          />
+          {errors.description && (
+            <p className="text-red-500">{errors.description.message}</p>
+          )}
 
           {/* Image Upload */}
           <div>
@@ -77,31 +95,23 @@ const AddSubCategoryForm = ({ onSuccess }) => {
               onChange={(e) => {
                 const file = e.target.files[0];
                 if (file) {
-                  setFormData({
-                    ...formData,
-                    image: file,
-                    previewUrl: URL.createObjectURL(file),
-                  });
+                  setValue("image", file); // RHF register file
+                  setPreviewUrl(URL.createObjectURL(file)); // preview
                 }
               }}
-              required
             />
-            {formData.previewUrl && (
+            {errors.image && (
+              <p className="text-red-500">{errors.image.message}</p>
+            )}
+
+            {previewUrl && (
               <img
-                src={formData.previewUrl}
+                src={previewUrl}
                 alt="Preview"
                 className="mt-2 h-20 object-cover rounded-md border"
               />
             )}
           </div>
-
-          <Input
-            type="text"
-            name="description"
-            placeholder="Description"
-            value={formData.description}
-            onChange={handleChange}
-          />
 
           {/* Category Dropdown */}
           <div>
@@ -109,10 +119,8 @@ const AddSubCategoryForm = ({ onSuccess }) => {
               Parent Category
             </label>
             <Select
-              value={formData.category}
-              onValueChange={(value) =>
-                setFormData({ ...formData, category: value })
-              }
+              onValueChange={(value) => setValue("category", value)}
+              defaultValue=""
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select Category" />
@@ -125,9 +133,14 @@ const AddSubCategoryForm = ({ onSuccess }) => {
                 ))}
               </SelectContent>
             </Select>
+            {errors.category && (
+              <p className="text-red-500">{errors.category.message}</p>
+            )}
           </div>
 
-          <Button type="submit">Add Subcategory</Button>
+          <Button type="submit" disabled={loading}>
+            {loading ? "Adding..." : "Add Subcategory"}
+          </Button>
         </form>
       </CardContent>
     </Card>

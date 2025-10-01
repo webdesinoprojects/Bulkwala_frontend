@@ -3,7 +3,6 @@ import { z } from "zod";
 export const productSchema = z.object({
   title: z.string().min(2, "Title is required"),
 
-  // Slug is optional – if provided, validate; if not, backend will auto-generate
   slug: z.string().optional(),
 
   description: z.string().min(5, "Description is required"),
