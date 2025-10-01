@@ -22,6 +22,7 @@ import AddSubCategoryForm from "../components/AddSubCategoryForm.jsx";
 import { useEffect } from "react";
 import { useCategoryStore } from "../../store/category.store.js";
 import { useSubcategoryStore } from "@/store/subcategory.store.js";
+import { useProductStore } from "@/store/product.store.js";
 // ------------------------- Dashboard Cards -------------------------
 const DashboardContent = () => (
   <>
@@ -57,22 +58,48 @@ const DashboardContent = () => (
 // ------------------------- Products Section -------------------------
 const ProductsContent = () => {
   const [showAddForm, setShowAddForm] = useState(false);
+  const { fetchProducts, products } = useProductStore();
+  console.log("Products:", products);
 
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const productList = Array.isArray(products)
+    ? products
+    : products?.products || [];
   return (
     <>
       <Button className="mb-4" onClick={() => setShowAddForm(!showAddForm)}>
         {showAddForm ? "Close Form" : "Add New Product"}
       </Button>
-
       {showAddForm && (
-        <AddProductForm onSuccess={() => setShowAddForm(false)} />
+        <AddProductForm
+          onSuccess={() => {
+            setShowAddForm(false), fetchProducts();
+          }}
+        />
       )}
-
-      <Card>
-        <CardContent>
-          <p className="text-gray-500">
-            List of all products will appear here.
-          </p>
+      <Card className="bg-gray-200">
+        <CardContent className="flex gap-4 flex-wrap">
+          {productList.length > 0 ? (
+            productList.map((product) => (
+              <Card key={product._id} className="w-1/4">
+                <CardContent className="p-2">
+                  <p className="font-semibold">{product.title}</p>
+                  {product.images?.length > 0 && (
+                    <img
+                      src={product.images[0]}
+                      alt={product.title}
+                      className="w-full h-40 object-cover rounded"
+                    />
+                  )}
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <p className="text-gray-600">No products found.</p>
+          )}
         </CardContent>
       </Card>
     </>

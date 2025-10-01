@@ -1,7 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
 import { useProductStore } from "../../store/product.store.js";
 import { useCategoryStore } from "../../store/category.store.js";
 import { useSubcategoryStore } from "../../store/subcategory.store.js";
+import { productSchema } from "../../schemas/productSchema.js";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,94 +17,108 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from "sonner";
 
 const AddProductForm = ({ onSuccess }) => {
-  const { addProduct } = useProductStore();
+  const { addProduct, loading } = useProductStore();
   const { categories, fetchCategories } = useCategoryStore();
   const { subcategories, fetchSubcategories } = useSubcategoryStore();
 
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    price: "",
-    stock: "",
-    images: [],
-    previewUrls: [],
-    category: "",
-    subcategory: "",
+  const [previewUrls, setPreviewUrls] = useState([]);
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(productSchema),
+    defaultValues: {
+      title: "",
+      slug: "",
+      description: "",
+      price: "",
+      stock: "",
+      images: [],
+      category: "",
+      subcategory: "",
+      tags: [],
+      isActive: true,
+      isFeatured: false,
+    },
   });
+
+  const categoryValue = watch("category");
+
   useEffect(() => {
     fetchCategories();
-    fetchSubcategories().then(() => {
-      console.log("Subcategories from store:", subcategories);
-    });
+    fetchSubcategories();
   }, [fetchCategories, fetchSubcategories]);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  // ✅ Only send raw data now, service will convert to FormData
+  const onSubmit = async (data) => {
+    try {
+      await addProduct(data);
+      toast.success("Product added successfully!");
+      onSuccess?.();
+    } catch (err) {
+      toast.error(err.message || "Failed to add product");
+    }
   };
 
-  const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files);
-    const previews = files.map((file) => URL.createObjectURL(file));
-    setFormData({
-      ...formData,
-      images: files,
-      previewUrls: previews,
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    await addProduct(formData);
-    onSuccess?.();
-  };
-
-  // Filter subcategories by category
-  const filteredSubcategories = formData.category
+  // ✅ Filter subcategories by category
+  const filteredSubcategories = categoryValue
     ? subcategories.filter(
-        (sc) => String(sc.category?._id) === String(formData.category)
+        (sc) => String(sc.category?._id) === String(categoryValue)
       )
     : [];
 
   return (
     <Card className="mb-6">
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Title */}
           <Input
             type="text"
-            name="title"
             placeholder="Product Title"
-            value={formData.title}
-            onChange={handleChange}
-            required
+            {...register("title")}
           />
+          {errors.title && (
+            <p className="text-red-500">{errors.title.message}</p>
+          )}
+
+          {/* Slug (optional) */}
           <Input
             type="text"
-            name="description"
-            placeholder="Product Description"
-            value={formData.description}
-            onChange={handleChange}
-            required
+            placeholder="Slug (optional)"
+            {...register("slug")}
           />
-          <Input
-            type="number"
-            name="price"
-            placeholder="Price"
-            value={formData.price}
-            onChange={handleChange}
-            required
-          />
-          <Input
-            type="number"
-            name="stock"
-            placeholder="Stock"
-            value={formData.stock}
-            onChange={handleChange}
-            required
-          />
+          {errors.slug && <p className="text-red-500">{errors.slug.message}</p>}
 
-          {/* Image Upload */}
+          {/* Description */}
+          <Input
+            type="text"
+            placeholder="Product Description"
+            {...register("description")}
+          />
+          {errors.description && (
+            <p className="text-red-500">{errors.description.message}</p>
+          )}
+
+          {/* Price */}
+          <Input type="number" placeholder="Price" {...register("price")} />
+          {errors.price && (
+            <p className="text-red-500">{errors.price.message}</p>
+          )}
+
+          {/* Stock */}
+          <Input type="number" placeholder="Stock" {...register("stock")} />
+          {errors.stock && (
+            <p className="text-red-500">{errors.stock.message}</p>
+          )}
+
+          {/* Images with preview */}
           <div>
             <label className="block mb-1 text-sm text-gray-600">
               Product Images
@@ -109,11 +127,18 @@ const AddProductForm = ({ onSuccess }) => {
               type="file"
               accept="image/*"
               multiple
-              onChange={handleImageUpload}
-              required
+              onChange={(e) => {
+                const files = Array.from(e.target.files);
+                setValue("images", files); // RHF value
+                setPreviewUrls(files.map((file) => URL.createObjectURL(file)));
+              }}
             />
+            {errors.images && (
+              <p className="text-red-500">{errors.images.message}</p>
+            )}
+
             <div className="mt-2 flex gap-2 flex-wrap">
-              {formData.previewUrls.map((url, idx) => (
+              {previewUrls.map((url, idx) => (
                 <img
                   key={idx}
                   src={url}
@@ -124,14 +149,28 @@ const AddProductForm = ({ onSuccess }) => {
             </div>
           </div>
 
+          {/* Tags */}
+          <Input
+            type="text"
+            placeholder="Tags (comma separated)"
+            onChange={(e) =>
+              setValue(
+                "tags",
+                e.target.value
+                  .split(",")
+                  .map((tag) => tag.trim())
+                  .filter(Boolean)
+              )
+            }
+          />
+          {errors.tags && <p className="text-red-500">{errors.tags.message}</p>}
+
           {/* Category Dropdown */}
           <div>
             <label className="block mb-1 text-sm text-gray-600">Category</label>
             <Select
-              value={formData.category}
-              onValueChange={(value) =>
-                setFormData({ ...formData, category: value, subcategory: "" })
-              }
+              onValueChange={(value) => setValue("category", value)}
+              value={categoryValue}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select Category" />
@@ -144,6 +183,9 @@ const AddProductForm = ({ onSuccess }) => {
                 ))}
               </SelectContent>
             </Select>
+            {errors.category && (
+              <p className="text-red-500">{errors.category.message}</p>
+            )}
           </div>
 
           {/* Subcategory Dropdown */}
@@ -152,11 +194,9 @@ const AddProductForm = ({ onSuccess }) => {
               Subcategory
             </label>
             <Select
-              value={formData.subcategory}
-              onValueChange={(value) =>
-                setFormData({ ...formData, subcategory: value })
-              }
-              disabled={!formData.category}
+              onValueChange={(value) => setValue("subcategory", value)}
+              value={watch("subcategory")}
+              disabled={!categoryValue}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select Subcategory" />
@@ -169,9 +209,27 @@ const AddProductForm = ({ onSuccess }) => {
                 ))}
               </SelectContent>
             </Select>
+            {errors.subcategory && (
+              <p className="text-red-500">{errors.subcategory.message}</p>
+            )}
           </div>
 
-          <Button type="submit">Add Product</Button>
+          {/* Active / Featured checkboxes */}
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-2">
+              <input type="checkbox" {...register("isActive")} defaultChecked />
+              Active
+            </label>
+            <label className="flex items-center gap-2">
+              <input type="checkbox" {...register("isFeatured")} />
+              Featured
+            </label>
+          </div>
+
+          <Button type="submit" disabled={loading}>
+            {" "}
+            {loading ? "Adding..." : "Add Product"}
+          </Button>
         </form>
       </CardContent>
     </Card>

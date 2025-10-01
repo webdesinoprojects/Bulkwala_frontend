@@ -20,10 +20,12 @@ export const useProductStore = create((set) => ({
     set({ loading: true, error: null });
     try {
       const newProduct = await createProduct(productData);
-      set({
-        products: (state) => [...state.products, newProduct],
+      set((state) => ({
+        products: Array.isArray(state.products)
+          ? [...state.products, newProduct]
+          : [...(state.products?.products || []), newProduct],
         loading: false,
-      });
+      }));
     } catch (error) {
       set({ error: error.message, loading: false });
     }
