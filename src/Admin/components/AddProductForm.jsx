@@ -46,6 +46,12 @@ const AddProductForm = ({ onSuccess }) => {
       tags: [],
       isActive: true,
       isFeatured: false,
+      sku: "",
+      color: [],
+      genericName: "",
+      manufacturerName: "",
+      countryOfOrigin: "India",
+      video: null,
     },
   });
 
@@ -56,8 +62,9 @@ const AddProductForm = ({ onSuccess }) => {
     fetchSubcategories();
   }, [fetchCategories, fetchSubcategories]);
 
-  // ✅ Only send raw data now, service will convert to FormData
   const onSubmit = async (data) => {
+    console.log("🔍 Form Data before sending:", data);
+
     try {
       await addProduct(data);
       toast.success("Product added successfully!");
@@ -88,7 +95,7 @@ const AddProductForm = ({ onSuccess }) => {
             <p className="text-red-500">{errors.title.message}</p>
           )}
 
-          {/* Slug (optional) */}
+          {/* Slug */}
           <Input
             type="text"
             placeholder="Slug (optional)"
@@ -118,7 +125,81 @@ const AddProductForm = ({ onSuccess }) => {
             <p className="text-red-500">{errors.stock.message}</p>
           )}
 
-          {/* Images with preview */}
+          {/* SKU */}
+          <Input type="text" placeholder="SKU" {...register("sku")} />
+          {errors.sku && <p className="text-red-500">{errors.sku.message}</p>}
+
+          {/* Color */}
+          <Input
+            type="text"
+            placeholder="Colors (comma separated)"
+            {...register("color")}
+          />
+          {errors.color && (
+            <p className="text-red-500">{errors.color.message}</p>
+          )}
+
+          {/* Generic Name */}
+          <Input
+            type="text"
+            placeholder="Generic Name"
+            {...register("genericName")}
+          />
+          {errors.genericName && (
+            <p className="text-red-500">{errors.genericName.message}</p>
+          )}
+
+          {/* Country of Origin */}
+          <div>
+            <label className="block mb-1 text-sm text-gray-600">
+              Country of Origin
+            </label>
+            <Select
+              onValueChange={(value) => setValue("countryOfOrigin", value)}
+              defaultValue="India"
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select Country" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="India">India</SelectItem>
+                <SelectItem value="China">China</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {errors.countryOfOrigin && (
+            <p className="text-red-500">{errors.countryOfOrigin.message}</p>
+          )}
+
+          {/* Manufacturer Name */}
+          <Input
+            type="text"
+            placeholder="Manufacturer Name"
+            {...register("manufacturerName")}
+          />
+          {errors.manufacturerName && (
+            <p className="text-red-500">{errors.manufacturerName.message}</p>
+          )}
+
+          {/* Video Upload */}
+          <div>
+            <label className="block mb-1 text-sm text-gray-600">
+              Product Video (Single)
+            </label>
+            <Input
+              type="file"
+              accept="video/*"
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (file) setValue("video", file, { shouldValidate: true });
+              }}
+            />
+            {errors.video && (
+              <p className="text-red-500">{errors.video.message}</p>
+            )}
+          </div>
+
+          {/* Images Upload */}
           <div>
             <label className="block mb-1 text-sm text-gray-600">
               Product Images
@@ -129,7 +210,7 @@ const AddProductForm = ({ onSuccess }) => {
               multiple
               onChange={(e) => {
                 const files = Array.from(e.target.files);
-                setValue("images", files); 
+                setValue("images", files, { shouldValidate: true });
                 setPreviewUrls(files.map((file) => URL.createObjectURL(file)));
               }}
             />
@@ -153,15 +234,7 @@ const AddProductForm = ({ onSuccess }) => {
           <Input
             type="text"
             placeholder="Tags (comma separated)"
-            onChange={(e) =>
-              setValue(
-                "tags",
-                e.target.value
-                  .split(",")
-                  .map((tag) => tag.trim())
-                  .filter(Boolean)
-              )
-            }
+            {...register("tags")}
           />
           {errors.tags && <p className="text-red-500">{errors.tags.message}</p>}
 
@@ -227,7 +300,6 @@ const AddProductForm = ({ onSuccess }) => {
           </div>
 
           <Button type="submit" disabled={loading}>
-            {" "}
             {loading ? "Adding..." : "Add Product"}
           </Button>
         </form>

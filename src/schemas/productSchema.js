@@ -14,7 +14,11 @@ export const productSchema = z.object({
       "At least one image is required"
     ),
 
-  videos: z.array(z.string().url("Invalid video URL")).optional(),
+  video: z
+  .any()
+  .refine((file) => !file || file instanceof File, "Invalid video file")
+  .optional(),
+
 
   price: z
     .union([z.string(), z.number()])
@@ -37,8 +41,39 @@ export const productSchema = z.object({
   category: z.string().min(1, "Category is required"),
   subcategory: z.string().min(1, "Subcategory is required"),
 
-  tags: z.array(z.string()).optional(),
+  tags: z
+    .union([z.string(), z.array(z.string())])
+    .transform((val) =>
+      Array.isArray(val)
+        ? val
+        : val
+        ? val
+            .split(",")
+            .map((t) => t.trim())
+            .filter(Boolean)
+        : []
+    )
+    .optional(),
+
+  color: z
+    .union([z.string(), z.array(z.string())])
+    .transform((val) =>
+      Array.isArray(val)
+        ? val
+        : val
+        ? val
+            .split(",")
+            .map((c) => c.trim())
+            .filter(Boolean)
+        : []
+    )
+    .optional(),
 
   isActive: z.boolean().default(true),
   isFeatured: z.boolean().default(false),
+
+  sku: z.string().trim().optional(),
+  genericName: z.string().optional(),
+  countryOfOrigin: z.enum(["India", "China"]).default("India"),
+  manufacturerName: z.string().optional(),
 });

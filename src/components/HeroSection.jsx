@@ -1,38 +1,39 @@
 import React from "react";
-import img1 from "../assets/img1.jpg";
-import img2 from "../assets/img2.jpg";
-import img3 from "../assets/img3.jpg";
-import img4 from "../assets/img4.jpg";
+
+const categories = [
+  { img: "/assets/products/img1.jpg", title: "Audio Products" },
+  { img: "/assets/products/img2.jpg", title: "Gaming Products" },
+  { img: "/assets/products/img3.jpg", title: "Cover Products" },
+  { img: "/assets/products/img4.jpg", title: "Watch Products" },
+];
 
 export default function HeroSection() {
   return (
-    <section className="px-8 py-8 bg-white">
-      <h2 className="text-2xl font-mono font-bold mb-6">Featured Products</h2>
-      <div className="flex flex-col sm:flex-row gap-8 justify-center">
-        <div className="rounded-xl shadow-md overflow-hidden w-full sm:w-[220px] bg-black">
-          <img src={img1} alt="Audio Products" className="w-full h-[280px] object-cover" />
-          <div className="bg-black/70 py-2 px-4">
-            <span className="font-mono text-lg font-bold text-white">Audio Products</span>
+    <section className="px-6 py-10 bg-red-300">
+      <h2 className="text-3xl font-mono font-bold mb-10">Featured Products</h2>
+      <div className="flex bg-blue-100 ">
+        {categories.map((cat, idx) => (
+          <div
+            key={idx}
+            className="relative w-full max-w-[220px] h-[350px] rounded-xl overflow-hidden shadow-md group mx-auto"
+          >
+            {/* Full Image */}
+            <img
+              src={cat.img}
+              alt={cat.title}
+              loading="lazy"
+              decoding="async"
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+
+            {/* Bottom Overlay */}
+            <div className="absolute bottom-0 w-full bg-black/90 py-2 px-3 text-center">
+              <span className="font-mono text-sm font-bold text-white tracking-wide">
+                {cat.title}
+              </span>
+            </div>
           </div>
-        </div>
-        <div className="rounded-xl shadow-md overflow-hidden w-full sm:w-[220px] bg-black">
-          <img src={img2} alt="Gaming Products" className="w-full h-[280px] object-cover" />
-          <div className="bg-black/70 py-2 px-4">
-            <span className="font-mono text-lg font-bold text-white">gaming Products</span>
-          </div>
-        </div>
-        <div className="rounded-xl shadow-md overflow-hidden w-full sm:w-[220px] bg-black">
-          <img src={img3} alt="Cover Products" className="w-full h-[280px] object-cover" />
-          <div className="bg-black/70 py-2 px-4">
-            <span className="font-mono text-lg font-bold text-white">Cover Products</span>
-          </div>
-        </div>
-        <div className="rounded-xl shadow-md overflow-hidden w-full sm:w-[220px] bg-black">
-          <img src={img4} alt="Watch Products" className="w-full h-[280px] object-cover" />
-          <div className="bg-black/70 py-2 px-4">
-            <span className="font-mono text-lg font-bold text-white">Watch Products</span>
-          </div>
-        </div>
+        ))}
       </div>
     </section>
   );

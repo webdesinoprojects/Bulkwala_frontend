@@ -34,6 +34,31 @@ export const createProduct = async (productData) => {
     });
   }
 
+  //  single video
+  if (productData.video) {
+    formData.append("video", productData.video);
+  }
+  if (productData.sku && productData.sku.trim() !== "") {
+    formData.append("sku", productData.sku.trim());
+  }
+  if (productData.genericName && productData.genericName.trim() !== "") {
+    formData.append("genericName", productData.genericName.trim());
+  }
+  if (
+    productData.manufacturerName &&
+    productData.manufacturerName.trim() !== ""
+  ) {
+    formData.append("manufacturerName", productData.manufacturerName.trim());
+  }
+
+  if (productData.countryOfOrigin)
+    formData.append("countryOfOrigin", productData.countryOfOrigin);
+
+  // colors
+  if (productData.color && productData.color.length > 0) {
+    productData.color.forEach((c) => formData.append("color", c));
+  }
+
   const res = await axiosInstance.post("/api/product", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });

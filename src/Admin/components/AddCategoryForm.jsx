@@ -13,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 const AddCategoryForm = ({ onSuccess }) => {
   const { addCategory, loading } = useCategoryStore();
   const [previewUrl, setPreviewUrl] = useState("");
+  const [bannerPreviewUrls, setBannerPreviewUrls] = useState([]);
 
   const {
     register,
@@ -70,8 +71,8 @@ const AddCategoryForm = ({ onSuccess }) => {
               onChange={(e) => {
                 const file = e.target.files[0];
                 if (file) {
-                  setValue("image", file); 
-                  setPreviewUrl(URL.createObjectURL(file)); 
+                  setValue("image", file);
+                  setPreviewUrl(URL.createObjectURL(file));
                 }
               }}
             />
@@ -86,6 +87,39 @@ const AddCategoryForm = ({ onSuccess }) => {
                 className="mt-2 h-20 object-cover rounded-md border"
               />
             )}
+          </div>
+
+          {/*  Banner Upload (multiple) */}
+          <div>
+            <label className="block mb-1 text-sm text-gray-600">
+              Banner Images
+            </label>
+            <Input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={(e) => {
+                const files = Array.from(e.target.files); // all selected files
+                setValue("banner", files); // store as array
+                setBannerPreviewUrls(
+                  files.map((file) => URL.createObjectURL(file))
+                );
+              }}
+            />
+            {errors.banner && (
+              <p className="text-red-500">{errors.banner.message}</p>
+            )}
+
+            <div className="mt-2 flex gap-2 flex-wrap">
+              {bannerPreviewUrls.map((url, idx) => (
+                <img
+                  key={idx}
+                  src={url}
+                  alt="Banner Preview"
+                  className="h-20 object-cover rounded-md border"
+                />
+              ))}
+            </div>
           </div>
 
           <Button type="submit" disabled={loading}>

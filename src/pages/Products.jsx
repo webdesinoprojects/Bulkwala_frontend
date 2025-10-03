@@ -9,6 +9,10 @@ const Products = () => {
     fetchProducts();
   }, [fetchProducts]);
 
+  const productList = Array.isArray(products)
+    ? products
+    : products?.products || [];
+
   if (loading) return <p>Loading products...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
 
@@ -17,9 +21,9 @@ const Products = () => {
       <h2 className="text-2xl font-semibold text-gray-800 mb-6">
         All Products
       </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {products.map((product) => (
-          <Card key={product._id}>
+      <div className="grid grid-cols-1 md:grid-cols-2 bg-gray-100 lg:grid-cols-4 gap-8 p-10">
+        {productList.map((product) => (
+          <Card  key={product._id}>
             <CardHeader>
               <CardTitle>{product.title}</CardTitle>
             </CardHeader>

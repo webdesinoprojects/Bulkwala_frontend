@@ -6,5 +6,11 @@ export const categorySchema = z.object({
   image: z
     .any()
     .refine((file) => file instanceof File, "Category image is required"),
-  banner: z.array(z.any()).optional(),
+  banner: z
+    .array(z.any())
+    .optional()
+    .refine(
+      (files) => !files || files.every((f) => f instanceof File),
+      "Banner must be valid image files"
+    ),
 });

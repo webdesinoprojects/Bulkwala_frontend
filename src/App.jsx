@@ -6,6 +6,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import VerificationPage from "./pages/VerificationPage";
 import AdminDashboard from "./Admin/pages/AdminDashboard";
+import Products from "./pages/Products";
 
 const App = createBrowserRouter([
   {
@@ -32,6 +33,10 @@ const App = createBrowserRouter([
         path: "/admin",
         element: <AdminDashboard />,
       },
+      {
+        path:"/products",
+        element:<Products/>
+      }
     ],
   },
 ]);

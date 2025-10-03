@@ -16,6 +16,14 @@ export const createCategory = async (categoryData) => {
   if (categoryData.image) {
     formData.append("image", categoryData.image);
   }
+
+  // 🆕 handle banners
+  if (categoryData.banner && categoryData.banner.length > 0) {
+    categoryData.banner.forEach((file) => {
+      formData.append("banner", file);
+    });
+  }
+
   const res = await axiosInstance.post("/api/category", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
