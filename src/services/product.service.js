@@ -64,3 +64,18 @@ export const createProduct = async (productData) => {
   });
   return res.data.data;
 };
+
+export const deleteProduct = async (slug) => {
+  const res = await axiosInstance.delete(`/api/product/${slug}`);
+  return res.data.data;
+};
+
+export const updateProduct = async (slug, productData) => {
+  const res = await axiosInstance.put(`/api/product/${slug}`, productData);
+  return res.data.data;
+};
+
+export const getProduct = async (slug) => {
+  const res = await axiosInstance.get(`/api/product/${slug}`);
+  return res.data.data;
+};

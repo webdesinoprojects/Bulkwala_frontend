@@ -1,4 +1,8 @@
-import { createProduct, getProducts } from "@/services/product.service";
+import {
+  createProduct,
+  getProducts,
+  deleteProduct,
+} from "@/services/product.service";
 import { create } from "zustand";
 
 export const useProductStore = create((set) => ({
@@ -27,6 +31,24 @@ export const useProductStore = create((set) => ({
         loading: false,
       }));
     } catch (error) {
+      set({ error: error.message, loading: false });
+    }
+  },
+
+  deleteProduct: async (slug) => {
+    set({ loading: true, error: null });
+    try {
+      await deleteProduct(slug);
+      set((state) => {
+        const updatedList = Array.isArray(state.products)
+          ? state.products.filter((product) => product.slug !== slug)
+          : (state.products?.products || []).filter(
+              (product) => product.slug !== slug
+            );
+        return { products: updatedList, loading: false };
+      });
+    } catch (error) {
+      console.error("Delete failed:", error);
       set({ error: error.message, loading: false });
     }
   },

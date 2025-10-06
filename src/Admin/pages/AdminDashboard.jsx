@@ -23,6 +23,10 @@ import { useEffect } from "react";
 import { useCategoryStore } from "../../store/category.store.js";
 import { useSubcategoryStore } from "@/store/subcategory.store.js";
 import { useProductStore } from "@/store/product.store.js";
+import EditProductDialog from "../components/EditProductDialog.jsx";
+import { Edit, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+
 // ------------------------- Dashboard Cards -------------------------
 const DashboardContent = () => (
   <>
@@ -56,10 +60,13 @@ const DashboardContent = () => (
 );
 
 // ------------------------- Products Section -------------------------
+
 const ProductsContent = () => {
   const [showAddForm, setShowAddForm] = useState(false);
-  const { fetchProducts, products } = useProductStore();
-  console.log("Products:", products);
+  const [editSlug, setEditSlug] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const { fetchProducts, products, deleteProduct } = useProductStore();
 
   useEffect(() => {
     fetchProducts();
@@ -68,40 +75,167 @@ const ProductsContent = () => {
   const productList = Array.isArray(products)
     ? products
     : products?.products || [];
+
+  // Handle Edit Click
+  const handleEdit = (slug) => {
+    setEditSlug(slug);
+    setDialogOpen(true);
+  };
+
+  // Handle Delete Click (Sonner confirm toast)
+  const handleDelete = (slug) => {
+    toast((t) => (
+      <div className="flex flex-col gap-2">
+        <p>Are you sure you want to delete this product?</p>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={async () => {
+              await deleteProduct(slug);
+              toast.dismiss(t);
+              toast.success("Product deleted successfully!");
+              fetchProducts();
+            }}
+          >
+            Yes, Delete
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => toast.dismiss(t)}>
+            Cancel
+          </Button>
+        </div>
+      </div>
+    ));
+  };
+
   return (
     <>
-      <Button className="mb-4" onClick={() => setShowAddForm(!showAddForm)}>
-        {showAddForm ? "Close Form" : "Add New Product"}
-      </Button>
+      {/* ✅ Header + Add Button */}
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold">Products</h2>
+        <Button onClick={() => setShowAddForm(!showAddForm)}>
+          {showAddForm ? "Close Form" : "Add New Product"}
+        </Button>
+      </div>
+
+      {/* ✅ Add Product Form */}
       {showAddForm && (
         <AddProductForm
           onSuccess={() => {
-            setShowAddForm(false), fetchProducts();
+            setShowAddForm(false);
+            fetchProducts();
           }}
         />
       )}
-      <Card className="bg-gray-200">
-        <CardContent className="flex gap-4 flex-wrap">
-          {productList.length > 0 ? (
-            productList.map((product) => (
-              <Card key={product._id} className="w-1/4">
-                <CardContent className="p-2">
-                  <p className="font-semibold">{product.title}</p>
-                  {product.images?.length > 0 && (
-                    <img
-                      src={product.images[0]}
-                      alt={product.title}
-                      className="w-full h-40 object-cover rounded"
-                    />
-                  )}
-                </CardContent>
-              </Card>
-            ))
-          ) : (
-            <p className="text-gray-600">No products found.</p>
-          )}
+
+      {/* ✅ Product Table */}
+      <Card className="bg-white border border-gray-200 rounded-xl shadow-sm">
+        <CardContent className="overflow-x-auto p-0">
+          <table className="min-w-full border-collapse">
+            <thead className="bg-gray-100 text-gray-700 text-sm">
+              <tr>
+                <th className="p-3 text-left font-semibold">Image</th>
+                <th className="p-3 text-left font-semibold">Title</th>
+                <th className="p-3 text-left font-semibold">Category</th>
+                <th className="p-3 text-left font-semibold">Subcategory</th>
+                <th className="p-3 text-center font-semibold">Price</th>
+                <th className="p-3 text-center font-semibold">Stock</th>
+                <th className="p-3 text-center font-semibold">Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {productList.length > 0 ? (
+                productList.map((product, index) => (
+                  <tr
+                    key={product._id || index}
+                    className="border-b hover:bg-gray-50 transition"
+                  >
+                    <td className="p-3">
+                      {product.images?.length > 0 ? (
+                        <img
+                          src={product.images[0]}
+                          alt={product.title}
+                          className="w-14 h-14 object-cover rounded-md border"
+                        />
+                      ) : (
+                        <div className="w-14 h-14 bg-gray-200 rounded-md" />
+                      )}
+                    </td>
+
+                    <td className="p-3 text-sm font-medium text-gray-900">
+                      {product.title}
+                    </td>
+
+                    <td className="p-3 text-sm text-gray-700">
+                      {product.category?.name || "-"}
+                    </td>
+
+                    <td className="p-3 text-sm text-gray-700">
+                      {product.subcategory?.name || "-"}
+                    </td>
+
+                    <td className="p-3 text-center text-gray-800 font-semibold">
+                      ₹{product.price}
+                    </td>
+
+                    <td className="p-3 text-center">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          product.stock > 0
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {product.stock > 0 ? "In Stock" : "Out of Stock"}
+                      </span>
+                    </td>
+
+                    <td className="p-3 text-center">
+                      <div className="flex justify-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                          onClick={() => handleEdit(product.slug)}
+                        >
+                          <Edit size={16} />
+                        </Button>
+
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-red-600 border-red-200 hover:bg-red-50"
+                          onClick={() => handleDelete(product.slug)}
+                        >
+                          <Trash2 size={16} />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan="7"
+                    className="text-center py-8 text-gray-500 text-sm"
+                  >
+                    No products found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </CardContent>
       </Card>
+
+      {/* ✅ Edit Product Dialog */}
+      <EditProductDialog
+        open={dialogOpen}
+        slug={editSlug}
+        onClose={() => setDialogOpen(false)}
+        onSuccess={fetchProducts}
+      />
     </>
   );
 };
