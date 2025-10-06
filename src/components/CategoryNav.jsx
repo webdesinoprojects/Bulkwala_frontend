@@ -11,28 +11,39 @@ export default function CategoryNav({ selectedCategory, onSelect }) {
   if (loading) return <p>Loading...</p>;
 
   return (
-    <div className="flex gap-6 overflow-x-auto py-4 border-b bg-white">
-      <button
-        className={`px-4 py-2 rounded ${
-          !selectedCategory ? "bg-blue-600 text-white" : "bg-gray-100"
-        }`}
-        onClick={() => onSelect(null)}
-      >
-        Home
-      </button>
-      {categories.map((cat) => (
-        <button
-          key={cat._id}
-          className={`px-4 py-2 rounded whitespace-nowrap ${
-            selectedCategory?._id === cat._id
-              ? "bg-blue-600 text-white"
-              : "bg-gray-100"
-          }`}
-          onClick={() => onSelect(cat)}
-        >
-          {cat.name}
-        </button>
-      ))}
+    <div className="flex gap-6 overflow-x-auto py-2 border-b scrollbar-hide">
+      {categories.map((cat) => {
+        const isSelected = selectedCategory?._id === cat._id;
+
+        return (
+          <div
+            key={cat._id}
+            className="flex flex-col items-center min-w-[70px] cursor-pointer"
+            onClick={() => onSelect(cat)}
+          >
+            <div
+              className={`w-16 h-16 rounded-full overflow-hidden flex items-center justify-center border-2 transition-all duration-200 ${
+                isSelected
+                  ? "border-blue-600 scale-105"
+                  : "border-transparent hover:border-blue-300"
+              }`}
+            >
+              <img
+                src={cat.img_url || cat.image}
+                alt={cat.name}
+                className="w-full h-full object-cover rounded-full"
+              />
+            </div>
+            <p
+              className={`text-sm mt-2 font-medium ${
+                isSelected ? "text-blue-600" : "text-gray-700"
+              }`}
+            >
+              {cat.name}
+            </p>
+          </div>
+        );
+      })}
     </div>
   );
 }

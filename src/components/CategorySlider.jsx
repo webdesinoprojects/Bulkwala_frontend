@@ -8,21 +8,21 @@ export default function CategorySlider({ category }) {
     : ["/assets/banner1.jpg", "/assets/banner2.png", "/assets/banner3.png"];
 
   return (
-    <div className="w-full h-[250px] md:h-[350px] mt-2">
+    <div className="w-full h-[250px] md:h-[350px] mt-4">
       <Swiper
         modules={[Navigation, Pagination, Autoplay]}
         navigation
         pagination={{ clickable: true }}
-        autoplay={{ delay: 3000 }}
+        autoplay={{ delay: 2000 }}
         loop={true}
-        className="w-full h-full"
+        className="w-full h-full overflow-hidden rounded-lg"
       >
         {images.map((img, idx) => (
           <SwiperSlide key={idx}>
             <img
               src={img}
               alt={`banner-${idx}`}
-              className="w-full h-full object-cover rounded-lg"
+              className="object-cover rounded-lg"
             />
           </SwiperSlide>
         ))}
