@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { getCategories, createCategory } from "../services/category.service.js";
+import { getCategories, createCategory ,updateCategory,deleteCategory } from "../services/category.service.js";
 
 export const useCategoryStore = create((set) => ({
   categories: [],
@@ -28,4 +28,37 @@ export const useCategoryStore = create((set) => ({
       set({ error: error.message, loading: false });
     }
   },
+
+
+  editCategory:async(slug,categoryData)=>{
+     set({ loading: true, error: null });
+    try {
+      const updated = await updateCategory(slug, categoryData);
+      set((state) => ({
+        categories: state.categories.map((cat) =>
+          cat.slug === slug ? updated : cat
+        ),
+        loading: false,
+      }));
+    } catch (error) {
+      set({ error: error.message, loading: false });
+    }
+  },
+
+
+  
+  removeCategory: async (slug) => {
+    set({ loading: true, error: null });
+    try {
+      await deleteCategory(slug);
+      set((state) => ({
+        categories: state.categories.filter((cat) => cat.slug !== slug),
+        loading: false,
+      }));
+    } catch (error) {
+      set({ error: error.message, loading: false });
+    }
+  },
+
+
 }));
