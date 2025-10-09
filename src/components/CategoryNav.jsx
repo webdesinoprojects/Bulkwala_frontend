@@ -22,7 +22,7 @@ export default function CategoryNav({ selectedCategory, onSelect }) {
             onClick={() => onSelect(cat)}
           >
             <div
-              className={`w-16 h-16 rounded-full overflow-hidden flex items-center justify-center border-2 transition-all duration-200 ${
+              className={`w-16 h-16 rounded overflow-hidden flex items-center justify-center border-2 transition-all duration-200 ${
                 isSelected
                   ? "border-blue-600 scale-105"
                   : "border-transparent hover:border-blue-300"
@@ -31,9 +31,9 @@ export default function CategoryNav({ selectedCategory, onSelect }) {
               <img
                 src={cat.img_url || cat.image}
                 alt={cat.name}
-                className="w-full h-full object-cover rounded-full"
+                className="w-full h-full object-cover "
               />
-            </div>
+          </div>
             <p
               className={`text-sm mt-2 font-medium ${
                 isSelected ? "text-blue-600" : "text-gray-700"

@@ -2,6 +2,7 @@ import {
   createProduct,
   getProducts,
   deleteProduct,
+  updateProduct,
 } from "@/services/product.service";
 import { create } from "zustand";
 
@@ -34,6 +35,37 @@ export const useProductStore = create((set) => ({
       set({ error: error.message, loading: false });
     }
   },
+
+editProduct: async (slug, productData) => {
+    set({ loading: true, error: null });
+    try {
+      // If images exist, we need FormData for multipart
+      const formData = new FormData();
+      Object.entries(productData).forEach(([key, value]) => {
+        if (key === "images" && value?.length > 0) {
+          Array.from(value).forEach((img) => formData.append("images", img));
+        } else {
+          formData.append(key, value);
+        }
+      });
+
+      const updatedProduct = await updateProduct(slug, formData);
+
+      set((state) => {
+        const updatedList = Array.isArray(state.products)
+          ? state.products.map((p) => (p.slug === slug ? updatedProduct : p))
+          : (state.products?.products || []).map((p) =>
+              p.slug === slug ? updatedProduct : p
+            );
+
+        return { products: updatedList, loading: false };
+      });
+    } catch (error) {
+      set({ error: error.message, loading: false });
+      throw error;
+    }
+  },
+
 
   deleteProduct: async (slug) => {
     set({ loading: true, error: null });
