@@ -36,18 +36,30 @@ export const useProductStore = create((set) => ({
     }
   },
 
-editProduct: async (slug, productData) => {
+  editProduct: async (slug, productData) => {
     set({ loading: true, error: null });
     try {
-      // If images exist, we need FormData for multipart
-      const formData = new FormData();
-      Object.entries(productData).forEach(([key, value]) => {
-        if (key === "images" && value?.length > 0) {
-          Array.from(value).forEach((img) => formData.append("images", img));
-        } else {
-          formData.append(key, value);
-        }
-      });
+      // ✅ Directly pass FormData if already provided
+      let formData;
+
+      if (productData instanceof FormData) {
+        formData = productData;
+      } else {
+        formData = new FormData();
+        Object.entries(productData).forEach(([key, value]) => {
+          if (key === "images" && value?.length > 0) {
+            Array.from(value).forEach((img) => formData.append("images", img));
+          } else if (Array.isArray(value)) {
+            value.forEach((v) => formData.append(key, v));
+          } else if (value !== undefined && value !== null) {
+            formData.append(key, value);
+          }
+        });
+      }
+
+      // ✅ Add slug & sku checks
+      if (productData.slug) formData.append("slug", productData.slug);
+      if (productData.sku) formData.append("sku", productData.sku);
 
       const updatedProduct = await updateProduct(slug, formData);
 
@@ -61,11 +73,11 @@ editProduct: async (slug, productData) => {
         return { products: updatedList, loading: false };
       });
     } catch (error) {
+      console.error("Update failed:", error);
       set({ error: error.message, loading: false });
       throw error;
     }
   },
-
 
   deleteProduct: async (slug) => {
     set({ loading: true, error: null });

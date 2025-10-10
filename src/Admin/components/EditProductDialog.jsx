@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -63,18 +68,20 @@ export default function EditProductDialog({ open, onClose, slug, onSuccess }) {
       uploadData.append("price", formData.price);
       uploadData.append("stock", formData.stock);
       uploadData.append("description", formData.description);
+      uploadData.append("slug", slug);
+      if (formData.sku) uploadData.append("sku", formData.sku);
 
-      // append images to remove
+      // append removed images
       imagesToRemove.forEach((img) => uploadData.append("imagesToRemove", img));
 
-      // append new images
+      // Append new images
       if (formData.newImages?.length > 0) {
         Array.from(formData.newImages).forEach((img) => {
           uploadData.append("images", img);
         });
       }
 
-      // include existing images URLs to keep
+      // Include existing images URLs to keep
       existingImages.forEach((imgUrl) => {
         uploadData.append("existingImages", imgUrl);
       });
@@ -103,17 +110,34 @@ export default function EditProductDialog({ open, onClose, slug, onSuccess }) {
           <form onSubmit={handleSubmit} className="space-y-4 mt-4">
             <div>
               <Label>Title</Label>
-              <Input name="title" value={formData.title} onChange={handleChange} required />
+              <Input
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                required
+              />
             </div>
 
             <div>
               <Label>Price</Label>
-              <Input type="number" name="price" value={formData.price} onChange={handleChange} required />
+              <Input
+                type="number"
+                name="price"
+                value={formData.price}
+                onChange={handleChange}
+                required
+              />
             </div>
 
             <div>
               <Label>Stock</Label>
-              <Input type="number" name="stock" value={formData.stock} onChange={handleChange} required />
+              <Input
+                type="number"
+                name="stock"
+                value={formData.stock}
+                onChange={handleChange}
+                required
+              />
             </div>
 
             <div>

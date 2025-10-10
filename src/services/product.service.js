@@ -71,7 +71,9 @@ export const deleteProduct = async (slug) => {
 };
 
 export const updateProduct = async (slug, productData) => {
-  const res = await axiosInstance.put(`/api/product/${slug}`, productData);
+  const res = await axiosInstance.put(`/api/product/${slug}`, productData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
   return res.data.data;
 };
 
