@@ -6,6 +6,7 @@ import {
   FaList,
   FaUsers,
   FaCog,
+  FaExclamationTriangle,
 } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,34 +31,78 @@ import { Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 // ------------------------- Dashboard Cards -------------------------
-const DashboardContent = () => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-    <Card>
-      <CardHeader>
-        <CardDescription>Total Products</CardDescription>
-        <CardTitle>120</CardTitle>
-      </CardHeader>
-    </Card>
-    <Card>
-      <CardHeader>
-        <CardDescription>Total Categories</CardDescription>
-        <CardTitle>12</CardTitle>
-      </CardHeader>
-    </Card>
-    <Card>
-      <CardHeader>
-        <CardDescription>Total Subcategories</CardDescription>
-        <CardTitle>30</CardTitle>
-      </CardHeader>
-    </Card>
-    <Card>
-      <CardHeader>
-        <CardDescription>Low Stock Products</CardDescription>
-        <CardTitle className="text-red-500">5</CardTitle>
-      </CardHeader>
-    </Card>
-  </div>
-);
+
+const DashboardContent = () => {
+  const { products, fetchProducts } = useProductStore();
+  const { categories, fetchCategories } = useCategoryStore();
+  const { subcategories, fetchSubcategories } = useSubcategoryStore();
+
+  useEffect(() => {
+    fetchProducts();
+    fetchCategories();
+    fetchSubcategories();
+  }, []);
+
+  const productList = Array.isArray(products)
+    ? products
+    : products?.products || [];
+
+  const totalProducts = productList?.length || 0;
+  const totalCategories = categories?.length || 0;
+  const totalSubcategories = subcategories?.length || 0;
+  const lowStockProducts = productList?.filter((p) => p.stock <= 5).length || 0;
+
+  const cardData = [
+    {
+      title: "Total Products",
+      value: totalProducts,
+      icon: <FaBoxOpen className="text-blue-500 w-6 h-6" />,
+      bg: "bg-blue-50",
+      textColor: "text-blue-600",
+    },
+    {
+      title: "Total Categories",
+      value: totalCategories,
+      icon: <FaTags className="text-green-500 w-6 h-6" />,
+      bg: "bg-green-50",
+      textColor: "text-green-600",
+    },
+    {
+      title: "Total Subcategories",
+      value: totalSubcategories,
+      icon: <FaList className="text-purple-500 w-6 h-6" />,
+      bg: "bg-purple-50",
+      textColor: "text-purple-600",
+    },
+    {
+      title: "Low Stock Products",
+      value: lowStockProducts,
+      icon: <FaExclamationTriangle className="text-red-500 w-6 h-6" />,
+      bg: "bg-red-50",
+      textColor: "text-red-600",
+    },
+  ];
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      {cardData.map((card) => (
+        <Card key={card.title} className={`shadow-md ${card.bg} rounded-xl`}>
+          <CardHeader className="flex items-center justify-between">
+            <div>
+              <CardDescription className="text-sm">
+                {card.title}
+              </CardDescription>
+              <CardTitle className={`text-2xl font-bold ${card.textColor}`}>
+                {card.value}
+              </CardTitle>
+            </div>
+            <div>{card.icon}</div>
+          </CardHeader>
+        </Card>
+      ))}
+    </div>
+  );
+};
 
 // ------------------------- Products Section -------------------------
 const ProductsContent = () => {

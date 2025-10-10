@@ -8,8 +8,11 @@ import VerificationPage from "./pages/VerificationPage";
 import AdminDashboard from "./Admin/pages/AdminDashboard";
 import Products from "./pages/Products";
 import ProtectedRoutes from "./components/ProtectedRoutes";
+import TermsAndConditions from "./requiredpages/Term&Condition";
+import PrivacyPolicy from "./requiredpages/PrivacyPolicy";
+import ShippingPolicy from "./requiredpages/ShipingPolicy";
+import RefundAndReturnPolicy from "./requiredpages/Refund&ReturnPolicy";
 
-// Define role constants for clarity
 const ROLES = {
   ADMIN: "admin",
   SELLER: "seller",
@@ -58,6 +61,23 @@ const App = createBrowserRouter([
       //     </ProtectedRoutes>
       //   ),
       // },
+
+      {
+        path: "/terms-and-conditions",
+        element: <TermsAndConditions />,
+      },
+      {
+        path: "/privacy-policy",
+        element: <PrivacyPolicy />,
+      },
+      {
+        path: "/shipping-policy",
+        element: <ShippingPolicy />,
+      },
+      {
+        path: "/refund-and-return-policy",
+        element: <RefundAndReturnPolicy />,
+      },
     ],
   },
 ]);

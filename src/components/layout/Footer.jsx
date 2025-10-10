@@ -1,4 +1,5 @@
 import { FaFacebookF, FaTwitter, FaInstagram, FaYoutube } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 export default function Footer() {
   return (
@@ -9,7 +10,7 @@ export default function Footer() {
           <h2 className="text-xl font-bold mb-3">BULKWALA</h2>
           <p className="text-gray-300 text-sm mb-4 leading-relaxed">
             The best quality electronics accessories <br />
-            providers for whole world
+            provider for the whole world.
           </p>
           <div className="flex items-center gap-3 text-gray-400">
             <FaFacebookF className="hover:text-white cursor-pointer" />
@@ -23,11 +24,14 @@ export default function Footer() {
         <div>
           <h3 className="text-lg font-semibold mb-3">Store</h3>
           <ul className="space-y-2 text-gray-300 text-sm">
-            <li>Hot Accessories</li>
-            <li>Audio && Headphone</li>
-            <li>Mobile Accessories</li>
-            <li>Wholesale</li>
-            <li>Term && Conditions</li>
+            <li className="hover:underline cursor-pointer">Hot Accessories</li>
+            <li className="hover:underline cursor-pointer">
+              Audio & Headphones
+            </li>
+            <li className="hover:underline cursor-pointer">
+              Mobile Accessories
+            </li>
+            <li className="hover:underline cursor-pointer">Wholesale</li>
           </ul>
         </div>
 
@@ -35,26 +39,50 @@ export default function Footer() {
         <div>
           <h3 className="text-lg font-semibold mb-3">Visit Us</h3>
           <ul className="space-y-2 text-gray-300 text-sm">
-            <li>New Delhi - 110001</li>
-            <li>street text address</li>
-            <li>Texttt</li>
+            <li>Upper Ground Floor, Back Side</li>
+            <li>Building No. M-77, Block-M, Shyam Park</li>
+            <li>Uttam Nagar, New Delhi - 110059</li>
+
+            {/* Contact Us */}
+            <li>📞 +91 9310701078</li>
+            <li>✉️ bulkwalaindia@gmail.com</li>
           </ul>
         </div>
 
-        {/* Contact Us */}
+        {/* Legal & Policy Links */}
         <div>
-          <h3 className="text-lg font-semibold mb-3">Contact Us</h3>
+          <h3 className="text-lg font-semibold mb-3">Policies</h3>
           <ul className="space-y-2 text-gray-300 text-sm">
-            <li>context us Details</li>
-            <li>You can put data</li>
-            <li>for context us</li>
+            <li>
+              <Link to="/terms-and-conditions" className="hover:underline">
+                Terms & Conditions
+              </Link>
+            </li>
+            <li>
+              <Link to="/privacy-policy" className="hover:underline">
+                Privacy Policy
+              </Link>
+            </li>
+            <li>
+              <Link to="/shipping-policy" className="hover:underline">
+                Shipping Policy
+              </Link>
+            </li>
+            <li>
+              <Link to="/refund-and-return-policy" className="hover:underline">
+                Refund & Return Policy
+              </Link>
+            </li>
           </ul>
         </div>
       </div>
 
       {/* Bottom Bar */}
       <div className="border-t border-gray-700 pt-4 flex flex-col md:flex-row items-center justify-between text-gray-400 text-sm">
-        <p>Copyright © 2024 electoshop</p>
+        <p>
+          Copyright © {new Date().getFullYear()} Bulkwala.com. All rights
+          reserved.
+        </p>
 
         <div className="flex items-center gap-3 mt-3 md:mt-0">
           <span className="text-gray-300">We accept:</span>
