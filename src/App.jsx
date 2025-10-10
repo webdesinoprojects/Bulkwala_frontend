@@ -7,6 +7,14 @@ import Signup from "./pages/Signup";
 import VerificationPage from "./pages/VerificationPage";
 import AdminDashboard from "./Admin/pages/AdminDashboard";
 import Products from "./pages/Products";
+import ProtectedRoutes from "./components/ProtectedRoutes";
+
+// Define role constants for clarity
+const ROLES = {
+  ADMIN: "admin",
+  SELLER: "seller",
+  CUSTOMER: "customer",
+};
 
 const App = createBrowserRouter([
   {
@@ -30,13 +38,26 @@ const App = createBrowserRouter([
         element: <VerificationPage />,
       },
       {
-        path: "/admin",
-        element: <AdminDashboard />,
+        path: "/products",
+        element: <Products />,
       },
       {
-        path:"/products",
-        element:<Products/>
-      }
+        path: "/admin",
+        element: (
+          <ProtectedRoutes allowedRoles={[ROLES.ADMIN]}>
+            <AdminDashboard />
+          </ProtectedRoutes>
+        ),
+      },
+      // Example for seller route
+      // {
+      //   path: "/seller",
+      //   element: (
+      //     <ProtectedRoutes allowedRoles={[ROLES.SELLER]}>
+      //       <SellerDashboard />
+      //     </ProtectedRoutes>
+      //   ),
+      // },
     ],
   },
 ]);
