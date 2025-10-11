@@ -48,10 +48,36 @@ export const resetPasswordService = async (credentials) => {
   return res.data;
 };
 
-// ✅ Apply for seller
+//  Apply for seller
 export const applySellerService = async (sellerData) => {
   const res = await axiosInstance.post("/api/users/apply-seller", sellerData, {
     withCredentials: true,
   });
+  return res.data.data;
+};
+
+//  Fetch all users (admin only)
+export const getAllUsersService = async () => {
+  const res = await axiosInstance.get("/api/users", { withCredentials: true });
+  return res.data.data;
+};
+
+//  Approve pending seller
+export const approveSellerService = async (userid) => {
+  const res = await axiosInstance.put(
+    `/api/users/sellers/approve/${userid}`,
+    {},
+    { withCredentials: true }
+  );
+  return res.data.data;
+};
+
+// Reject pending seller
+export const rejectSellerService = async (userid) => {
+  const res = await axiosInstance.put(
+    `/api/users/sellers/reject/${userid}`,
+    {},
+    { withCredentials: true }
+  );
   return res.data.data;
 };

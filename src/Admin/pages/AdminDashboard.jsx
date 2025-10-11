@@ -26,7 +26,7 @@ import { useProductStore } from "@/store/product.store.js";
 import EditProductDialog from "../components/EditProductDialog.jsx";
 import EditCategoryDialog from "../components/EditCategoryDialog.jsx";
 import EditSubcategoryDialog from "../components/EditSubcategoryDialog.jsx";
-
+import { useAuthStore } from "@/store/auth.store.js";
 import { Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -554,7 +554,7 @@ const SubcategoriesContent = () => {
         </CardContent>
       </Card>
 
-      {/* ✅ Edit Dialog */}
+      {/* Edit Dialog */}
       <EditSubcategoryDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
@@ -570,11 +570,137 @@ const SubcategoriesContent = () => {
 };
 
 // ------------------------- Users & Settings -------------------------
-const UsersContent = () => (
-  <Card>
-    <CardContent>Manage Users here.</CardContent>
-  </Card>
-);
+
+const UsersContent = () => {
+  const allUsers = useAuthStore((state) => state.allUsers);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const fetchAllUsers = useAuthStore((state) => state.fetchAllUsers);
+  const approveSeller = useAuthStore((state) => state.approveSeller);
+  const rejectSeller = useAuthStore((state) => state.rejectSeller);
+
+  useEffect(() => {
+    fetchAllUsers();
+  }, [fetchAllUsers]);
+
+  const getBadgeClass = (role) => {
+    switch (role) {
+      case "admin":
+        return "bg-green-100 text-green-700";
+      case "seller":
+        return "bg-blue-100 text-blue-700";
+      default:
+        return "bg-yellow-100 text-yellow-700";
+    }
+  };
+
+  const handleApprove = async (id) => {
+    const res = await approveSeller(id);
+    if (res.success) toast.success("Seller approved successfully!");
+    else toast.error("Approval failed.");
+  };
+
+  const handleReject = async (id) => {
+    const res = await rejectSeller(id);
+    if (res.success) toast.success("Seller rejected successfully!");
+    else toast.error("Rejection failed.");
+  };
+
+  console.log("🧩 All users from store:", allUsers);
+
+  return (
+    <Card className="bg-white border border-gray-200 rounded-xl shadow-sm">
+      <CardHeader>
+        <CardTitle>All Users</CardTitle>
+        <CardDescription>
+          Manage users, roles, and seller approvals.
+        </CardDescription>
+      </CardHeader>
+
+      <CardContent className="overflow-x-auto p-0">
+        {isLoading ? (
+          <div className="text-center py-6 text-gray-500">Loading users...</div>
+        ) : allUsers?.length > 0 ? (
+          <table className="min-w-full border-collapse">
+            <thead className="bg-gray-100 text-gray-700 text-sm">
+              <tr>
+                <th className="p-3 text-left font-semibold">Name</th>
+                <th className="p-3 text-left font-semibold">Email</th>
+                <th className="p-3 text-center font-semibold">Role</th>
+                <th className="p-3 text-left font-semibold">Business Name</th>
+                <th className="p-3 text-left font-semibold">Pickup Address</th>
+                <th className="p-3 text-center font-semibold">Status</th>
+                <th className="p-3 text-center font-semibold">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allUsers.map((user, index) => (
+                <tr
+                  key={user._id || index}
+                  className="border-b hover:bg-gray-50 transition"
+                >
+                  <td className="p-3 text-sm font-medium text-gray-900">
+                    {user.name}
+                  </td>
+                  <td className="p-3 text-sm text-gray-700">{user.email}</td>
+                  <td className="p-3 text-center">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-semibold ${getBadgeClass(
+                        user.role
+                      )}`}
+                    >
+                      {user.role}
+                    </span>
+                  </td>
+                  <td className="p-3 text-sm text-gray-700">
+                    {user.sellerDetails?.businessName || "-"}
+                  </td>
+                  <td className="p-3 text-sm text-gray-700">
+                    {user.sellerDetails?.pickupAddress || "-"}
+                  </td>
+                  <td className="p-3 text-center text-sm">
+                    {user.sellerDetails?.approved
+                      ? "Approved ✅"
+                      : user.sellerDetails?.businessName
+                      ? "Pending ⏳"
+                      : "-"}
+                  </td>
+                  <td className="p-3 text-center">
+                    {user.sellerDetails?.businessName &&
+                    !user.sellerDetails?.approved ? (
+                      <div className="flex justify-center gap-2">
+                        <Button
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                          onClick={() => handleApprove(user._id)}
+                        >
+                          Approve
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleReject(user._id)}
+                        >
+                          Reject
+                        </Button>
+                      </div>
+                    ) : (
+                      <span className="text-gray-400 text-xs">No actions</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div className="text-center py-8 text-gray-500 text-sm">
+            No users found.
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
 const SettingsContent = () => (
   <Card>
     <CardContent>Settings panel goes here.</CardContent>
@@ -584,7 +710,17 @@ const SettingsContent = () => (
 // ------------------------- Main Dashboard -------------------------
 const AdminDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeSection, setActiveSection] = useState("Dashboard");
+
+  // ✅ persist the active section (fix re-render issue)
+  const [activeSection, setActiveSection] = useState(
+    localStorage.getItem("adminActiveSection") || "Dashboard"
+  );
+
+  useEffect(() => {
+    localStorage.setItem("adminActiveSection", activeSection);
+  }, [activeSection]);
+
+  console.log("🧭 Active section:", activeSection);
 
   const menuItems = [
     { name: "Dashboard", icon: <FaTachometerAlt /> },
@@ -594,25 +730,6 @@ const AdminDashboard = () => {
     { name: "Users", icon: <FaUsers /> },
     { name: "Settings", icon: <FaCog /> },
   ];
-
-  const renderContent = () => {
-    switch (activeSection) {
-      case "Dashboard":
-        return <DashboardContent />;
-      case "Products":
-        return <ProductsContent />;
-      case "Categories":
-        return <CategoriesContent />;
-      case "Subcategories":
-        return <SubcategoriesContent />;
-      case "Users":
-        return <UsersContent />;
-      case "Settings":
-        return <SettingsContent />;
-      default:
-        return <DashboardContent />;
-    }
-  };
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -663,7 +780,13 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {renderContent()}
+        {/* ✅ Render Content Directly */}
+        {activeSection === "Dashboard" && <DashboardContent />}
+        {activeSection === "Products" && <ProductsContent />}
+        {activeSection === "Categories" && <CategoriesContent />}
+        {activeSection === "Subcategories" && <SubcategoriesContent />}
+        {activeSection === "Users" && <UsersContent />}
+        {activeSection === "Settings" && <SettingsContent />}
       </main>
     </div>
   );

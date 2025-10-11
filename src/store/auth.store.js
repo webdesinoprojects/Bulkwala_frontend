@@ -1,10 +1,13 @@
 import {
   applySellerService,
+  approveSellerService,
   checkauthService,
   forgotPasswordService,
+  getAllUsersService,
   loginService,
   logoutService,
   registerService,
+  rejectSellerService,
   resendVerificationService,
   resetPasswordService,
   verifyEmailService,
@@ -14,6 +17,7 @@ import { create } from "zustand";
 export const useAuthStore = create((set) => ({
   user: null,
   isLoggedIn: false,
+  allUsers: [],
   isLoading: false,
   pendingVerificationUser: null,
   error: null,
@@ -190,6 +194,44 @@ export const useAuthStore = create((set) => ({
         error.response?.data?.message || "Failed to apply for seller";
       set({ isLoading: false, error: message });
       return { success: false, error: message };
+    }
+  },
+
+  fetchAllUsers: async () => {
+    set({ isLoading: true });
+    try {
+      const users = await getAllUsersService();
+      set({ allUsers: users, isLoading: false });
+      return { success: true, users };
+    } catch (error) {
+      set({ isLoading: false, error: "Failed to fetch users" });
+      return { success: false, error };
+    }
+  },
+
+  approveSeller: async (userid) => {
+    set({ isLoading: true });
+    try {
+      await approveSellerService(userid);
+      await useAuthStore.getState().fetchAllUsers(); // refresh list
+      set({ isLoading: false });
+      return { success: true };
+    } catch (error) {
+      set({ isLoading: false, error: "Failed to approve seller" });
+      return { success: false, error };
+    }
+  },
+
+  rejectSeller: async (userid) => {
+    set({ isLoading: true });
+    try {
+      await rejectSellerService(userid);
+      await useAuthStore.getState().fetchAllUsers(); // refresh list
+      set({ isLoading: false });
+      return { success: true };
+    } catch (error) {
+      set({ isLoading: false, error: "Failed to reject seller" });
+      return { success: false, error };
     }
   },
 }));
