@@ -23,7 +23,7 @@ export default function Navbar() {
   // Optional: refresh user on mount
   useEffect(() => {
     checkauthstatus();
-  }, [checkauthstatus]);
+  }, []);
 
   const handleLogout = async () => {
     const result = await logout();
@@ -101,6 +101,16 @@ export default function Navbar() {
                       Manage Dashboard
                     </Link>
                   )}
+
+                  {/* ✅ Added Profile Link */}
+                  <Link
+                    to="/profile"
+                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    My Profile
+                  </Link>
+
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"

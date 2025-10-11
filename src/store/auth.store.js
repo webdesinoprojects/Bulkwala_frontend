@@ -1,4 +1,5 @@
 import {
+  applySellerService,
   checkauthService,
   forgotPasswordService,
   loginService,
@@ -83,18 +84,28 @@ export const useAuthStore = create((set) => ({
   },
 
   checkauthstatus: async () => {
+    const state = useAuthStore.getState();
+    if (state.isLoading) return;
+    if (state.user && state.isLoggedIn) return;
     try {
       set({ isLoading: true });
       const user = await checkauthService();
       if (user && user.isVerified) {
-        set({ user, isLoggedIn: true });
-        return { success: true, user };
+        set({
+          user,
+          isLoggedIn: true,
+        });
+      } else {
+        set({
+          user: null,
+          isLoggedIn: false,
+        });
       }
-      set({ user: null, isLoggedIn: false });
-      return { success: false, error: "Authentication failed." };
     } catch (error) {
-      set({ user: null, isLoggedIn: false, isLoading: false });
-      return { success: false, error: "Failed to check auth status" };
+      set({
+        user: null,
+        isLoggedIn: false,
+      });
     } finally {
       set({ isLoading: false });
     }
@@ -165,6 +176,20 @@ export const useAuthStore = create((set) => ({
       return { success: false, error: message };
     } finally {
       set({ isLoading: false });
+    }
+  },
+
+  applySeller: async (sellerData) => {
+    set({ isLoading: true });
+    try {
+      const user = await applySellerService(sellerData);
+      set({ user, isLoading: false });
+      return { success: true, user };
+    } catch (error) {
+      const message =
+        error.response?.data?.message || "Failed to apply for seller";
+      set({ isLoading: false, error: message });
+      return { success: false, error: message };
     }
   },
 }));

@@ -47,3 +47,11 @@ export const resetPasswordService = async (credentials) => {
   );
   return res.data;
 };
+
+// ✅ Apply for seller
+export const applySellerService = async (sellerData) => {
+  const res = await axiosInstance.post("/api/users/apply-seller", sellerData, {
+    withCredentials: true,
+  });
+  return res.data.data;
+};

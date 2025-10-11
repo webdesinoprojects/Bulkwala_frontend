@@ -12,6 +12,7 @@ import TermsAndConditions from "./requiredpages/Term&Condition";
 import PrivacyPolicy from "./requiredpages/PrivacyPolicy";
 import ShippingPolicy from "./requiredpages/ShipingPolicy";
 import RefundAndReturnPolicy from "./requiredpages/Refund&ReturnPolicy";
+import Profile from "./pages/Profile";
 
 const ROLES = {
   ADMIN: "admin",
@@ -52,6 +53,17 @@ const App = createBrowserRouter([
           </ProtectedRoutes>
         ),
       },
+      {
+        path: "/profile",
+        element: (
+          <ProtectedRoutes
+            allowedRoles={[ROLES.ADMIN, ROLES.SELLER, ROLES.CUSTOMER]}
+          >
+            <Profile />
+          </ProtectedRoutes>
+        ),
+      },
+
       // Example for seller route
       // {
       //   path: "/seller",
