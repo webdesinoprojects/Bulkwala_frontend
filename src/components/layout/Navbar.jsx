@@ -81,10 +81,15 @@ export default function Navbar() {
                 ></ion-icon>
                 <span className="text-base font-medium">{user.name}</span>
 
-                {/* Admin Badge */}
+                {/* Role Badge */}
                 {user.role === "admin" && (
                   <span className="ml-2 px-2 py-0.5 text-xs font-semibold text-white bg-red-500 rounded-full">
                     Admin
+                  </span>
+                )}
+                {user.role === "seller" && (
+                  <span className="ml-2 px-2 py-0.5 text-xs font-semibold text-white bg-blue-500 rounded-full">
+                    Seller
                   </span>
                 )}
               </button>
@@ -92,6 +97,7 @@ export default function Navbar() {
               {/* Dropdown Menu */}
               {dropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-lg rounded-md z-50">
+                  {/* ✅ Show correct dashboard based on role */}
                   {user.role === "admin" && (
                     <Link
                       to="/admin"
@@ -102,7 +108,17 @@ export default function Navbar() {
                     </Link>
                   )}
 
-                  {/* ✅ Added Profile Link */}
+                  {user.role === "seller" && (
+                    <Link
+                      to="/seller"
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      onClick={() => setDropdownOpen(false)}
+                    >
+                      Manage Dashboard
+                    </Link>
+                  )}
+
+                  {/* Profile Link */}
                   <Link
                     to="/profile"
                     className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
@@ -111,6 +127,7 @@ export default function Navbar() {
                     My Profile
                   </Link>
 
+                  {/* Logout */}
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"

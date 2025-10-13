@@ -13,6 +13,9 @@ import PrivacyPolicy from "./requiredpages/PrivacyPolicy";
 import ShippingPolicy from "./requiredpages/ShipingPolicy";
 import RefundAndReturnPolicy from "./requiredpages/Refund&ReturnPolicy";
 import Profile from "./pages/Profile";
+import SellerDashboard from "./Seller/pages/sellerDashboard";
+import Contact from "./pages/Contact";
+import About from "./pages/About";
 
 const ROLES = {
   ADMIN: "admin",
@@ -45,6 +48,17 @@ const App = createBrowserRouter([
         path: "/products",
         element: <Products />,
       },
+
+      {
+        path: "/contact",
+        element: <Contact />,
+      },
+
+      {
+        path: "/about",
+        element: <About />,
+      },
+
       {
         path: "/admin",
         element: (
@@ -65,14 +79,14 @@ const App = createBrowserRouter([
       },
 
       // Example for seller route
-      // {
-      //   path: "/seller",
-      //   element: (
-      //     <ProtectedRoutes allowedRoles={[ROLES.SELLER]}>
-      //       <SellerDashboard />
-      //     </ProtectedRoutes>
-      //   ),
-      // },
+      {
+        path: "/seller",
+        element: (
+          <ProtectedRoutes allowedRoles={[ROLES.SELLER]}>
+            <SellerDashboard />
+          </ProtectedRoutes>
+        ),
+      },
 
       {
         path: "/terms-and-conditions",
