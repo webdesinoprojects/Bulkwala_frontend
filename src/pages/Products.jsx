@@ -147,11 +147,14 @@ const Products = () => {
                     <CardTitle className="truncate">{product.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <img
-                      src={product.images[0]}
-                      alt={product.title}
-                      className="h-40 w-full object-cover rounded-md"
-                    />
+                    <div className="w-full h-48 flex items-center justify-center bg-white rounded-md overflow-hidden">
+                      <img
+                        src={product.images?.[0]}
+                        alt={product.title}
+                        className="max-h-full max-w-full object-contain transition-transform duration-300 hover:scale-105"
+                      />
+                    </div>
+
                     <p className="mt-2 text-gray-600 line-clamp-2 text-sm">
                       {product.description}
                     </p>
