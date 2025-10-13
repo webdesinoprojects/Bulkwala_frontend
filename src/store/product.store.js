@@ -10,12 +10,22 @@ export const useProductStore = create((set) => ({
   products: [],
   loading: false,
   error: null,
+  total: 0,
+  page: 1,
+  limit: 12,
+  filter: {},
 
-  fetchProducts: async () => {
+  fetchProducts: async (params = {}) => {
     set({ loading: true, error: null });
     try {
-      const data = await getProducts();
-      set({ products: data, loading: false });
+      const data = await getProducts(params);
+      set({
+        products: data.products,
+        total: data.total,
+        page: data.page,
+        limit: data.limit,
+        loading: false,
+      });
     } catch (error) {
       set({ error: error.message, loading: false });
     }

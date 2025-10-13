@@ -47,7 +47,8 @@ const DashboardContent = () => {
     ? products
     : products?.products || [];
 
-  const totalProducts = productList?.length || 0;
+  const { total } = useProductStore();
+  const totalProducts = total || 0;
   const totalCategories = categories?.length || 0;
   const totalSubcategories = subcategories?.length || 0;
   const lowStockProducts = productList?.filter((p) => p.stock <= 5).length || 0;
@@ -110,15 +111,24 @@ const ProductsContent = () => {
   const [editSlug, setEditSlug] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const { fetchProducts, products, deleteProduct } = useProductStore();
+  const { fetchProducts, products, deleteProduct, total, limit } =
+    useProductStore();
+
+  // filters for pagination and limit
+  const [filters, setFilters] = useState({
+    page: 1,
+    limit: 15,
+  });
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    fetchProducts(filters);
+  }, [filters]);
 
   const productList = Array.isArray(products)
     ? products
     : products?.products || [];
+
+  const totalPages = Math.ceil(total / filters.limit) || 1;
 
   const handleEdit = (slug) => {
     setEditSlug(slug);
@@ -200,9 +210,10 @@ const ProductsContent = () => {
                         <div className="w-14 h-14 bg-gray-200 rounded-md" />
                       )}
                     </td>
-                    <td className="p-3 text-sm font-medium text-gray-900">
+                    <td className="p-3 text-sm font-medium text-gray-900 line-clamp-2 max-w-[250px]">
                       {product.title}
                     </td>
+
                     <td className="p-3 text-sm text-gray-700">
                       {product.category?.name || "-"}
                     </td>
@@ -259,6 +270,33 @@ const ProductsContent = () => {
           </table>
         </CardContent>
       </Card>
+
+      {/*  Pagination Controls */}
+      {total > filters.limit && (
+        <div className="flex justify-center items-center gap-4 mt-6">
+          <Button
+            variant="outline"
+            disabled={filters.page === 1}
+            onClick={() =>
+              setFilters((prev) => ({ ...prev, page: prev.page - 1 }))
+            }
+          >
+            Prev
+          </Button>
+          <span>
+            Page {filters.page} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            disabled={filters.page === totalPages}
+            onClick={() =>
+              setFilters((prev) => ({ ...prev, page: prev.page + 1 }))
+            }
+          >
+            Next
+          </Button>
+        </div>
+      )}
 
       <EditProductDialog
         open={dialogOpen}
