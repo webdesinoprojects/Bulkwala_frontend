@@ -3,10 +3,12 @@ import {
   getProducts,
   deleteProduct,
   updateProduct,
+  getProduct,
 } from "@/services/product.service";
 import { create } from "zustand";
 
 export const useProductStore = create((set) => ({
+  singleProduct: null,
   products: [],
   loading: false,
   error: null,
@@ -104,6 +106,17 @@ export const useProductStore = create((set) => ({
     } catch (error) {
       console.error("Delete failed:", error);
       set({ error: error.message, loading: false });
+    }
+  },
+
+  getProductBySlug: async (slug) => {
+    set({ loading: true, error: null });
+    try {
+      const product = await getProduct(slug);
+      set({ singleProduct: product, loading: false });
+    } catch (error) {
+      set({ error: error.message, loading: false });
+      throw error;
     }
   },
 }));

@@ -6,7 +6,15 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { Building2, Globe, Users, Truck, CheckCircle } from "lucide-react";
+import {
+  Building2,
+  Users,
+  Globe,
+  Truck,
+  CheckCircle,
+  HeartHandshake,
+  ShieldCheck,
+} from "lucide-react";
 
 export default function About() {
   return (
@@ -16,114 +24,125 @@ export default function About() {
         <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/white-wall.png')]"></div>
         <div className="relative z-10 max-w-6xl mx-auto px-6 text-center">
           <h1 className="text-5xl font-bold tracking-tight mb-4">
-            About <span className="text-[#C9E0EF]">BulkWala</span>
+            About <span className="text-[#C9E0EF]">Bulkwala.com</span>
           </h1>
           <p className="text-lg text-gray-200 max-w-2xl mx-auto leading-relaxed">
-            India’s trusted destination for bulk products — delivering quality,
-            value, and speed for every business and customer.
+            Empowering India’s local businesses and customers through digital
+            access, affordability, and trust since 2017.
           </p>
         </div>
       </div>
 
+      {/* Main Content */}
       <div className="max-w-6xl mx-auto px-6">
-        {/* Who We Are */}
+        {/* About Story */}
         <Card className="border-gray-200 shadow-md mb-16">
           <CardHeader>
             <CardTitle className="text-3xl font-semibold text-[#02066F]">
-              Who We Are
+              Our Story
             </CardTitle>
           </CardHeader>
           <CardContent className="text-gray-700 leading-relaxed space-y-4 text-lg">
             <p>
-              <strong>BulkWala</strong> is a modern B2B & B2C platform built to
-              simplify bulk purchasing for Indian businesses, resellers, and
-              individuals. From mobile accessories to electronic essentials, we
-              offer verified products sourced from trusted manufacturers.
+              Founded in <strong>2017</strong> by{" "}
+              <strong>Azad Kumar Jha</strong>,<strong> Bulkwala.com</strong> is
+              a proud initiative of <strong>Awesome Accessories</strong>,
+              headquartered in Delhi, India. What began as a humble street
+              vending journey has evolved into one of India’s fastest-growing
+              digital marketplaces — bridging the gap between bulk and retail
+              shopping across the nation.
             </p>
             <p>
-              With a focus on transparency, speed, and reliability, BulkWala has
-              become a one-stop solution for those looking to grow their
-              business with quality products and consistent supply.
+              As a homegrown e-commerce platform, Bulkwala.com is driven by a
+              vision to empower local businesses, shopkeepers, and customers
+              through digital access, affordability, and trust. Our mission is
+              to create a sustainable and inclusive ecosystem where every seller
+              and buyer can grow together.
+            </p>
+            <p>
+              We believe in the spirit of innovation, resilience, and progress.
+              Every challenge inspires us to learn, improve, and deliver better
+              experiences to our users. By combining technology with
+              customer-first values, Bulkwala.com continues to connect{" "}
+              <em>“Bharat with India”</em> — enabling seamless commerce for
+              everyone, everywhere.
+            </p>
+            <p>
+              At Bulkwala.com, customer satisfaction is our top priority. Our
+              dedicated support team, secure checkout process, and fast delivery
+              network work together to provide a smooth and reliable shopping
+              experience — every time you shop.
+            </p>
+            <p>
+              Whether you’re upgrading your wardrobe, decorating your home, or
+              finding the perfect gift — we’re here to make it happen with
+              style, trust, and confidence.
             </p>
           </CardContent>
         </Card>
 
-        {/* Mission - Vision - Values */}
-        <div className="grid md:grid-cols-3 gap-8 mb-20">
-          {[
-            {
-              icon: <Globe className="w-10 h-10 mx-auto text-[#02066F]" />,
-              title: "Our Mission",
-              desc: "To empower resellers and businesses by providing genuine products, smooth delivery, and dependable customer support across India.",
-            },
-            {
-              icon: <Building2 className="w-10 h-10 mx-auto text-[#02066F]" />,
-              title: "Our Vision",
-              desc: "To become India’s most reliable and affordable wholesale platform — connecting brands, sellers, and customers under one ecosystem.",
-            },
-            {
-              icon: <Users className="w-10 h-10 mx-auto text-[#02066F]" />,
-              title: "Our Values",
-              desc: "Integrity, transparency, and customer satisfaction define how we operate and the promises we keep every day.",
-            },
-          ].map((item) => (
-            <Card
-              key={item.title}
-              className="text-center shadow-sm hover:shadow-md transition-shadow duration-200 border-gray-200"
-            >
-              <CardHeader>
-                {item.icon}
-                <CardTitle className="mt-4 text-xl font-semibold text-[#02066F]">
-                  {item.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-gray-600 text-sm px-6 pb-8 leading-relaxed">
-                {item.desc}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Why Choose Us */}
+        {/* Why Choose Us Section */}
         <Card className="shadow-md border-gray-200 mb-20">
           <CardHeader className="text-center">
             <CardTitle className="text-3xl font-semibold text-[#02066F]">
-              Why Choose BulkWala?
+              Why Choose <span className="text-[#1E40AF]">Bulkwala.com</span>?
             </CardTitle>
             <CardDescription className="text-gray-600 mt-2">
-              Experience reliability, speed, and value — all in one place.
+              Discover what makes us India’s trusted online wholesale platform.
             </CardDescription>
           </CardHeader>
-          <CardContent className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 px-8 py-6">
+
+          <CardContent className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 px-8 py-8">
             {[
-              "Fast and reliable pan-India delivery.",
-              "Affordable pricing with genuine wholesale rates.",
-              "Wide range of product categories and brands.",
-              "Trusted by resellers and businesses nationwide.",
-              "User-friendly platform with secure payments.",
-              "Dedicated customer support team for every query.",
-            ].map((point, i) => (
+              {
+                icon: <ShieldCheck className="w-8 h-8 text-[#02066F]" />,
+                text: "100% Genuine & Verified Products",
+              },
+              {
+                icon: <HeartHandshake className="w-8 h-8 text-[#02066F]" />,
+                text: "Easy Returns & Hassle-Free Refunds",
+              },
+              {
+                icon: <CheckCircle className="w-8 h-8 text-[#02066F]" />,
+                text: "Safe & Secure Payments (Razorpay / Paytm / UPI / Cards)",
+              },
+              {
+                icon: <Truck className="w-8 h-8 text-[#02066F]" />,
+                text: "Fast Pan-India Delivery",
+              },
+              {
+                icon: <Users className="w-8 h-8 text-[#02066F]" />,
+                text: "24×7 Customer Support",
+              },
+              {
+                icon: <Globe className="w-8 h-8 text-[#02066F]" />,
+                text: "Trusted by thousands of happy customers across India",
+              },
+            ].map((item, i) => (
               <div
                 key={i}
-                className="flex items-start gap-3 bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-all"
+                className="flex items-start gap-3 bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-all cursor-pointer"
               >
-                <CheckCircle className="text-green-500 w-5 h-5 mt-0.5" />
-                <p className="text-gray-700 text-sm">{point}</p>
+                {item.icon}
+                <p className="text-gray-700 text-sm leading-relaxed">
+                  {item.text}
+                </p>
               </div>
             ))}
           </CardContent>
         </Card>
 
         {/* Closing Section */}
-        <div className="text-center py-10">
-          <Truck className="w-14 h-14 text-[#02066F] mx-auto mb-4" />
+        <div className="text-center py-12">
+          <Building2 className="w-14 h-14 text-[#02066F] mx-auto mb-4" />
           <h2 className="text-3xl font-semibold text-[#02066F] mb-2">
-            Together, Let’s Grow with BulkWala 🚀
+            Join the <span className="text-[#1E40AF]">BulkWala</span> Community
+            🚀
           </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            Whether you're a reseller, entrepreneur, or business owner, BulkWala
-            is here to help you scale your business with quality, affordability,
-            and trust.
+          <p className="text-gray-600 max-w-2xl mx-auto leading-relaxed text-base">
+            Be a part of India’s growing digital marketplace. Whether you're a
+            seller, a business owner, or a customer — Bulkwala.com is your
+            destination for quality, trust, and growth.
           </p>
         </div>
       </div>

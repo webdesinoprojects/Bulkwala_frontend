@@ -16,6 +16,7 @@ import Profile from "./pages/Profile";
 import SellerDashboard from "./Seller/pages/sellerDashboard";
 import Contact from "./pages/Contact";
 import About from "./pages/About";
+import ProductDetail from "./pages/ProductDetail";
 
 const ROLES = {
   ADMIN: "admin",
@@ -57,6 +58,10 @@ const App = createBrowserRouter([
       {
         path: "/about",
         element: <About />,
+      },
+      {
+        path: "/product/:slug",
+        element: <ProductDetail />,
       },
 
       {
