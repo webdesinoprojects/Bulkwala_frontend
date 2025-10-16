@@ -146,12 +146,8 @@ const Products = () => {
                   onClick={() => navigate(`/product/${product.slug}`)}
                   className="cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-200 border rounded-xl bg-white"
                 >
-                  <CardHeader>
-                    <CardTitle className="truncate text-[#02066F]">
-                      {product.title}
-                    </CardTitle>
-                  </CardHeader>
                   <CardContent>
+                    {/* 🖼 Product Image */}
                     <div className="w-full h-48 flex items-center justify-center bg-white rounded-md overflow-hidden">
                       <img
                         src={product.images?.[0]}
@@ -159,11 +155,20 @@ const Products = () => {
                         className="max-h-full max-w-full object-contain transition-transform duration-300 hover:scale-105"
                       />
                     </div>
-                    <p className="mt-3 text-gray-600 line-clamp-2 text-sm">
-                      {product.description}
-                    </p>
+
+                    {/* 🏷 Title */}
+                    <h3 className="truncate text-[#02066F] font-semibold mt-3">
+                      {product.title}
+                    </h3>
+
+                    {/* 💰 Price */}
                     <p className="font-semibold mt-2 text-lg text-gray-900">
                       ₹{product.price}
+                    </p>
+
+                    {/* 📝 Description */}
+                    <p className="mt-2 text-gray-600 line-clamp-2 text-sm">
+                      {product.description}
                     </p>
                   </CardContent>
                 </Card>

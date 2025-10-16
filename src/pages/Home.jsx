@@ -21,17 +21,17 @@ export default function HomePage() {
         {/* Subcategories */}
         <SubcategoryList category={selectedCategory} />
         {/* Subcategory grid */}
-        <SubcategoryGrid />
+        {/* <SubcategoryGrid /> */}
       </div>
 
       {/* Sale Section */}
-      <div className=" w-full h-[500px] my-10">
+      {/* <div className=" w-full h-[500px] my-10">
         <img
           src="https://ik.imagekit.io/bulkwala/demo/section-3.png?updatedAt=1759740430676"
           alt=""
           className="w-full object-cover h-full"
         />
-      </div>
+      </div> */}
 
       {/* Promo Section */}
 
