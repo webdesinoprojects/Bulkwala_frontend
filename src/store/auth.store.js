@@ -11,6 +11,7 @@ import {
   resendVerificationService,
   resetPasswordService,
   verifyEmailService,
+  changePasswordService,
 } from "@/services/auth.service";
 import { create } from "zustand";
 
@@ -151,6 +152,23 @@ export const useAuthStore = create((set) => ({
     try {
       set({ isLoading: true, error: null });
       await forgotPasswordService(email);
+      set({ isLoading: false });
+      return { success: true };
+    } catch (error) {
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to send reset link";
+      set({ error: message, isLoading: false });
+      return { success: false, error: message };
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+   changePassword: async (email) => {
+    try {
+      set({ isLoading: true, error: null });
+      await changePasswordService(email);
       set({ isLoading: false });
       return { success: true };
     } catch (error) {
