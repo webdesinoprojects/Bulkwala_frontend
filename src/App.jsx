@@ -17,6 +17,7 @@ import SellerDashboard from "./Seller/pages/sellerDashboard";
 import Contact from "./pages/Contact";
 import About from "./pages/About";
 import ProductDetail from "./pages/ProductDetail";
+import ChangePassword from "./pages/ChangePassword";
 
 const ROLES = {
   ADMIN: "admin",
@@ -63,7 +64,11 @@ const App = createBrowserRouter([
         path: "/product/:slug",
         element: <ProductDetail />,
       },
-
+      {
+        path: "/change-password",
+        element: <ChangePassword />
+      },
+      
       {
         path: "/admin",
         element: (

@@ -119,9 +119,11 @@ const Profile = () => {
             </div>
 
             <div className="pt-4 flex justify-center">
-              <Button as={Link} to="/change-password" variant="outline">
-                Change Password
-              </Button>
+              <Link to="/change-password">
+                <Button variant="outline">
+                  Change Password
+                </Button>
+              </Link>
             </div>
           </CardContent>
         </Card>
