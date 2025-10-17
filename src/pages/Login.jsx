@@ -84,6 +84,15 @@ const Login = () => {
               </Button>
             </form>
           </Form>
+          <div className="mt-4 text-center">
+            <button
+              type="button"
+              onClick={() => navigate("/forgot-password")}
+              className="text-sm text-blue-500 hover:underline"
+            >
+              Forgot Password?
+            </button>
+          </div>
         </CardContent>
       </Card>
     </div>
