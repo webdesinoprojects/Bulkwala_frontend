@@ -11,7 +11,7 @@ export default function CategoryNav({ selectedCategory, onSelect }) {
   if (loading) return <p>Loading...</p>;
 
   return (
-    <div className="flex gap-6 overflow-x-auto py-2 border-b scrollbar-hide">
+    <div className="flex gap-4 overflow-x-auto py-2 border-b scrollbar-hide">
       {categories.map((cat) => {
         const isSelected = selectedCategory?._id === cat._id;
 
@@ -33,7 +33,7 @@ export default function CategoryNav({ selectedCategory, onSelect }) {
                 alt={cat.name}
                 className="w-full h-full object-cover "
               />
-          </div>
+            </div>
             <p
               className={`text-sm mt-2 font-medium ${
                 isSelected ? "text-blue-600" : "text-gray-700"

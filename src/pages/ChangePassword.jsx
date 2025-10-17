@@ -24,7 +24,6 @@ const ChangePassword = () => {
     const res = await changePassword(email);
     if (res.success) {
       toast.success("Password reset link sent to your email!");
-      //setTimeout(() => navigate("/login"), 2500);
     } else {
       toast.error(res.error || "Failed to send reset link");
     }
@@ -61,11 +60,7 @@ const ChangePassword = () => {
               />
             </div>
 
-            <Button
-              type="submit"
-              className="w-full mt-2"
-              disabled={isLoading}
-            >
+            <Button type="submit" className="w-full mt-2" disabled={isLoading}>
               {isLoading ? "Sending..." : "Send Reset Link"}
             </Button>
 
