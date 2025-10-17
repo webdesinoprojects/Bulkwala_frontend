@@ -18,10 +18,10 @@ export default function EditProductDialog({ open, onClose, slug, onSuccess }) {
     price: "",
     stock: "",
     description: "",
-    newImages: [], // newly selected images
+    newImages: [],
   });
-  const [existingImages, setExistingImages] = useState([]); // existing images URLs
-  const [imagesToRemove, setImagesToRemove] = useState([]); // images marked for deletion
+  const [existingImages, setExistingImages] = useState([]);
+  const [imagesToRemove, setImagesToRemove] = useState([]);
 
   const { products, editProduct } = useProductStore();
 

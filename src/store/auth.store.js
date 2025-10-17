@@ -90,27 +90,46 @@ export const useAuthStore = create((set) => ({
 
   checkauthstatus: async () => {
     const state = useAuthStore.getState();
+
+    // Prevent re-checking if already loading or logged in
     if (state.isLoading) return;
     if (state.user && state.isLoggedIn) return;
+
     try {
       set({ isLoading: true });
+
+      // Check localStorage for existing user data
+      const storedUser = JSON.parse(localStorage.getItem("user"));
+      if (storedUser && storedUser.isVerified) {
+        set({
+          user: storedUser,
+          isLoggedIn: true,
+        });
+        return;
+      }
+
       const user = await checkauthService();
       if (user && user.isVerified) {
         set({
           user,
           isLoggedIn: true,
         });
+
+        // Persist user in localStorage
+        localStorage.setItem("user", JSON.stringify(user));
       } else {
         set({
           user: null,
           isLoggedIn: false,
         });
+        localStorage.removeItem("user"); // Clear if no valid user
       }
     } catch (error) {
       set({
         user: null,
         isLoggedIn: false,
       });
+      localStorage.removeItem("user"); // Clear on error
     } finally {
       set({ isLoading: false });
     }

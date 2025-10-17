@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,15 +17,19 @@ const Cart = () => {
   } = useCartStore();
   const navigate = useNavigate();
 
+  const [isFetched, setIsFetched] = useState(false);
+
   // Fetch cart data on mount
   useEffect(() => {
-    fetchCart();
+    const loadCart = async () => {
+      await fetchCart();
+      setIsFetched(true);
+    };
+    loadCart();
   }, [fetchCart]);
 
-  console.log("Cart:", cart);
-
   // Check if the cart data is null or loading
-  if (isLoading) {
+  if (isLoading || !isFetched) {
     return (
       <div className="min-h-screen flex justify-center items-center text-gray-600">
         Loading cart...
@@ -34,7 +38,7 @@ const Cart = () => {
   }
 
   // If cart is null or empty, show a friendly message
-  if (!cart || cart.items.length === 0) {
+  if (!cart || !cart.items || cart.items.length === 0) {
     return (
       <div className="min-h-screen flex justify-center items-center text-gray-600">
         <p>Your cart is empty.</p>
@@ -45,7 +49,7 @@ const Cart = () => {
 
   // Calculate subtotal
   const getTotal = () => {
-    if (!cart) return 0;
+    if (!cart || !cart.items) return 0;
     return cart.items.reduce(
       (acc, item) => acc + item.product.price * item.quantity,
       0
@@ -87,54 +91,60 @@ const Cart = () => {
       <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-lg p-6">
         <h1 className="text-3xl font-semibold text-center mb-6">Your Cart</h1>
         <div className="space-y-6">
-          {cart.items.map((item) => (
-            <div
-              key={item.product._id}
-              className="flex flex-col sm:flex-row  items-center justify-between border-b py-4"
-            >
-              <div className="flex items-center space-x-4 w-full sm:w-3/4">
-                <img
-                  src={item.product.images[0]}
-                  alt={item.product.title}
-                  className="w-50 h-50 object-cover rounded-md"
-                />
-                <div className="flex flex-col gap-2 ml-10">
-                  <h3 className="text-xl font-medium">{item.product.title}</h3>
-                  <p className="text-gray-500 text-sm line-clamp-2">
-                    {item.product.description}
-                  </p>
-                  <p className="text-black-500 font-semibold text-xl ">
-                    {`₹${item.product.price}`}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-4 w-full sm:w-1/4 justify-end mt-4 sm:mt-0 ">
-                <div className="flex items-center">
-                  <Input
-                    type="number"
-                    value={item.quantity}
-                    onChange={(e) =>
-                      handleUpdateQuantity(
-                        item.product._id,
-                        parseInt(e.target.value)
-                      )
-                    }
-                    className="w-16 text-center border border-gray-300 rounded-md shadow px-2 py-1 "
-                    min={1}
-                    disabled={isUpdating}
+          {cart.items && cart.items.length > 0 ? (
+            cart.items.map((item) => (
+              <div
+                key={item.product._id}
+                className="flex flex-col sm:flex-row items-center justify-between border-b py-4"
+              >
+                <div className="flex items-center space-x-4 w-full sm:w-3/4">
+                  <img
+                    src={item.product.images[0]}
+                    alt={item.product.title}
+                    className="w-40 h-40 object-cover rounded-md"
                   />
+                  <div className="flex flex-col gap-2 ml-10 w-full sm:w-3/4">
+                    <h3 className="text-xl font-medium">
+                      {item.product.title}
+                    </h3>
+                    <p className="text-gray-500 text-sm line-clamp-2">
+                      {item.product.description}
+                    </p>
+                    <p className="text-black-500 font-semibold text-lg">
+                      {`₹${item.product.price}`}
+                    </p>
+                  </div>
                 </div>
-                <Button
-                  variant="destructive"
-                  color="red"
-                  onClick={() => handleRemoveItem(item.product._id)}
-                  disabled={isUpdating}
-                >
-                  Remove
-                </Button>
+                <div className="flex items-center space-x-4 w-full sm:w-1/4 justify-end mt-4 sm:mt-0">
+                  <div className="flex items-center">
+                    <Input
+                      type="number"
+                      value={item.quantity}
+                      onChange={(e) =>
+                        handleUpdateQuantity(
+                          item.product._id,
+                          parseInt(e.target.value)
+                        )
+                      }
+                      className="w-16 text-center border border-gray-300 rounded-md shadow px-2 py-1"
+                      min={1}
+                      disabled={isUpdating}
+                    />
+                  </div>
+                  <Button
+                    variant="destructive"
+                    color="red"
+                    onClick={() => handleRemoveItem(item.product._id)}
+                    disabled={isUpdating}
+                  >
+                    Remove
+                  </Button>
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p>Your cart is empty.</p>
+          )}
         </div>
 
         {/* Subtotal Section */}

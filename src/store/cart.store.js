@@ -8,7 +8,7 @@ import {
 import { create } from "zustand";
 
 const useCartStore = create((set) => ({
-  cart: null,
+  cart: { items: [] },
   isLoading: false,
   isUpdating: false,
 
