@@ -18,7 +18,7 @@ import Contact from "./pages/Contact";
 import About from "./pages/About";
 import ProductDetail from "./pages/ProductDetail";
 import ChangePassword from "./pages/ChangePassword";
-import Cart from "./pages/Cart";
+import ResetPassword from "./pages/ResetPassword";
 
 const ROLES = {
   ADMIN: "admin",
@@ -85,13 +85,12 @@ const App = createBrowserRouter([
       // Authenticated Routes (Require Login)
       {
         path: "/change-password",
-        element: (
-          <ProtectedRoutes>
-            <ChangePassword />
-          </ProtectedRoutes>
-        ),
+        element: <ChangePassword />
       },
-
+      {
+        path: "/reset-password/:userid/:token",
+        element: <ResetPassword />
+      },
       {
         path: "/cart",
         element: (
