@@ -18,6 +18,7 @@ import Contact from "./pages/Contact";
 import About from "./pages/About";
 import ProductDetail from "./pages/ProductDetail";
 import ChangePassword from "./pages/ChangePassword";
+import Cart from "./pages/Cart";
 
 const ROLES = {
   ADMIN: "admin",
@@ -65,40 +66,6 @@ const App = createBrowserRouter([
         element: <ProductDetail />,
       },
       {
-        path: "/change-password",
-        element: <ChangePassword />
-      },
-      
-      {
-        path: "/admin",
-        element: (
-          <ProtectedRoutes allowedRoles={[ROLES.ADMIN]}>
-            <AdminDashboard />
-          </ProtectedRoutes>
-        ),
-      },
-      {
-        path: "/profile",
-        element: (
-          <ProtectedRoutes
-            allowedRoles={[ROLES.ADMIN, ROLES.SELLER, ROLES.CUSTOMER]}
-          >
-            <Profile />
-          </ProtectedRoutes>
-        ),
-      },
-
-      // Example for seller route
-      {
-        path: "/seller",
-        element: (
-          <ProtectedRoutes allowedRoles={[ROLES.SELLER]}>
-            <SellerDashboard />
-          </ProtectedRoutes>
-        ),
-      },
-
-      {
         path: "/terms-and-conditions",
         element: <TermsAndConditions />,
       },
@@ -113,6 +80,56 @@ const App = createBrowserRouter([
       {
         path: "/refund-and-return-policy",
         element: <RefundAndReturnPolicy />,
+      },
+
+      // Authenticated Routes (Require Login)
+      {
+        path: "/change-password",
+        element: (
+          <ProtectedRoutes>
+            <ChangePassword />
+          </ProtectedRoutes>
+        ),
+      },
+
+      {
+        path: "/cart",
+        element: (
+          <ProtectedRoutes>
+            <Cart />
+          </ProtectedRoutes>
+        ),
+      },
+
+      {
+        path: "/profile",
+        element: (
+          <ProtectedRoutes
+            allowedRoles={[ROLES.ADMIN, ROLES.SELLER, ROLES.CUSTOMER]}
+          >
+            <Profile />
+          </ProtectedRoutes>
+        ),
+      },
+
+      // Admin Routes (Require Admin Role)
+      {
+        path: "/admin",
+        element: (
+          <ProtectedRoutes allowedRoles={[ROLES.ADMIN]}>
+            <AdminDashboard />
+          </ProtectedRoutes>
+        ),
+      },
+
+      // Seller Routes (Require Seller Role)
+      {
+        path: "/seller",
+        element: (
+          <ProtectedRoutes allowedRoles={[ROLES.SELLER]}>
+            <SellerDashboard />
+          </ProtectedRoutes>
+        ),
       },
     ],
   },

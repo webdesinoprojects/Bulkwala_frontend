@@ -165,7 +165,7 @@ export const useAuthStore = create((set) => ({
       set({ isLoading: false });
     }
   },
-   changePassword: async (email) => {
+  changePassword: async (email) => {
     try {
       set({ isLoading: true, error: null });
       await changePasswordService(email);

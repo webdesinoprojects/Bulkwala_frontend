@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useProductStore } from "@/store/product.store";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Star, Heart, Minus, Plus, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
+import useCartStore from "@/store/cart.store";
 
 const ProductDetail = () => {
   const { slug } = useParams();
   const { singleProduct, getProductBySlug, loading } = useProductStore();
+  const { addToCart } = useCartStore();
   const [quantity, setQuantity] = useState(1);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     getProductBySlug(slug);
@@ -41,6 +45,17 @@ const ProductDetail = () => {
     );
   };
 
+  // Handle Add to Cart
+  const handleAddToCart = async () => {
+    console.log("Add to Cart clicked!");
+    await addToCart(product._id, quantity);
+    console.log(product);
+    toast.success(`${product.title} added to your cart 🛒`);
+  };
+
+  const handleViewCart = () => {
+    navigate("/cart"); // Navigate to the Cart page
+  };
   return (
     <section className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-12">
       <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10">
@@ -146,6 +161,23 @@ const ProductDetail = () => {
               className="text-xl font-bold"
             >
               <Plus size={18} />
+            </Button>
+          </div>
+
+          {/* Add to Cart Button */}
+          <div className="mt-6 flex items-center justify-center gap-4 ">
+            <Button
+              onClick={handleAddToCart}
+              className="w-50 bg-blue-600 text-white"
+            >
+              Add to Cart
+            </Button>
+            {/* View Cart Button */}
+            <Button
+              onClick={handleViewCart}
+              className="w-50 bg-gray-500 text-white"
+            >
+              View Cart
             </Button>
           </div>
         </div>
