@@ -20,6 +20,7 @@ import ProductDetail from "./pages/ProductDetail";
 import ChangePassword from "./pages/ChangePassword";
 import ResetPassword from "./pages/ResetPassword";
 import Cart from "./pages/Cart";
+import ForgotPassword from "./pages/ForgotPassword";
 
 const ROLES = {
   ADMIN: "admin",
@@ -92,6 +93,11 @@ const App = createBrowserRouter([
         path: "/reset-password/:userid/:token",
         element: <ResetPassword />,
       },
+      {
+        path: "/forgot-password",
+        element: <ForgotPassword />
+      },
+      
       {
         path: "/cart",
         element: (

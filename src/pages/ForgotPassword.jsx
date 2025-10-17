@@ -3,32 +3,31 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import useAuthStore from "@/store/auth.store";
-import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChangePasswordSchema } from "@/schemas/usersSchema.js";
+import { ForgotPasswordSchema } from "@/schemas/usersSchema";  // Import ForgotPasswordSchema
+import { useNavigate } from "react-router-dom";
+import { forgotPasswordService } from "@/services/auth.service";
 
-const ChangePassword = () => {
-  const { changePassword, isLoading } = useAuthStore();
+const ForgotPassword = () => {
   const navigate = useNavigate();
-
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm({
-    resolver: zodResolver(ChangePasswordSchema),
+    resolver: zodResolver(ForgotPasswordSchema),
   });
 
-  const handleSubmitPassword = async (data) => {
+  const onSubmit = async (data) => {
     const { email } = data;
+    const res = await forgotPasswordService(email);
 
-    const res = await changePassword(email);
     if (res.success) {
-      toast.success("Password reset link sent to your email!");
+      toast.success("Password reset link sent to your email!");  // Success toast
+      navigate("/reset-password"); // Redirect to ResetPassword page
     } else {
-      toast.error(res.error || "Failed to send reset link");
+      toast.error(res.error || "Failed to send reset link"); // Error toast
     }
   };
 
@@ -37,7 +36,7 @@ const ChangePassword = () => {
       <Card className="w-full max-w-md shadow-lg border-none bg-white">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-semibold text-gray-800">
-            Change Password
+            Forgot Password
           </CardTitle>
           <CardDescription>
             Enter your registered email to receive a password reset link
@@ -45,19 +44,16 @@ const ChangePassword = () => {
         </CardHeader>
 
         <CardContent>
-          <form onSubmit={handleSubmit(handleSubmitPassword)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
-              <label
-                htmlFor="email"
-                className="block text-gray-700 font-medium mb-2"
-              >
+              <label htmlFor="email" className="block text-gray-700 font-medium mb-2">
                 Email Address
               </label>
               <Input
                 id="email"
                 type="email"
                 placeholder="you@example.com"
-                {...register("email")} // Register input with React Hook Form
+                {...register("email")}
                 className="focus:ring-2 focus:ring-gray-700"
               />
               {errors.email && (
@@ -65,20 +61,13 @@ const ChangePassword = () => {
               )}
             </div>
 
-            <Button type="submit" className="w-full mt-2" disabled={isLoading}>
-              {isLoading ? "Sending..." : "Send Reset Link"}
+            <Button
+              type="submit"
+              className="w-full mt-2"
+              disabled={isSubmitting}  // Disable button while submitting
+            >
+              {isSubmitting ? "Sending..." : "Send Reset Link"}
             </Button>
-
-            <div className="text-center mt-4 text-sm text-gray-500">
-              <span>Remembered your password? </span>
-              <Button
-                type="button"
-                variant="link"
-                onClick={() => navigate("/login")}
-              >
-                Go to Login
-              </Button>
-            </div>
           </form>
         </CardContent>
       </Card>
@@ -86,4 +75,4 @@ const ChangePassword = () => {
   );
 };
 
-export default ChangePassword;
+export default ForgotPassword;
