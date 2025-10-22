@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000"; 
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL; 
 
 export const createPaymentOrder = async (payload) => {
   const { data } = await axios.post(`${API_BASE_URL}/api/payment/create-order`, payload, {
