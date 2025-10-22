@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import useAuthStore from "@/store/auth.store";
+import useCartStore from "@/store/cart.store";
 import { toast } from "sonner";
 
 export default function Navbar() {
   const { user, logout, checkauthstatus } = useAuthStore();
+  const { totalItems, fetchCart } = useCartStore();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef();
   const navigate = useNavigate();
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -20,9 +21,9 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Optional: refresh user on mount
   useEffect(() => {
     checkauthstatus();
+    fetchCart();
   }, []);
 
   const handleLogout = async () => {
@@ -38,14 +39,11 @@ export default function Navbar() {
 
   return (
     <header className="w-full border-b border-gray-300 bg-white">
-      {/* Top Header */}
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between p-4">
-        {/* Logo */}
         <div className="mb-2 md:mb-0 flex-shrink-0">
           <h1 className="font-bold text-xl tracking-wide">BULKWALA</h1>
         </div>
 
-        {/* Search Bar */}
         <div className="flex items-center w-full md:w-[450px] bg-gray-100 rounded-md px-4 py-2 mb-2 md:mb-0">
           <ion-icon
             name="search-outline"
@@ -62,7 +60,6 @@ export default function Navbar() {
           ></ion-icon>
         </div>
 
-        {/* Whislist  */}
         <div className="flex items-center space-x-8 relative">
           <div className="flex items-center space-x-1">
             <Link to="/wishlist">
@@ -73,12 +70,16 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* User & Cart */}
           <div className="flex items-center space-x-8 relative">
             <Link to="/cart">
-              <div className="flex items-center space-x-1 cursor-pointer">
+              <div className="flex items-center space-x-1 cursor-pointer relative">
                 <ion-icon name="cart-outline" className="text-xl"></ion-icon>
                 <span className="text-base font-medium">Cart</span>
+                {totalItems > 0 && (
+                  <span className="absolute -top-2 -right-3 bg-red-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                    {totalItems}
+                  </span>
+                )}
               </div>
             </Link>
           </div>
@@ -94,8 +95,6 @@ export default function Navbar() {
                   class="text-xl"
                 ></ion-icon>
                 <span className="text-base font-medium">{user.name}</span>
-
-                {/* Role Badge */}
                 {user.role === "admin" && (
                   <span className="ml-2 px-2 py-0.5 text-xs font-semibold text-white bg-red-500 rounded-full">
                     Admin
@@ -107,11 +106,8 @@ export default function Navbar() {
                   </span>
                 )}
               </button>
-
-              {/* Dropdown Menu */}
               {dropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-lg rounded-md z-50">
-                  {/* ✅ Show correct dashboard based on role */}
                   {user.role === "admin" && (
                     <Link
                       to="/admin"
@@ -121,7 +117,6 @@ export default function Navbar() {
                       Manage Dashboard
                     </Link>
                   )}
-
                   {user.role === "seller" && (
                     <Link
                       to="/seller"
@@ -131,8 +126,6 @@ export default function Navbar() {
                       Manage Dashboard
                     </Link>
                   )}
-
-                  {/* Profile Link */}
                   <Link
                     to="/profile"
                     className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
@@ -140,8 +133,6 @@ export default function Navbar() {
                   >
                     My Profile
                   </Link>
-
-                  {/* Logout */}
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
@@ -171,7 +162,6 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Bottom Navigation */}
       <nav className="w-full bg-[#C9E0EF] shadow-sm">
         <div className="max-w-7xl mx-auto flex gap-10 px-12 py-5">
           <NavLink

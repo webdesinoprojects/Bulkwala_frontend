@@ -166,7 +166,7 @@ const Cart = () => {
           </Button>
           <Button
             className="w-full sm:w-auto mt-4 sm:mt-0 bg-blue-600 text-white"
-            onClick={() => navigate("/checkout")}
+            onClick={() => navigate("/payment")}
             disabled={isUpdating}
           >
             Proceed to Checkout

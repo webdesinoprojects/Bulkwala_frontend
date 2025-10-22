@@ -7,20 +7,28 @@ import {
 } from "@/services/cart.service";
 import { create } from "zustand";
 
-const useCartStore = create((set) => ({
+const useCartStore = create((set, get) => ({
   cart: { items: [] },
+  totalAmount: 0,
+  totalItems: 0,
   isLoading: false,
   isUpdating: false,
 
-  addToCart: async (productId, quantity) => {
-    set({ isUpdating: true });
-    try {
-      const cartData = await addToCartService(productId, quantity);
-      set({ cart: cartData, isUpdating: false });
-    } catch (error) {
-      set({ isUpdating: false });
-      console.error("Error adding to cart:", error);
+  calculateTotals: () => {
+    const { items } = get().cart;
+    if (!items || items.length === 0) {
+      set({ totalAmount: 0, totalItems: 0 });
+      return;
     }
+    const totalAmount = items.reduce(
+      (sum, item) => sum + (item.product.price || 0) * (item.quantity || 1),
+      0
+    );
+    const totalItems = items.reduce(
+      (sum, item) => sum + (item.quantity || 1),
+      0
+    );
+    set({ totalAmount, totalItems });
   },
 
   fetchCart: async () => {
@@ -28,8 +36,22 @@ const useCartStore = create((set) => ({
     try {
       const cartData = await fetchCartService();
       set({ cart: cartData, isLoading: false });
+      get().calculateTotals(); // ✅ auto update totals
     } catch (error) {
+      console.error("Error fetching cart:", error);
       set({ isLoading: false });
+    }
+  },
+
+  addToCart: async (productId, quantity) => {
+    set({ isUpdating: true });
+    try {
+      const cartData = await addToCartService(productId, quantity);
+      set({ cart: cartData, isUpdating: false });
+      get().calculateTotals();
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      set({ isUpdating: false });
     }
   },
 
@@ -43,8 +65,9 @@ const useCartStore = create((set) => ({
         );
         return { cart: { ...state.cart, items: updatedItems } };
       });
+      get().calculateTotals();
     } catch (error) {
-      set({ isUpdating: false });
+      console.error("Error updating cart:", error);
     } finally {
       set({ isUpdating: false });
     }
@@ -62,8 +85,9 @@ const useCartStore = create((set) => ({
           ),
         },
       }));
+      get().calculateTotals();
     } catch (error) {
-      set({ isUpdating: false });
+      console.error("Error removing item:", error);
     } finally {
       set({ isUpdating: false });
     }
@@ -73,9 +97,9 @@ const useCartStore = create((set) => ({
     set({ isUpdating: true });
     try {
       await clearCartService();
-      set({ cart: { items: [] } });
+      set({ cart: { items: [] }, totalAmount: 0, totalItems: 0 });
     } catch (error) {
-      set({ isUpdating: false });
+      console.error("Error clearing cart:", error);
     } finally {
       set({ isUpdating: false });
     }

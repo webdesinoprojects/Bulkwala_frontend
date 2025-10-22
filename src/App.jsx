@@ -21,6 +21,7 @@ import ChangePassword from "./pages/ChangePassword";
 import ResetPassword from "./pages/ResetPassword";
 import Cart from "./pages/Cart";
 import ForgotPassword from "./pages/ForgotPassword";
+import PaymentPage from "./pages/paymentPage";
 
 const ROLES = {
   ADMIN: "admin",
@@ -107,6 +108,11 @@ const App = createBrowserRouter([
         ),
       },
 
+      {
+        path: "/payment",
+        element: <PaymentPage />
+      }, 
+      
       {
         path: "/profile",
         element: (
