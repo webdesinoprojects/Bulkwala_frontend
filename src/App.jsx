@@ -87,11 +87,11 @@ const App = createBrowserRouter([
       // Authenticated Routes (Require Login)
       {
         path: "/change-password",
-        element: <ChangePassword />
+        element: <ChangePassword />,
       },
       {
         path: "/reset-password/:userid/:token",
-        element: <ResetPassword />
+        element: <ResetPassword />,
       },
       {
         path: "/forgot-password",

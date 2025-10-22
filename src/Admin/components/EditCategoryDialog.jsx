@@ -1,28 +1,57 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
 
 const EditCategoryDialog = ({ open, onOpenChange, category, onSave }) => {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [image, setImage] = useState(null);
   const [banners, setBanners] = useState([]);
-  const [previewImage, setPreviewImage] = useState("");
-  const [previewBanners, setPreviewBanners] = useState([]);
+  const [existingImage, setExistingImage] = useState("");
+  const [existingBanners, setExistingBanners] = useState([]);
 
   useEffect(() => {
     if (category) {
       setName(category.name || "");
       setSlug(category.slug || "");
-      setPreviewImage(category.img_url || "");
-      setPreviewBanners(category.banner || []);
+      setExistingImage(category.img_url || "");
+      setExistingBanners(category.banner || []);
     }
   }, [category]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await onSave({ name, slug, image, banner: banners });
+
+    const uploadData = new FormData();
+    uploadData.append("name", name);
+    uploadData.append("slug", slug);
+
+    if (image) uploadData.append("image", image);
+    existingImage && uploadData.append("existingImage", existingImage);
+
+    banners.forEach((banner) => uploadData.append("banners", banner));
+
+    existingBanners.forEach((bannerUrl) =>
+      uploadData.append("existingBanners", bannerUrl)
+    );
+
+    await onSave(uploadData);
+  };
+
+  const handleBannerChange = (e) => {
+    setBanners([...e.target.files]);
+  };
+
+  const removeBanner = (index) => {
+    const newBanners = [...existingBanners];
+    newBanners.splice(index, 1);
+    setExistingBanners(newBanners);
   };
 
   return (
@@ -34,7 +63,11 @@ const EditCategoryDialog = ({ open, onOpenChange, category, onSave }) => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium">Name</label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} required />
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
           </div>
 
           <div>
@@ -44,10 +77,10 @@ const EditCategoryDialog = ({ open, onOpenChange, category, onSave }) => {
 
           <div>
             <label className="block text-sm font-medium">Current Image</label>
-            {previewImage && (
+            {existingImage && (
               <img
-                src={previewImage}
-                alt="Current"
+                src={existingImage}
+                alt="Category Image"
                 className="w-20 h-20 object-cover rounded-md border my-2"
               />
             )}
@@ -59,28 +92,43 @@ const EditCategoryDialog = ({ open, onOpenChange, category, onSave }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium">Banners (optional)</label>
-            <div className="flex flex-wrap gap-2 my-2">
-              {previewBanners?.length > 0 &&
-                previewBanners.map((banner, i) => (
-                  <img
-                    key={i}
-                    src={banner}
-                    alt="banner"
-                    className="w-20 h-20 object-cover rounded-md border"
-                  />
+            <label className="block text-sm font-medium">Current Banners</label>
+            {existingBanners.length > 0 && (
+              <div className="flex gap-2 mt-2 flex-wrap">
+                {existingBanners.map((banner, idx) => (
+                  <div key={idx} className="relative w-24 h-24">
+                    <img
+                      src={banner}
+                      alt="Banner"
+                      className="w-full h-full object-cover rounded-md border"
+                    />
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="destructive"
+                      className="absolute top-0 right-0"
+                      onClick={() => removeBanner(idx)}
+                    >
+                      ✕
+                    </Button>
+                  </div>
                 ))}
-            </div>
+              </div>
+            )}
             <Input
               type="file"
               multiple
               accept="image/*"
-              onChange={(e) => setBanners([...e.target.files])}
+              onChange={handleBannerChange}
             />
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
             <Button type="submit">Save Changes</Button>

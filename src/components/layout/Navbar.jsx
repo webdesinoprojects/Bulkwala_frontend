@@ -62,11 +62,25 @@ export default function Navbar() {
           ></ion-icon>
         </div>
 
-        {/* User & Cart */}
+        {/* Whislist  */}
         <div className="flex items-center space-x-8 relative">
           <div className="flex items-center space-x-1">
-            <ion-icon name="cart-outline" class="text-xl"></ion-icon>
-            <span className="text-base font-medium">Cart</span>
+            <Link to="/wishlist">
+              <div className="flex items-center space-x-1 cursor-pointer">
+                <ion-icon name="heart-outline" className="text-xl"></ion-icon>
+                <span className="text-base font-medium">Wishlist</span>
+              </div>
+            </Link>
+          </div>
+
+          {/* User & Cart */}
+          <div className="flex items-center space-x-8 relative">
+            <Link to="/cart">
+              <div className="flex items-center space-x-1 cursor-pointer">
+                <ion-icon name="cart-outline" className="text-xl"></ion-icon>
+                <span className="text-base font-medium">Cart</span>
+              </div>
+            </Link>
           </div>
 
           {user ? (
