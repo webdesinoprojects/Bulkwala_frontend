@@ -1,12 +1,18 @@
 import React, { useEffect } from "react";
-import usePaymentStore from "@/store/payment.store";
+import useOrderStore from "@/store/order.store";
 import useCartStore from "@/store/cart.store";
+import { toast } from "sonner";
 
 const PaymentPage = () => {
-  const { paymentMode, setPaymentMode, initiatePayment, isLoading } =
-    usePaymentStore();
-  const { cart, totalAmount, totalItems, fetchCart, isLoading: cartLoading } =
-    useCartStore();
+  const { paymentMode, setPaymentMode, handlePayment, isLoading } =
+    useOrderStore();
+  const {
+    cart,
+    totalAmount,
+    totalItems,
+    fetchCart,
+    isLoading: cartLoading,
+  } = useCartStore();
 
   useEffect(() => {
     fetchCart();
@@ -15,6 +21,28 @@ const PaymentPage = () => {
     script.async = true;
     document.body.appendChild(script);
   }, []);
+
+  const proceedToPay = async () => {
+    if (!paymentMode) {
+      toast.error("Please select a payment method");
+      return;
+    }
+
+    const shippingAddress = {
+      name: "John Doe",
+      phone: "9999999999",
+      street: "MG Road",
+      city: "Delhi",
+      state: "Delhi",
+      postalCode: "110001",
+      country: "India",
+    };
+
+    const result = await handlePayment(cart, shippingAddress);
+    if (result?.type === "COD") {
+      toast.success("COD Order Placed Successfully ");
+    }
+  };
 
   if (cartLoading)
     return (
@@ -30,7 +58,7 @@ const PaymentPage = () => {
           Order Summary
         </h2>
 
-        {/* 🧾 Order Summary */}
+        {/* Cart Table */}
         <div className="border rounded-lg mb-6 overflow-hidden">
           <table className="w-full text-left border-collapse">
             <thead className="bg-gray-100">
@@ -44,9 +72,9 @@ const PaymentPage = () => {
               {cart?.items?.map((item) => (
                 <tr
                   key={item.product._id}
-                  className="border-b last:border-none hover:bg-gray-50"
+                  className="border-b last:border-none"
                 >
-                  <td className="p-3 text-gray-800">{item.product.name}</td>
+                  <td className="p-3 text-gray-800">{item.product.title}</td>
                   <td className="p-3 text-center">{item.quantity}</td>
                   <td className="p-3 text-right">
                     ₹{(item.product.price * item.quantity).toFixed(2)}
@@ -57,58 +85,48 @@ const PaymentPage = () => {
           </table>
         </div>
 
-        {/* 💳 Payment Methods */}
+        {/* Payment Method */}
         <h3 className="text-xl font-semibold text-center mb-4">
           Select Payment Method
         </h3>
         <div className="space-y-4 mb-6">
-          <label className="flex items-center space-x-3 border p-3 rounded-xl hover:border-black transition cursor-pointer">
-            <input
-              type="radio"
-              name="payment"
-              value="online"
-              checked={paymentMode === "online"}
-              onChange={(e) => setPaymentMode(e.target.value)}
-            />
-            <span>💳 Pay Online (Card / UPI)</span>
-          </label>
-
-          <label className="flex items-center space-x-3 border p-3 rounded-xl hover:border-black transition cursor-pointer">
-            <input
-              type="radio"
-              name="payment"
-              value="netbanking"
-              checked={paymentMode === "netbanking"}
-              onChange={(e) => setPaymentMode(e.target.value)}
-            />
-            <span>🏦 Net Banking</span>
-          </label>
-
-          <label className="flex items-center space-x-3 border p-3 rounded-xl hover:border-black transition cursor-pointer">
-            <input
-              type="radio"
-              name="payment"
-              value="cod"
-              checked={paymentMode === "cod"}
-              onChange={(e) => setPaymentMode(e.target.value)}
-            />
-            <span>💵 Cash on Delivery</span>
-          </label>
+          {[
+            { value: "online", label: "💳 Pay Online (Card/UPI)" },
+            { value: "netbanking", label: "🏦 Net Banking" },
+            { value: "cod", label: "💵 Cash on Delivery" },
+          ].map(({ value, label }) => (
+            <label
+              key={value}
+              className="flex items-center space-x-3 border p-3 rounded-xl hover:border-black cursor-pointer"
+            >
+              <input
+                type="radio"
+                name="payment"
+                value={value}
+                checked={paymentMode === value}
+                onChange={(e) => setPaymentMode(e.target.value)}
+              />
+              <span>{label}</span>
+            </label>
+          ))}
         </div>
 
-        {/* 💰 Total */}
         <div className="border-t pt-6 text-center">
           <p className="text-gray-600 text-sm mb-1">{totalItems} item(s)</p>
           <h3 className="text-3xl font-bold mb-6">₹{totalAmount}</h3>
 
           <button
-            disabled={!paymentMode || isLoading || totalAmount <= 0}
-            onClick={initiatePayment}
-            className="w-full bg-black text-white py-3 rounded-lg text-lg font-medium hover:bg-gray-800 transition disabled:opacity-50"
+            disabled={!paymentMode || isLoading}
+            onClick={proceedToPay}
+            className="w-full bg-black text-white py-3 rounded-lg text-lg font-medium hover:bg-gray-800 disabled:opacity-50"
           >
-            {isLoading
+            {paymentMode === "cod"
+              ? isLoading
+                ? "Placing Order..."
+                : "Place Order (COD)"
+              : isLoading
               ? "Processing..."
-              : `Proceed to Pay ₹${totalAmount || 0}`}
+              : `Proceed to Pay ₹${totalAmount}`}
           </button>
         </div>
       </div>

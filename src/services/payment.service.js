@@ -1,17 +1,17 @@
-import axios from "axios";
-
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL; 
+import { axiosInstance } from "@/lib/axios";
 
 export const createPaymentOrder = async (payload) => {
-  const { data } = await axios.post(`${API_BASE_URL}/api/payment/create-order`, payload, {
+  const res = await axiosInstance.post(`/api/payment/create-order`, payload, {
     withCredentials: true,
   });
-  return data;
+
+  console.log("createPaymentOrder response:", res.data);
+  return res.data.data; 
 };
 
 export const verifyPayment = async (payload) => {
-  const { data } = await axios.post(`${API_BASE_URL}/api/payment/verify`, payload, {
+  const res = await axiosInstance.post(`/api/payment/verify-order`, payload, {
     withCredentials: true,
   });
-  return data;
+  return res.data.data;
 };
