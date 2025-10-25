@@ -4,7 +4,7 @@ import {
   verifyOrderService,
 } from "@/services/order.service";
 
-const usePaymentStore = create((set, get) => ({
+const useOrderStore = create((set, get) => ({
   paymentMode: "",
   isLoading: false,
   paymentStatus: "PENDING",
@@ -37,6 +37,7 @@ const usePaymentStore = create((set, get) => ({
       // Step 1: Create Order
       const res = await createOrderService(orderPayload);
 
+      console.log("createOrderService response:", res);
       // Step 2: COD flow
       if (paymentMode === "cod") {
         set({ isLoading: false, paymentStatus: "PENDING" });
@@ -55,6 +56,7 @@ const usePaymentStore = create((set, get) => ({
         name: "Bulkwala Store",
         description: "Order Payment",
         handler: async function (response) {
+          console.log("response from razorpay handler", response);
           const { razorpay_payment_id, razorpay_order_id, razorpay_signature } =
             response;
 
@@ -68,6 +70,14 @@ const usePaymentStore = create((set, get) => ({
             paymentStatus: "SUCCESS",
             isLoading: false,
           });
+        },
+        modal: {
+          ondismiss: () => {
+            set({
+              paymentStatus: "CANCELLED",
+              isLoading: false,
+            });
+          },
         },
         prefill: {
           name: "User Name",
@@ -87,4 +97,4 @@ const usePaymentStore = create((set, get) => ({
   },
 }));
 
-export default usePaymentStore;
+export default useOrderStore;

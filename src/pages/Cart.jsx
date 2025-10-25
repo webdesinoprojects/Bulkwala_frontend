@@ -8,6 +8,10 @@ import useCartStore from "@/store/cart.store";
 const Cart = () => {
   const {
     cart,
+    totalPrice,
+    shippingPrice,
+    taxPrice,
+    itemsPrice,
     isLoading,
     isUpdating,
     fetchCart,
@@ -47,19 +51,11 @@ const Cart = () => {
     );
   }
 
-  // Calculate subtotal
-  const getTotal = () => {
-    if (!cart || !cart.items) return 0;
-    return cart.items.reduce(
-      (acc, item) => acc + item.product.price * item.quantity,
-      0
-    );
-  };
-
   // Handle updating quantity
   const handleUpdateQuantity = async (productId, quantity) => {
     try {
       await updateCart(productId, quantity);
+      await fetchCart();
       toast.success("Quantity updated");
     } catch (error) {
       toast.error("Failed to update quantity");
@@ -147,10 +143,26 @@ const Cart = () => {
           )}
         </div>
 
-        {/* Subtotal Section */}
-        <div className="flex justify-between mt-6">
-          <h2 className="text-2xl font-semibold">Subtotal</h2>
-          <p className="text-xl font-medium">{`₹${getTotal().toFixed(2)}`}</p>
+        {/* Subtotal and Deductions Section */}
+        <div className="mt-6">
+          <div className="flex justify-between">
+            <h2 className="text-2xl font-semibold">Items Price</h2>
+            <p className="text-xl font-medium">{`₹${itemsPrice.toFixed(2)}`}</p>
+          </div>
+          <div className="flex justify-between mt-2">
+            <h2 className="text-2xl font-semibold">Shipping</h2>
+            <p className="text-xl font-medium">{`₹${shippingPrice.toFixed(
+              2
+            )}`}</p>
+          </div>
+          <div className="flex justify-between mt-2">
+            <h2 className="text-2xl font-semibold">Tax</h2>
+            <p className="text-xl font-medium">{`₹${taxPrice.toFixed(2)}`}</p>
+          </div>
+          <div className="flex justify-between mt-4">
+            <h2 className="text-2xl font-semibold">Total Price</h2>
+            <p className="text-xl font-medium">{`₹${totalPrice.toFixed(2)}`}</p>
+          </div>
         </div>
 
         {/* Clear Cart and Checkout Buttons */}

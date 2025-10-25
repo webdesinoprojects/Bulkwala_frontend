@@ -10,6 +10,10 @@ export const loginService = async (credentials) => {
   return res.data.data;
 };
 
+export const updateShippingAddressService = async (addressData) => {
+  const res = await axiosInstance.put("/api/users/address", addressData);
+  return res.data.data;
+};
 export const checkauthService = async () => {
   const res = await axiosInstance.get("/api/users/profile");
   return res.data.data;

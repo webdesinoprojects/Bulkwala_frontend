@@ -28,6 +28,7 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     const result = await logout();
+    console.log(result);
     if (result.success) {
       toast.success("Logged out successfully!");
       navigate("/login");

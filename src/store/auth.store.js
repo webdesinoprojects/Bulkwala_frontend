@@ -12,6 +12,7 @@ import {
   resetPasswordService,
   verifyEmailService,
   changePasswordService,
+  updateShippingAddressService,
 } from "@/services/auth.service";
 import { create } from "zustand";
 
@@ -85,6 +86,18 @@ export const useAuthStore = create((set) => ({
         error: errorMessage,
       });
       return { success: false, error: errorMessage };
+    }
+  },
+
+  updateAddress: async (addressData) => {
+    set({ isLoading: true, error: null });
+    try {
+      const updatedUser = await updateShippingAddressService(addressData);
+      set({ user: updatedUser, isLoading: false });
+      return { success: true, user: updatedUser };
+    } catch (error) {
+      set({ isLoading: false, error: error.message });
+      return { success: false, error: error.message };
     }
   },
 
@@ -184,8 +197,8 @@ export const useAuthStore = create((set) => ({
       set({ isLoading: false });
     }
   },
-  
-   changePassword: async (email) => {
+
+  changePassword: async (email) => {
     try {
       set({ isLoading: true, error: null });
       await changePasswordService(email);

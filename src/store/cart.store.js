@@ -9,33 +9,34 @@ import { create } from "zustand";
 
 const useCartStore = create((set, get) => ({
   cart: { items: [] },
-  totalAmount: 0,
+  itemsPrice: 0,
+  shippingPrice: 0,
+  taxPrice: 0,
+  totalPrice: 0,
   totalItems: 0,
   isLoading: false,
   isUpdating: false,
 
   calculateTotals: () => {
-    const { items } = get().cart;
-    if (!items || items.length === 0) {
-      set({ totalAmount: 0, totalItems: 0 });
-      return;
-    }
-    const totalAmount = items.reduce(
-      (sum, item) => sum + (item.product.price || 0) * (item.quantity || 1),
-      0
-    );
-    const totalItems = items.reduce(
-      (sum, item) => sum + (item.quantity || 1),
-      0
-    );
-    set({ totalAmount, totalItems });
+    const { items, itemsPrice, shippingPrice, taxPrice } = get().cart;
+    const totalPrice = itemsPrice + shippingPrice + taxPrice;
+    const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
+
+    set({ totalPrice, totalItems });
   },
 
   fetchCart: async () => {
     set({ isLoading: true });
     try {
       const cartData = await fetchCartService();
-      set({ cart: cartData, isLoading: false });
+      set({
+        cart: cartData,
+        itemsPrice: cartData.itemsPrice,
+        shippingPrice: cartData.shippingPrice,
+        taxPrice: cartData.taxPrice,
+        totalPrice: cartData.totalPrice,
+        isLoading: false,
+      });
       get().calculateTotals(); // ✅ auto update totals
     } catch (error) {
       console.error("Error fetching cart:", error);
@@ -61,10 +62,15 @@ const useCartStore = create((set, get) => ({
       await updateCartItemService(productId, quantity);
       set((state) => {
         const updatedItems = state.cart.items.map((item) =>
-          item.product._id === productId ? { ...item, quantity } : item
+          item.product._id === productId
+            ? { ...item, quantity, totalPrice: item.product.price * quantity }
+            : item
         );
         return { cart: { ...state.cart, items: updatedItems } };
       });
+
+      console.log("Updated Cart State:", get().cart);
+
       get().calculateTotals();
     } catch (error) {
       console.error("Error updating cart:", error);
@@ -97,7 +103,16 @@ const useCartStore = create((set, get) => ({
     set({ isUpdating: true });
     try {
       await clearCartService();
-      set({ cart: { items: [] }, totalAmount: 0, totalItems: 0 });
+      set({
+        cart: {
+          items: [],
+          itemsPrice: 0,
+          shippingPrice: 0,
+          taxPrice: 0,
+          totalPrice: 0,
+        },
+        totalItems: 0,
+      });
     } catch (error) {
       console.error("Error clearing cart:", error);
     } finally {
