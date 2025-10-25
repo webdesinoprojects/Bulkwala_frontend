@@ -29,12 +29,13 @@ const useCartStore = create((set, get) => ({
     set({ isLoading: true });
     try {
       const cartData = await fetchCartService();
+      console.log("cartData from store :", cartData);
       set({
         cart: cartData,
-        itemsPrice: cartData.itemsPrice,
-        shippingPrice: cartData.shippingPrice,
-        taxPrice: cartData.taxPrice,
-        totalPrice: cartData.totalPrice,
+        itemsPrice: cartData.itemsPrice || 0,
+        shippingPrice: cartData.shippingPrice || 0,
+        taxPrice: cartData.taxPrice || 0,
+        totalPrice: cartData.totalPrice || 0,
         isLoading: false,
       });
       get().calculateTotals(); // ✅ auto update totals

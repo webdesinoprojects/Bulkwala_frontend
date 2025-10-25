@@ -7,6 +7,7 @@ export const addToCartService = async (productId, quantity) => {
 
 export const fetchCartService = async () => {
   const res = await axiosInstance.get("/api/cart");
+  console.log("fetchCartService response:", res.data.data);
   return res.data.data;
 };
 
