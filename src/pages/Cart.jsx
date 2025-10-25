@@ -147,21 +147,27 @@ const Cart = () => {
         <div className="mt-6">
           <div className="flex justify-between">
             <h2 className="text-2xl font-semibold">Items Price</h2>
-            <p className="text-xl font-medium">{`₹${itemsPrice.toFixed(2)}`}</p>
-          </div>
-          <div className="flex justify-between mt-2">
-            <h2 className="text-2xl font-semibold">Shipping</h2>
-            <p className="text-xl font-medium">{`₹${shippingPrice.toFixed(
+            <p className="text-xl font-medium">{`₹${(itemsPrice || 0).toFixed(
               2
             )}`}</p>
           </div>
           <div className="flex justify-between mt-2">
+            <h2 className="text-2xl font-semibold">Shipping</h2>
+            <p className="text-xl font-medium">{`₹${(
+              shippingPrice || 0
+            ).toFixed(2)}`}</p>
+          </div>
+          <div className="flex justify-between mt-2">
             <h2 className="text-2xl font-semibold">Tax</h2>
-            <p className="text-xl font-medium">{`₹${taxPrice.toFixed(2)}`}</p>
+            <p className="text-xl font-medium">{`₹${(taxPrice || 0).toFixed(
+              2
+            )}`}</p>
           </div>
           <div className="flex justify-between mt-4">
             <h2 className="text-2xl font-semibold">Total Price</h2>
-            <p className="text-xl font-medium">{`₹${totalPrice.toFixed(2)}`}</p>
+            <p className="text-xl font-medium">{`₹${(totalPrice || 0).toFixed(
+              2
+            )}`}</p>
           </div>
         </div>
 
