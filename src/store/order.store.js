@@ -60,16 +60,26 @@ const useOrderStore = create((set, get) => ({
           const { razorpay_payment_id, razorpay_order_id, razorpay_signature } =
             response;
 
-          await verifyOrderService({
+          const verifyResponse = await verifyOrderService({
             razorpay_order_id,
             razorpay_payment_id,
             razorpay_signature,
           });
 
+          console.log("✅ verifyOrderService response:", verifyResponse);
+
+          const verifiedOrder = verifyResponse?.order; // ✅ Extract actual order object
+
           set({
             paymentStatus: "SUCCESS",
             isLoading: false,
           });
+
+          window.dispatchEvent(
+            new CustomEvent("razorpay-success", {
+              detail: { order: verifiedOrder },
+            })
+          );
         },
         modal: {
           ondismiss: () => {

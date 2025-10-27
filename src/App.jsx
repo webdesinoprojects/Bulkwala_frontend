@@ -22,6 +22,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Cart from "./pages/Cart";
 import ForgotPassword from "./pages/ForgotPassword";
 import PaymentPage from "./pages/PaymentPage";
+import OrderSuccess from "./pages/OrderSuccess";
 
 const ROLES = {
   ADMIN: "admin",
@@ -96,9 +97,9 @@ const App = createBrowserRouter([
       },
       {
         path: "/forgot-password",
-        element: <ForgotPassword />
+        element: <ForgotPassword />,
       },
-      
+
       {
         path: "/cart",
         element: (
@@ -110,9 +111,22 @@ const App = createBrowserRouter([
 
       {
         path: "/payment",
-        element: <PaymentPage />
-      }, 
-      
+        element: (
+          <ProtectedRoutes>
+            <PaymentPage />
+          </ProtectedRoutes>
+        ),
+      },
+
+      {
+        path: "/order-success",
+        element: (
+          <ProtectedRoutes>
+            <OrderSuccess />
+          </ProtectedRoutes>
+        ),
+      },
+
       {
         path: "/profile",
         element: (

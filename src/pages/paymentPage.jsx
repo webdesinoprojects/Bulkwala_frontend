@@ -4,6 +4,7 @@ import useCartStore from "@/store/cart.store";
 import { toast } from "sonner";
 import ShippingAddressForm from "@/components/ShippingAddressForm";
 import useAuthStore from "@/store/auth.store";
+import { useNavigate } from "react-router-dom";
 
 const PaymentPage = () => {
   const {
@@ -24,6 +25,7 @@ const PaymentPage = () => {
     isLoading: cartLoading,
   } = useCartStore();
   const { user, updateAddress } = useAuthStore();
+  const navigate = useNavigate();
 
   const [shippingAddress, setShippingAddress] = useState(
     user?.address[0] || null
@@ -36,6 +38,27 @@ const PaymentPage = () => {
     script.async = true;
     document.body.appendChild(script);
   }, []);
+
+  // ✅ Listen for Razorpay success event
+  useEffect(() => {
+    const handleRazorpaySuccess = (e) => {
+      const verifiedOrder = e.detail.order;
+      console.log("✅ Received Razorpay success:", verifiedOrder);
+      if (verifiedOrder) {
+        toast.success("Payment Successful!");
+        navigate("/order-success", {
+          state: { orderData: verifiedOrder, paymentType: "Online Payment" },
+        });
+      } else {
+        toast.error("No order data received after payment!");
+      }
+    };
+
+    window.addEventListener("razorpay-success", handleRazorpaySuccess);
+    return () => {
+      window.removeEventListener("razorpay-success", handleRazorpaySuccess);
+    };
+  }, [navigate]);
 
   console.log("Cart items:", cart?.items);
 
@@ -64,17 +87,16 @@ const PaymentPage = () => {
     const result = await handlePayment(cart, shippingAddress);
     if (result?.type === "COD") {
       toast.success("COD Order Placed Successfully ");
+      navigate("/order-success", {
+        state: { orderData: result.order, paymentType: "Cash on Delivery" },
+      });
     }
-  };
-
-  // Function to handle Razorpay callback for payment cancellation
-  const handlePaymentCancellation = () => {
-    toast.error("Payment Cancelled");
-  };
-
-  // Function to handle successful Razorpay payment
-  const handlePaymentSuccess = () => {
-    toast.success("Payment Successful");
+    if (result?.type === "ONLINE_SUCCESS") {
+      toast.success("Payment Successful");
+      navigate("/order-success", {
+        state: { orderData: verifiedOrder, paymentType: "Online Payment" },
+      });
+    }
   };
 
   // Function to handle address selection
