@@ -120,6 +120,18 @@ const useCartStore = create((set, get) => ({
       set({ isUpdating: false });
     }
   },
+
+  // ✅ clears cart locally when user logs out
+  clearCartOnLogout: () => {
+    set({
+      cart: { items: [] },
+      itemsPrice: 0,
+      shippingPrice: 0,
+      taxPrice: 0,
+      totalPrice: 0,
+      totalItems: 0,
+    });
+  },
 }));
 
 export default useCartStore;

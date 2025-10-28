@@ -59,28 +59,35 @@ const useOrderStore = create((set, get) => ({
           console.log("response from razorpay handler", response);
           const { razorpay_payment_id, razorpay_order_id, razorpay_signature } =
             response;
+          set({ isLoading: true });
+          try {
+            const verifyResponse = await verifyOrderService({
+              razorpay_order_id,
+              razorpay_payment_id,
+              razorpay_signature,
+            });
 
-          const verifyResponse = await verifyOrderService({
-            razorpay_order_id,
-            razorpay_payment_id,
-            razorpay_signature,
-          });
+            console.log("✅ verifyOrderService response:", verifyResponse);
 
-          console.log("✅ verifyOrderService response:", verifyResponse);
+            const verifiedOrder = verifyResponse?.populatedOrder;
 
-          const verifiedOrder = verifyResponse?.order; // ✅ Extract actual order object
+            // ✅ Stop loader first
+            set({ isLoading: false, paymentStatus: "SUCCESS" });
 
-          set({
-            paymentStatus: "SUCCESS",
-            isLoading: false,
-          });
-
-          window.dispatchEvent(
-            new CustomEvent("razorpay-success", {
-              detail: { order: verifiedOrder },
-            })
-          );
+            // ✅ Trigger success event slightly after loader clears
+            setTimeout(() => {
+              window.dispatchEvent(
+                new CustomEvent("razorpay-success", {
+                  detail: { order: verifiedOrder },
+                })
+              );
+            }, 100);
+          } catch (error) {
+            console.error("Error verifying payment:", error);
+            set({ isLoading: false, paymentStatus: "FAILED" });
+          }
         },
+
         modal: {
           ondismiss: () => {
             set({
