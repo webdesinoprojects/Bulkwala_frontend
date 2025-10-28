@@ -41,17 +41,17 @@ const useOrderStore = create((set, get) => ({
       // Step 2: COD flow
       if (paymentMode === "cod") {
         set({ isLoading: false, paymentStatus: "PENDING" });
-        return { message: "COD order placed successfully", type: "COD" };
+        return { type: "COD", order: res };
       }
 
       // Step 3: Online flow
-      const { razorpayOrderId, orderId, amount } = res;
-      set({ razorpayOrderId, orderId, amount });
+      const { razorpayOrderId, amount, currency } = res;
+      set({ razorpayOrderId, amount });
 
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: amount * 100,
-        currency: "INR",
+        currency,
         order_id: razorpayOrderId,
         name: "Bulkwala Store",
         description: "Order Payment",

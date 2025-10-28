@@ -22,6 +22,7 @@ const PaymentPage = () => {
     totalPrice,
     totalItems,
     fetchCart,
+    clearCart,
     isLoading: cartLoading,
   } = useCartStore();
   const { user, updateAddress } = useAuthStore();
@@ -41,11 +42,12 @@ const PaymentPage = () => {
 
   // ✅ Listen for Razorpay success event
   useEffect(() => {
-    const handleRazorpaySuccess = (e) => {
+    const handleRazorpaySuccess = async (e) => {
       const verifiedOrder = e.detail.order;
       console.log("✅ Received Razorpay success:", verifiedOrder);
       if (verifiedOrder) {
         toast.success("Payment Successful!");
+        await clearCart();
         navigate("/order-success", {
           state: { orderData: verifiedOrder, paymentType: "Online Payment" },
         });
@@ -87,14 +89,9 @@ const PaymentPage = () => {
     const result = await handlePayment(cart, shippingAddress);
     if (result?.type === "COD") {
       toast.success("COD Order Placed Successfully ");
+      await clearCart();
       navigate("/order-success", {
         state: { orderData: result.order, paymentType: "Cash on Delivery" },
-      });
-    }
-    if (result?.type === "ONLINE_SUCCESS") {
-      toast.success("Payment Successful");
-      navigate("/order-success", {
-        state: { orderData: verifiedOrder, paymentType: "Online Payment" },
       });
     }
   };
@@ -108,6 +105,17 @@ const PaymentPage = () => {
     return (
       <div className="flex justify-center items-center min-h-screen text-gray-600">
         Loading cart details...
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-black mx-auto mb-3"></div>
+          <p className="text-gray-700 font-medium">Processing payment...</p>
+        </div>
       </div>
     );
   }
