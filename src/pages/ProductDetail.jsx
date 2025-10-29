@@ -17,20 +17,25 @@ const ProductDetail = () => {
   const { addToCart } = useCartStore();
   const [quantity, setQuantity] = useState(1);
   const [isInWishlist, setIsInWishlist] = useState(false); // ✅ local reactive state
+  const [isWishlistLoading, setIsWishlistLoading] = useState(false);
 
   const navigate = useNavigate();
 
   useEffect(() => {
     getProductBySlug(slug);
-    fetchWishlist();
   }, [slug]);
 
   useEffect(() => {
-    if (singleProduct && wishlist.length > 0) {
+    fetchWishlist();
+  }, []);
+
+  // Sync button with wishlist
+  useEffect(() => {
+    if (singleProduct && wishlist?.length >= 0) {
       const exists = wishlist.some((p) => p._id === singleProduct._id);
       setIsInWishlist(exists);
     }
-  }, [wishlist, singleProduct]); // ✅ react to store updates
+  }, [wishlist, singleProduct]);
 
   if (loading || !singleProduct) {
     return (
@@ -47,17 +52,23 @@ const ProductDetail = () => {
 
   const handleAddToWishlist = async () => {
     try {
-      // ✅ Optimistically toggle local state
-      setIsInWishlist((prev) => !prev);
-      await toggleWishlist(product._id);
+      setIsWishlistLoading(true);
+      const updatedList = await toggleWishlist(product._id);
 
-      if (isInWishlist) {
-        toast.info(`${product.title} removed from wishlist ❌`);
-      } else {
+      if (!updatedList) return;
+
+      const nowInWishlist = updatedList.some((p) => p._id === product._id);
+      setIsInWishlist(nowInWishlist);
+
+      if (nowInWishlist) {
         toast.success(`${product.title} added to wishlist ❤️`);
+      } else {
+        toast.info(`${product.title} removed from wishlist ❌`);
       }
     } catch (error) {
       toast.error("Something went wrong while updating wishlist");
+    } finally {
+      setIsWishlistLoading(false);
     }
   };
 

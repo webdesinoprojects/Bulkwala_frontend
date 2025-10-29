@@ -6,64 +6,54 @@ import {
   clearWishlistService,
 } from "@/services/wishlist.service";
 
-export const useWishlistStore = create((set, get) => ({
+export const useWishlistStore = create((set) => ({
   wishlist: [],
   isLoading: false,
   error: null,
 
   fetchWishlist: async () => {
-    set({ isLoading: true, error: null });
     try {
+      set({ isLoading: true });
       const data = await getWishlistService();
       set({ wishlist: data.products || [], isLoading: false });
     } catch (error) {
+      console.error("Fetch wishlist failed:", error);
       set({ error: error.message, isLoading: false });
     }
   },
 
   toggleWishlist: async (productId) => {
-    const state = get();
-    const exists = state.wishlist.some((p) => p._id === productId);
-
-    // ✅ Optimistic update (instant feedback)
-    set({
-      wishlist: exists
-        ? state.wishlist.filter((p) => p._id !== productId)
-        : [...state.wishlist, { _id: productId }],
-    });
-
     try {
+      set({ isLoading: true });
       const data = await addToWishlistService(productId);
-
-      // ✅ Sync final state with backend (ensure accurate data)
-      set({ wishlist: data.products || [] });
+      set({ wishlist: data.products || [], isLoading: false });
+      return data.products || [];
     } catch (error) {
-      console.error("Wishlist toggle failed:", error);
-
-      // ❌ Rollback optimistic update if API fails
-      set({
-        wishlist: exists
-          ? [...state.wishlist, { _id: productId }]
-          : state.wishlist.filter((p) => p._id !== productId),
-      });
+      console.error("Toggle wishlist failed:", error);
+      set({ error: error.message, isLoading: false });
+      return null;
     }
   },
 
   removeWishlistItem: async (productId) => {
     try {
+      set({ isLoading: true });
       const data = await removeFromWishlistService(productId);
-      set({ wishlist: data.products || [] });
+      set({ wishlist: data.products || [], isLoading: false });
     } catch (error) {
-      set({ error: error.message });
+      console.error("Remove wishlist item failed:", error);
+      set({ error: error.message, isLoading: false });
     }
   },
 
   clearWishlist: async () => {
     try {
+      set({ isLoading: true });
       await clearWishlistService();
-      set({ wishlist: [] });
+      set({ wishlist: [], isLoading: false });
     } catch (error) {
-      set({ error: error.message });
+      console.error("Clear wishlist failed:", error);
+      set({ error: error.message, isLoading: false });
     }
   },
 }));
