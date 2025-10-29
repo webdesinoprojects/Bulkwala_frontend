@@ -1,22 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { useProductStore } from "../store/product.store.js";
 import { useCategoryStore } from "../store/category.store.js";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Products = () => {
   const { products, fetchProducts, loading, error, total, limit } =
     useProductStore();
   const { categories, fetchCategories } = useCategoryStore();
   const navigate = useNavigate();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const subcategoryFromURL = params.get("subcategory");
 
   const [filters, setFilters] = useState({
     category: "",
+    subcategory: subcategoryFromURL || "",
     search: "",
     minPrice: 0,
     maxPrice: 10000,
@@ -28,6 +32,13 @@ const Products = () => {
   useEffect(() => {
     fetchCategories();
   }, []);
+
+  // ✅ Update filter when user navigates with ?subcategory=Name
+  useEffect(() => {
+    if (subcategoryFromURL) {
+      setFilters((prev) => ({ ...prev, subcategory: subcategoryFromURL }));
+    }
+  }, [subcategoryFromURL]);
 
   // Fetch products when filters change
   useEffect(() => {

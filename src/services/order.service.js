@@ -15,3 +15,17 @@ export const verifyOrderService = async (payload) => {
   console.log("verifyOrderService payload:", res.data.data);
   return res.data.data;
 };
+
+export const getSingleOrderService = async (orderId) => {
+  const res = await axiosInstance.get(`/api/order/${orderId}`, {
+    withCredentials: true,
+  });
+  return res.data.data;
+};
+
+export const getMyOrdersService = async () => {
+  const res = await axiosInstance.get("/api/order/my-orders", {
+    withCredentials: true,
+  });
+  return res.data.data;
+};

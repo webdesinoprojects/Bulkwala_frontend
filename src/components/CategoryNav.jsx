@@ -11,7 +11,7 @@ export default function CategoryNav({ selectedCategory, onSelect }) {
   if (loading) return <p>Loading...</p>;
 
   return (
-    <div className="flex gap-4 overflow-x-auto py-2 border-b scrollbar-hide">
+    <div className="flex gap-6 overflow-x-auto py-1 scrollbar-hide">
       {categories.map((cat) => {
         const isSelected = selectedCategory?._id === cat._id;
 
@@ -22,7 +22,7 @@ export default function CategoryNav({ selectedCategory, onSelect }) {
             onClick={() => onSelect(cat)}
           >
             <div
-              className={`w-16 h-16 rounded overflow-hidden flex items-center justify-center border-2 transition-all duration-200 ${
+              className={`w-18 h-18 rounded overflow-hidden flex items-center justify-center border-2 transition-all duration-200 ${
                 isSelected
                   ? "border-blue-600 scale-105"
                   : "border-transparent hover:border-blue-300"

@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import {
   getAllOrdersService,
-  getSingleOrderService,
   updateOrderStatusService,
   updatePaymentStatusService,
 } from "@/services/admin-orders.service";
@@ -67,16 +66,6 @@ export const useAdminOrdersStore = create((set, get) => ({
         success: false,
         message: e?.response?.data?.message || "Failed to fetch orders",
       };
-    }
-  },
-
-  // Read one (optional, if you plan a drawer/modal)
-  fetchOne: async (orderId) => {
-    try {
-      return await getSingleOrderService(orderId);
-    } catch (e) {
-      console.error(e);
-      return null;
     }
   },
 

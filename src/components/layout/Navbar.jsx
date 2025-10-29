@@ -2,11 +2,13 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import useAuthStore from "@/store/auth.store";
 import useCartStore from "@/store/cart.store";
+import { useWishlistStore } from "@/store/wishlist.store";
 import { toast } from "sonner";
 
 export default function Navbar() {
   const { user, logout, checkauthstatus } = useAuthStore();
   const { totalItems, fetchCart } = useCartStore();
+  const { wishlist, fetchWishlist } = useWishlistStore();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef();
   const navigate = useNavigate();
@@ -24,6 +26,7 @@ export default function Navbar() {
   useEffect(() => {
     checkauthstatus();
     fetchCart();
+    fetchWishlist();
   }, []);
 
   const handleLogout = async () => {
@@ -62,11 +65,18 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center space-x-8 relative">
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center space-x-1 relative">
             <Link to="/wishlist">
-              <div className="flex items-center space-x-1 cursor-pointer">
+              <div className="flex items-center space-x-1 cursor-pointer relative">
                 <ion-icon name="heart-outline" className="text-xl"></ion-icon>
                 <span className="text-base font-medium">Wishlist</span>
+
+                {/* ✅ Wishlist Count Badge */}
+                {wishlist.length > 0 && (
+                  <span className="absolute -top-2 -right-3 bg-red-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                    {wishlist.length}
+                  </span>
+                )}
               </div>
             </Link>
           </div>
@@ -134,6 +144,17 @@ export default function Navbar() {
                   >
                     My Profile
                   </Link>
+
+                  {/* ✅ Show My Orders only for customers */}
+                  {user.role === "customer" && (
+                    <Link
+                      to="/my-orders"
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      onClick={() => setDropdownOpen(false)}
+                    >
+                      My Orders
+                    </Link>
+                  )}
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"

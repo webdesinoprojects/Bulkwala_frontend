@@ -5,13 +5,6 @@ export const getAllOrdersService = async () => {
   return res.data.data || [];
 };
 
-export const getSingleOrderService = async (orderId) => {
-  const res = await axiosInstance.get(`/api/order/${orderId}`, {
-    withCredentials: true,
-  });
-  return res.data.data;
-};
-
 export const updateOrderStatusService = async (orderId, status) => {
   const res = await axiosInstance.patch(
     `/api/order/${orderId}/status`,

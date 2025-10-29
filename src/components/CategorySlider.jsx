@@ -8,7 +8,7 @@ export default function CategorySlider({ category }) {
     : ["/assets/banner1.jpg", "/assets/banner2.png", "/assets/banner3.png"];
 
   return (
-    <div className="w-full h-[350px] md:h-[650px] mt-4">
+    <div className="w-full h-[350px] md:h-[650px]">
       <Swiper
         modules={[Navigation, Pagination, Autoplay]}
         navigation

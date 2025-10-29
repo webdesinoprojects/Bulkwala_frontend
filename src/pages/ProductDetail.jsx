@@ -7,18 +7,30 @@ import { Star, Heart, Minus, Plus, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import useCartStore from "@/store/cart.store";
+import { useWishlistStore } from "@/store/wishlist.store";
 
 const ProductDetail = () => {
   const { slug } = useParams();
+  const { wishlist, toggleWishlist, fetchWishlist } = useWishlistStore();
+
   const { singleProduct, getProductBySlug, loading } = useProductStore();
   const { addToCart } = useCartStore();
   const [quantity, setQuantity] = useState(1);
+  const [isInWishlist, setIsInWishlist] = useState(false); // ✅ local reactive state
 
   const navigate = useNavigate();
 
   useEffect(() => {
     getProductBySlug(slug);
+    fetchWishlist();
   }, [slug]);
+
+  useEffect(() => {
+    if (singleProduct && wishlist.length > 0) {
+      const exists = wishlist.some((p) => p._id === singleProduct._id);
+      setIsInWishlist(exists);
+    }
+  }, [wishlist, singleProduct]); // ✅ react to store updates
 
   if (loading || !singleProduct) {
     return (
@@ -33,8 +45,20 @@ const ProductDetail = () => {
   const increaseQty = () => setQuantity((prev) => prev + 1);
   const decreaseQty = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
-  const handleAddToWishlist = () => {
-    toast.success(`${product.title} added to your wishlist ❤️`);
+  const handleAddToWishlist = async () => {
+    try {
+      // ✅ Optimistically toggle local state
+      setIsInWishlist((prev) => !prev);
+      await toggleWishlist(product._id);
+
+      if (isInWishlist) {
+        toast.info(`${product.title} removed from wishlist ❌`);
+      } else {
+        toast.success(`${product.title} added to wishlist ❤️`);
+      }
+    } catch (error) {
+      toast.error("Something went wrong while updating wishlist");
+    }
   };
 
   const handleWhatsApp = () => {
@@ -113,9 +137,18 @@ const ProductDetail = () => {
             <Button
               onClick={handleAddToWishlist}
               variant="outline"
-              className="flex items-center gap-2"
+              className={`flex items-center gap-2 transition-all ${
+                isInWishlist
+                  ? "border-red-500 text-red-600 bg-red-50 hover:bg-red-100"
+                  : "border-gray-300 text-gray-700 hover:bg-gray-50"
+              }`}
             >
-              <Heart className="w-5 h-5 text-[#02066F]" /> Wishlist
+              <Heart
+                className={`w-5 h-5 ${
+                  isInWishlist ? "fill-red-500 text-red-500" : "text-[#02066F]"
+                }`}
+              />
+              {isInWishlist ? "Wishlisted" : "Add to Wishlist"}
             </Button>
             <Button
               onClick={handleWhatsApp}

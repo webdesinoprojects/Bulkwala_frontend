@@ -23,6 +23,9 @@ import Cart from "./pages/Cart";
 import ForgotPassword from "./pages/ForgotPassword";
 import PaymentPage from "./pages/PaymentPage";
 import OrderSuccess from "./pages/OrderSuccess";
+import OrderDetail from "./pages/OrderDetail";
+import MyOrders from "./pages/Myorders";
+import Wishlist from "./pages/Wishlist";
 
 const ROLES = {
   ADMIN: "admin",
@@ -134,6 +137,32 @@ const App = createBrowserRouter([
             allowedRoles={[ROLES.ADMIN, ROLES.SELLER, ROLES.CUSTOMER]}
           >
             <Profile />
+          </ProtectedRoutes>
+        ),
+      },
+      {
+        path: "/my-orders",
+        element: (
+          <ProtectedRoutes allowedRoles={[ROLES.CUSTOMER]}>
+            <MyOrders />
+          </ProtectedRoutes>
+        ),
+      },
+
+      {
+        path: "order/:orderId",
+        element: (
+          <ProtectedRoutes allowedRoles={[ROLES.CUSTOMER]}>
+            <OrderDetail />
+          </ProtectedRoutes>
+        ),
+      },
+
+      {
+        path: "/wishlist",
+        element: (
+          <ProtectedRoutes>
+            <Wishlist />
           </ProtectedRoutes>
         ),
       },

@@ -1,10 +1,15 @@
 import { create } from "zustand";
 import {
   createOrderService,
+  getMyOrdersService,
+  getSingleOrderService,
   verifyOrderService,
 } from "@/services/order.service";
 
 const useOrderStore = create((set, get) => ({
+  orders: [],
+  singleOrder: null,
+  error: null,
   paymentMode: "",
   isLoading: false,
   paymentStatus: "PENDING",
@@ -110,6 +115,34 @@ const useOrderStore = create((set, get) => ({
     } catch (error) {
       console.error("Payment initiation failed", error);
       set({ isLoading: false });
+    }
+  },
+
+  fetchMyOrders: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await getMyOrdersService();
+      set({ orders: res, isLoading: false });
+    } catch (error) {
+      console.error(error);
+      set({
+        error: error.response?.data?.message || "Failed to fetch orders",
+        isLoading: false,
+      });
+    }
+  },
+
+  fetchSingleOrder: async (orderId) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await getSingleOrderService(orderId);
+      set({ singleOrder: res, isLoading: false });
+    } catch (error) {
+      console.error(error);
+      set({
+        error: error.response?.data?.message || "Failed to fetch order details",
+        isLoading: false,
+      });
     }
   },
 }));

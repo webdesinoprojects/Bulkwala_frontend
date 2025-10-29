@@ -120,3 +120,150 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+
+/* ----------------------------
+   ✅ BULKWALA SWIPER DESIGN (FINAL FIX - SINGLE ARROWS)
+   ---------------------------- */
+
+.custom-swiper {
+  position: relative;
+  overflow: visible !important;
+  padding-bottom: 55px !important;
+}
+
+/* ----------------------------
+   🔹 Circle Navigation Buttons
+   ---------------------------- */
+.custom-swiper .swiper-button-prev,
+.custom-swiper .swiper-button-next {
+  background-color: #ffffff !important;
+  border: 1px solid #e5e7eb;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50%;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 15;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.95;
+  cursor: pointer;
+}
+
+/* Align outside */
+.custom-swiper .swiper-button-prev {
+  left: -50px !important;
+}
+.custom-swiper .swiper-button-next {
+  right: -50px !important;
+}
+
+/* Hover styling */
+.custom-swiper .swiper-button-prev:hover,
+.custom-swiper .swiper-button-next:hover {
+  background-color: #02066f !important;
+  transform: translateY(-50%) scale(1.08);
+  box-shadow: 0 4px 12px rgba(2, 6, 111, 0.25);
+  opacity: 1;
+}
+
+/* ----------------------------
+   🔹 REMOVE Swiper Default Content (Both Pseudo + Inner SVGs)
+   ---------------------------- */
+.custom-swiper .swiper-button-prev::after,
+.custom-swiper .swiper-button-next::after {
+  display: none !important;
+  content: none !important;
+}
+.custom-swiper .swiper-button-prev > svg,
+.custom-swiper .swiper-button-next > svg,
+.custom-swiper .swiper-button-prev > div,
+.custom-swiper .swiper-button-next > div {
+  display: none !important;
+}
+
+/* ----------------------------
+   🔹 Add Custom CSS Chevrons
+   ---------------------------- */
+.custom-swiper .swiper-button-prev::before,
+.custom-swiper .swiper-button-next::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-top: 2px solid #02066f;
+  border-right: 2px solid #02066f;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+/* Left */
+.custom-swiper .swiper-button-prev::before {
+  transform: rotate(-135deg);
+}
+
+/* Right */
+.custom-swiper .swiper-button-next::before {
+  transform: rotate(45deg);
+}
+
+/* Hover */
+.custom-swiper .swiper-button-prev:hover::before,
+.custom-swiper .swiper-button-next:hover::before {
+  border-color: #ffffff;
+}
+
+/* ----------------------------
+   🔹 Show/Hide Animation
+   ---------------------------- */
+.custom-swiper .swiper-button-prev,
+.custom-swiper .swiper-button-next {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.custom-swiper:hover .swiper-button-prev,
+.custom-swiper:hover .swiper-button-next {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ----------------------------
+   🔹 Pagination Dots
+   ---------------------------- */
+.custom-swiper .swiper-pagination {
+  position: absolute;
+  bottom: 10px !important;
+  text-align: center;
+  width: 100%;
+}
+
+.custom-swiper .swiper-pagination-bullet {
+  background-color: #cbd5e1 !important;
+  opacity: 1 !important;
+  width: 8px !important;
+  height: 8px !important;
+  margin: 0 5px !important;
+  transition: all 0.3s ease;
+}
+
+.custom-swiper .swiper-pagination-bullet-active {
+  background-color: #02066f !important;
+  width: 10px !important;
+  height: 10px !important;
+}
+
+/* ----------------------------
+   🔹 Responsive
+   ---------------------------- */
+@media (max-width: 768px) {
+  .custom-swiper .swiper-button-prev,
+  .custom-swiper .swiper-button-next {
+    display: none !important;
+  }
+}
