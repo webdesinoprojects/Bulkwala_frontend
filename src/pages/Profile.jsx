@@ -15,27 +15,58 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   Form,
   FormField,
   FormItem,
-  FormLabel,
   FormControl,
   FormMessage,
+  FormLabel,
 } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import useAuthStore from "@/store/auth.store.js";
 import { SellerApplicationSchema } from "@/schemas/sellerSchema.js";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const Profile = () => {
-  const { user, applySeller, isLoading } = useAuthStore();
+  const { user, applySeller, updateProfile, isLoading } = useAuthStore();
   const [open, setOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const navigate = useNavigate();
 
+  // ✅ include phone number and email in form data
+  const [formData, setFormData] = useState({
+    name: user?.name || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+  });
+
+  // ✅ handle profile update (name, email, phone)
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+
+    // check if user tries to change email
+    if (formData.email !== user.email) {
+      toast.error("Email change requires new registration. Redirecting...");
+      setTimeout(() => navigate("/signup"), 1500);
+      return;
+    }
+
+    const res = await updateProfile(formData);
+    if (res.success) {
+      toast.success("Profile updated successfully!");
+      setEditOpen(false);
+    } else {
+      toast.error(res.error);
+    }
+  };
+
+  // ✅ Seller form setup
   const form = useForm({
     resolver: zodResolver(SellerApplicationSchema),
     defaultValues: {
@@ -118,12 +149,79 @@ const Profile = () => {
               </span>
             </div>
 
-            <div className="pt-4 flex justify-center">
+            <div className="pt-4 flex flex-col items-center gap-3">
               <Link to="/change-password">
-                <Button variant="outline">
-                  Change Password
-                </Button>
+                <Button variant="outline">Change Password</Button>
               </Link>
+
+              {/* ✅ Update Profile Dialog */}
+              <Dialog open={editOpen} onOpenChange={setEditOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="default">Update Profile</Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Update Profile</DialogTitle>
+                    <DialogDescription>
+                      Edit your name, email, or phone number
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <form onSubmit={handleUpdate} className="space-y-3 mt-3">
+                    <div className="grid gap-2">
+                      <label className="text-sm font-medium text-gray-700">
+                        Username
+                      </label>
+                      <Input
+                        value={formData.name}
+                        onChange={(e) =>
+                          setFormData({ ...formData, name: e.target.value })
+                        }
+                        placeholder="Enter new name"
+                      />
+                    </div>
+
+                    <div className="grid gap-2">
+                      <label className="text-sm font-medium text-gray-700">
+                        Email
+                      </label>
+                      <Input
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) =>
+                          setFormData({ ...formData, email: e.target.value })
+                        }
+                        placeholder="Enter new email"
+                      />
+                    </div>
+
+                    {/* ✅ Added phone field */}
+                    <div className="grid gap-2">
+                      <label className="text-sm font-medium text-gray-700">
+                        Phone Number
+                      </label>
+                      <Input
+                        type="tel"
+                        value={formData.phone || ""}
+                        onChange={(e) =>
+                          setFormData({ ...formData, phone: e.target.value })
+                        }
+                        placeholder="Enter phone number"
+                      />
+                    </div>
+
+                    <DialogFooter>
+                      <Button
+                        type="submit"
+                        className="w-full mt-2"
+                        disabled={isLoading}
+                      >
+                        {isLoading ? "Updating..." : "Save Changes"}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </div>
           </CardContent>
         </Card>
@@ -314,7 +412,7 @@ const Profile = () => {
             </CardContent>
           </Card>
 
-          {/* 🔹 Placeholder: Order Summary Card */}
+          {/* Order Summary */}
           <Card className="shadow-md border-none bg-white">
             <CardHeader>
               <CardTitle className="text-xl font-semibold text-gray-800">

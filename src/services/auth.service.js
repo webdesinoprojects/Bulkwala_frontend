@@ -89,3 +89,11 @@ export const rejectSellerService = async (userid) => {
   );
   return res.data.data;
 };
+
+//update profile
+export const updateProfileService = async (profileData) => {
+  const res = await axiosInstance.put("/api/users/update", profileData, {
+    withCredentials: true,
+  });
+  return res.data.data;
+};

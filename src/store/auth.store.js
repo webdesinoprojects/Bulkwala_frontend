@@ -13,6 +13,7 @@ import {
   verifyEmailService,
   changePasswordService,
   updateShippingAddressService,
+  updateProfileService,
 } from "@/services/auth.service";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -297,6 +298,22 @@ export const useAuthStore = create(
       } catch (error) {
         set({ isLoading: false, error: "Failed to reject seller" });
         return { success: false, error };
+      }
+    },
+    updateProfile: async (profileData) => {
+      set({ isLoading: true, error: null });
+      try {
+        const updatedUser = await updateProfileService(profileData);
+        set({ user: updatedUser, isLoading: false });
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        return { success: true, user: updatedUser };
+      } catch (error) {
+        const message =
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to update profile";
+        set({ isLoading: false, error: message });
+        return { success: false, error: message };
       }
     },
   }))
