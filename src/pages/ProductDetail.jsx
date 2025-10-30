@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { reviewSchema } from "@/schemas/reviewSchema";
 import { useProductStore } from "@/store/product.store";
+import { useReviewStore } from "@/store/review.store";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Star, Heart, Minus, Plus, MessageCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Star, Heart, Minus, Plus, MessageCircle, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import useCartStore from "@/store/cart.store";
@@ -11,25 +16,45 @@ import { useWishlistStore } from "@/store/wishlist.store";
 
 const ProductDetail = () => {
   const { slug } = useParams();
+  const navigate = useNavigate();
   const { wishlist, toggleWishlist, fetchWishlist } = useWishlistStore();
-
   const { singleProduct, getProductBySlug, loading } = useProductStore();
   const { addToCart } = useCartStore();
+  const { reviews, fetchReviews, addReview, deleteReview } = useReviewStore();
+
   const [quantity, setQuantity] = useState(1);
-  const [isInWishlist, setIsInWishlist] = useState(false); // ✅ local reactive state
+  const [isInWishlist, setIsInWishlist] = useState(false);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
+  const [selectedRating, setSelectedRating] = useState(0);
+  const [isEditing, setIsEditing] = useState(false);
+  // const [editReviewId, setEditReviewId] = useState(null);
 
-  const navigate = useNavigate();
+  // 🔹 Form setup (react-hook-form + zod)
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(reviewSchema),
+    defaultValues: { text: "", rating: 0 },
+  });
 
+  // 🔹 Fetch product & reviews
   useEffect(() => {
     getProductBySlug(slug);
   }, [slug]);
 
   useEffect(() => {
+    if (singleProduct?._id) fetchReviews(singleProduct._id);
+  }, [singleProduct]);
+
+  // 🔹 Wishlist setup
+  useEffect(() => {
     fetchWishlist();
   }, []);
 
-  // Sync button with wishlist
   useEffect(() => {
     if (singleProduct && wishlist?.length >= 0) {
       const exists = wishlist.some((p) => p._id === singleProduct._id);
@@ -47,50 +72,108 @@ const ProductDetail = () => {
 
   const product = singleProduct;
 
-  const increaseQty = () => setQuantity((prev) => prev + 1);
-  const decreaseQty = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
-
+  // 🔹 Wishlist toggle
   const handleAddToWishlist = async () => {
     try {
       setIsWishlistLoading(true);
       const updatedList = await toggleWishlist(product._id);
-
       if (!updatedList) return;
 
       const nowInWishlist = updatedList.some((p) => p._id === product._id);
       setIsInWishlist(nowInWishlist);
-
-      if (nowInWishlist) {
-        toast.success(`${product.title} added to wishlist ❤️`);
-      } else {
-        toast.info(`${product.title} removed from wishlist ❌`);
-      }
-    } catch (error) {
+      toast[nowInWishlist ? "success" : "info"](
+        `${product.title} ${
+          nowInWishlist ? "added to wishlist ❤️" : "removed from wishlist ❌"
+        }`
+      );
+    } catch {
       toast.error("Something went wrong while updating wishlist");
     } finally {
       setIsWishlistLoading(false);
     }
   };
 
-  const handleWhatsApp = () => {
-    const msg = `Hi, I'm interested in ${product.title} (₹${product.price})`;
-    window.open(
-      `https://wa.me/9310701078?text=${encodeURIComponent(msg)}`,
-      "_blank"
-    );
+  // 🔹 Review Submit Handler
+  const onSubmitReview = async (data) => {
+    console.log("✅ Form submitted data:", data);
+
+    if (!selectedRating) {
+      toast.error("Please select a rating before submitting!");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("text", data.text);
+    formData.append("rating", selectedRating);
+
+    if (data.images && data.images.length > 0) {
+      for (const file of data.images) {
+        formData.append("images", file);
+      }
+    }
+
+    try {
+      const newReview = await addReview(product._id, formData);
+
+      if (newReview) {
+        toast.success(
+          isEditing
+            ? "Review updated successfully ✅"
+            : "Review submitted successfully ✅"
+        );
+        reset();
+        setSelectedRating(0);
+        setIsEditing(false);
+        setEditReviewId(null);
+        await fetchReviews(product._id);
+      }
+    } catch (error) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to submit review";
+
+      if (message.includes("already reviewed")) {
+        toast.info("You’ve already reviewed this product 💬");
+      } else {
+        toast.error(message);
+      }
+    }
   };
 
-  // Handle Add to Cart
+  // 🔹 Edit Review
+  const handleEditReview = (review) => {
+    setValue("text", review.text);
+    setSelectedRating(review.rating);
+    setIsEditing(true);
+    // setEditReviewId(review._id);
+    toast.info("You can now edit your review ✏️");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // 🔹 Cancel Edit
+  const handleCancelEdit = () => {
+    reset();
+    setSelectedRating(0);
+    setIsEditing(false);
+    // setEditReviewId(null);
+    toast.info("Edit cancelled 🚫");
+  };
+
+  const handleDeleteReview = async (reviewId) => {
+    await deleteReview(product._id, reviewId);
+    toast.success("Review deleted successfully 🗑️");
+  };
+
   const handleAddToCart = async () => {
-    console.log("Add to Cart clicked!");
     await addToCart(product._id, quantity);
-    console.log(product);
     toast.success(`${product.title} added to your cart 🛒`);
   };
 
-  const handleViewCart = () => {
-    navigate("/cart"); // Navigate to the Cart page
-  };
+  const handleViewCart = () => navigate("/cart");
+  const increaseQty = () => setQuantity((prev) => prev + 1);
+  const decreaseQty = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+
   return (
     <section className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-12">
       <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10">
@@ -104,7 +187,7 @@ const ProductDetail = () => {
             />
           </div>
 
-          {/* Small thumbnails */}
+          {/* Thumbnails */}
           <div className="flex gap-3 mt-4">
             {product.images?.slice(0, 3).map((img, i) => (
               <img
@@ -147,6 +230,7 @@ const ProductDetail = () => {
           <div className="flex items-center gap-4">
             <Button
               onClick={handleAddToWishlist}
+              disabled={isWishlistLoading}
               variant="outline"
               className={`flex items-center gap-2 transition-all ${
                 isInWishlist
@@ -161,54 +245,34 @@ const ProductDetail = () => {
               />
               {isInWishlist ? "Wishlisted" : "Add to Wishlist"}
             </Button>
+
             <Button
-              onClick={handleWhatsApp}
+              onClick={() =>
+                window.open(
+                  `https://wa.me/9310701078?text=${encodeURIComponent(
+                    `Hi, I'm interested in ${product.title} (₹${product.price})`
+                  )}`,
+                  "_blank"
+                )
+              }
               className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
             >
               <MessageCircle className="w-5 h-5" /> WhatsApp
             </Button>
           </div>
 
-          {/* Product Details */}
-          <div className="mt-6 space-y-2">
-            <h3 className="text-lg font-semibold text-gray-800">
-              Product Details
-            </h3>
-            <p className="text-sm text-gray-600">
-              <strong>Generic Name:</strong> {product.genericName || "N/A"}
-            </p>
-            <p className="text-sm text-gray-600">
-              <strong>Country of Origin:</strong>{" "}
-              {product.countryOfOrigin || "India"}
-            </p>
-            <p className="text-sm text-gray-600">
-              <strong>Manufacturer:</strong>{" "}
-              {product.manufacturerName || "Awesome Accessories"}
-            </p>
-          </div>
-
           {/* Quantity Selector */}
           <div className="mt-6 flex items-center gap-4">
-            <Button
-              size="icon"
-              variant="outline"
-              onClick={decreaseQty}
-              className="text-xl font-bold"
-            >
+            <Button size="icon" variant="outline" onClick={decreaseQty}>
               <Minus size={18} />
             </Button>
             <span className="text-lg font-semibold">{quantity}</span>
-            <Button
-              size="icon"
-              variant="outline"
-              onClick={increaseQty}
-              className="text-xl font-bold"
-            >
+            <Button size="icon" variant="outline" onClick={increaseQty}>
               <Plus size={18} />
             </Button>
           </div>
 
-          {/* Add to Cart Button */}
+          {/* Add to Cart */}
           <div className="mt-6 flex items-center justify-center gap-4 ">
             <Button
               onClick={handleAddToCart}
@@ -216,7 +280,6 @@ const ProductDetail = () => {
             >
               Add to Cart
             </Button>
-            {/* View Cart Button */}
             <Button
               onClick={handleViewCart}
               className="w-50 bg-gray-500 text-white"
@@ -228,50 +291,144 @@ const ProductDetail = () => {
       </div>
 
       {/* ---------------- REVIEWS SECTION ---------------- */}
+
       <div className="max-w-6xl mx-auto mt-16 px-6">
         <h2 className="text-2xl font-semibold text-[#02066F] mb-4">Reviews</h2>
+
+        {/* Review Form */}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            console.log("🟢 Form manually submitted");
+            handleSubmit(onSubmitReview)(e);
+          }}
+          className="mb-8 space-y-4"
+        >
+          {/* Rating Stars */}
+          <div className="flex gap-2">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <Star
+                key={star}
+                size={28}
+                className={`cursor-pointer ${
+                  star <= selectedRating
+                    ? "text-yellow-400 fill-yellow-400"
+                    : "text-gray-300"
+                }`}
+                onClick={() => {
+                  setSelectedRating(star);
+                  setValue("rating", star, { shouldValidate: true });
+                }}
+              />
+            ))}
+          </div>
+          {errors.rating && (
+            <p className="text-red-500 text-sm">{errors.rating.message}</p>
+          )}
+
+          {/* Text Input */}
+          <textarea
+            {...register("text")}
+            placeholder="Write your review..."
+            className="w-full border rounded-md p-2 text-sm focus:ring-1 focus:ring-[#02066F]"
+          />
+          {errors.text && (
+            <p className="text-red-500 text-sm">{errors.text.message}</p>
+          )}
+
+          {/* Image Upload */}
+          <Input
+            type="file"
+            accept="image/*"
+            multiple
+            {...register("images")}
+            className="border border-gray-300 rounded-md p-2"
+          />
+          <div className="flex gap-3">
+            <Button
+              type="submit"
+              className="bg-[#02066F] text-white hover:bg-[#01054f]"
+            >
+              {isEditing ? "Update Review" : "Submit Review"}
+            </Button>
+
+            {isEditing && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCancelEdit}
+              >
+                Cancel Edit
+              </Button>
+            )}
+          </div>
+        </form>
+
+        {/* Review List */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {product.reviews?.length > 0 ? (
-            product.reviews.map((rev, i) => (
-              <Card key={i} className="shadow-sm border-gray-200">
+          {reviews?.length > 0 ? (
+            reviews.map((rev) => (
+              <Card
+                key={rev._id}
+                className="shadow-sm border-gray-200 relative"
+              >
                 <CardContent className="p-4 text-gray-700">
+                  <div className="flex justify-between items-center">
+                    <p className="font-semibold">
+                      {rev.user?.name || "Anonymous"}
+                    </p>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEditReview(rev)}
+                        className="text-gray-400 hover:text-blue-600"
+                      >
+                        ✏️
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteReview(rev._id)}
+                        className="text-gray-400 hover:text-red-600"
+                      >
+                        <Trash2 size={16} />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-1 my-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        size={14}
+                        className={
+                          i < rev.rating
+                            ? "text-yellow-400 fill-yellow-400"
+                            : "text-gray-300"
+                        }
+                      />
+                    ))}
+                  </div>
                   <p className="text-sm mb-2">"{rev.text}"</p>
-                  <p className="text-xs text-gray-500">
-                    — {rev.user?.name || "Anonymous"}
-                  </p>
+
+                  {rev.images?.length > 0 && (
+                    <div className="flex gap-2 mt-2">
+                      {rev.images.map((img, i) => (
+                        <img
+                          key={i}
+                          src={img}
+                          alt={`review-img-${i}`}
+                          className="w-12 h-12 object-cover rounded-md"
+                        />
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))
           ) : (
             <p className="text-gray-500 text-sm">No reviews yet.</p>
-          )}
-        </div>
-      </div>
-
-      {/* ---------------- TOP SUGGESTIONS ---------------- */}
-      <div className="max-w-6xl mx-auto mt-20 px-6">
-        <h2 className="text-2xl font-semibold text-[#02066F] mb-6">
-          Top Suggestions
-        </h2>
-        <div className="flex gap-5 overflow-x-auto pb-4">
-          {[...(product.suggestions || Array(6).fill(product))].map(
-            (suggest, i) => (
-              <Card
-                key={i}
-                className="min-w-[150px] hover:shadow-md transition"
-              >
-                <CardContent className="p-3 text-center">
-                  <img
-                    src={suggest.images?.[0]}
-                    alt={suggest.title}
-                    className="w-full h-28 object-contain mb-2"
-                  />
-                  <p className="text-sm font-medium line-clamp-1">
-                    {suggest.title}
-                  </p>
-                </CardContent>
-              </Card>
-            )
           )}
         </div>
       </div>
