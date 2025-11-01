@@ -3,6 +3,7 @@ import {
   createOrderService,
   getMyOrdersService,
   getSingleOrderService,
+  trackOrderService,
   verifyOrderService,
 } from "@/services/order.service";
 
@@ -16,6 +17,7 @@ const useOrderStore = create((set, get) => ({
   orderId: "",
   razorpayOrderId: "",
   amount: 0,
+  trackingData: null,
 
   setPaymentMode: (mode) => set({ paymentMode: mode }),
 
@@ -141,6 +143,22 @@ const useOrderStore = create((set, get) => ({
       console.error(error);
       set({
         error: error.response?.data?.message || "Failed to fetch order details",
+        isLoading: false,
+      });
+    }
+  },
+
+  fetchTrackingData: async (orderId) => {
+    set({ isLoading: true, error: null });
+    try {
+      const data = await trackOrderService(orderId);
+      set({ trackingData: data, isLoading: false });
+    } catch (error) {
+      console.error("Error fetching tracking:", error);
+      set({
+        error:
+          error.response?.data?.message ||
+          "Failed to fetch tracking information",
         isLoading: false,
       });
     }

@@ -29,3 +29,11 @@ export const getMyOrdersService = async () => {
   });
   return res.data.data;
 };
+
+// 🔹 Track Order (Delhivery Tracking)
+export const trackOrderService = async (orderId) => {
+  const res = await axiosInstance.get(`/api/order/track/${orderId}`, {
+    withCredentials: true,
+  });
+  return res.data.data;
+};

@@ -26,6 +26,7 @@ import OrderSuccess from "./pages/OrderSuccess";
 import OrderDetail from "./pages/OrderDetail";
 import MyOrders from "./pages/Myorders";
 import Wishlist from "./pages/Wishlist";
+import OrderTrack from "./pages/OrderTrack";
 
 const ROLES = {
   ADMIN: "admin",
@@ -167,6 +168,14 @@ const App = createBrowserRouter([
         ),
       },
 
+      {
+        path: "/track/:orderId",
+        element: (
+          <ProtectedRoutes allowedRoles={[ROLES.CUSTOMER]}>
+            <OrderTrack />
+          </ProtectedRoutes>
+        ),
+      },
       // Admin Routes (Require Admin Role)
       {
         path: "/admin",

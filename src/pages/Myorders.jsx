@@ -121,14 +121,28 @@ const MyOrders = () => {
                   </span>
                 </td>
 
-                <td className="px-4 py-3 text-center">
+                <td className="px-4 py-3 text-center space-y-2">
                   <Button
                     variant="outline"
-                    className="text-[#02066F] border-[#02066F] text-xs px-3 py-1"
+                    className="text-[#02066F] border-[#02066F] text-xs px-3 py-1 w-full"
                     onClick={() => navigate(`/order/${order._id}`)}
                   >
                     View Details
                   </Button>
+
+                  {order.trackingId ? (
+                    <Button
+                      variant="outline"
+                      className="text-green-700 border-green-700 text-xs px-3 py-1 w-full"
+                      onClick={() => navigate(`/track/${order._id}`)}
+                    >
+                      Track
+                    </Button>
+                  ) : (
+                    <p className="text-xs text-gray-400">
+                      Awaiting Tracking ID
+                    </p>
+                  )}
                 </td>
               </tr>
             ))}

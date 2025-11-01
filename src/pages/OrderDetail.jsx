@@ -95,6 +95,19 @@ const OrderDetail = () => {
               <strong>Order Created:</strong>{" "}
               {new Date(order.createdAt).toLocaleString()}
             </p>
+            {order.trackingId && (
+              <p>
+                <strong>Tracking ID:</strong> {order.trackingId}
+                <Button
+                  variant="outline"
+                  className="ml-3 text-xs text-[#02066F] border-[#02066F]"
+                  onClick={() => navigate(`/track/${order._id}`)}
+                >
+                  Track Shipment
+                </Button>
+              </p>
+            )}
+
             {order.deliveredAt && (
               <p>
                 <strong>Delivered At:</strong>{" "}

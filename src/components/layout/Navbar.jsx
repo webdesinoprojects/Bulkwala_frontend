@@ -363,21 +363,46 @@ export default function Navbar() {
       {/* 🧭 Bottom Nav */}
       <nav className="w-full bg-[#C9E0EF] shadow-sm">
         <div className="max-w-7xl mx-auto flex gap-10 px-12 py-5">
-          {["Home", "Products", "Contact Us", "About Us"].map((item) => (
-            <NavLink
-              key={item}
-              to={`/${
-                item === "Home" ? "" : item.toLowerCase().replace(" ", "")
-              }`}
-              className={({ isActive }) =>
-                `font-mono text-base font-medium ${
-                  isActive ? "underline" : "text-black hover:underline"
-                }`
-              }
-            >
-              {item}
-            </NavLink>
-          ))}
+          <NavLink
+            to="/"
+            className={({ isActive }) =>
+              `font-mono text-base font-medium ${
+                isActive ? "underline" : "text-black hover:underline"
+              }`
+            }
+          >
+            Home
+          </NavLink>
+          <NavLink
+            to="/products"
+            className={({ isActive }) =>
+              `font-mono text-base font-medium ${
+                isActive ? "underline" : "text-black hover:underline"
+              }`
+            }
+          >
+            Products
+          </NavLink>
+          <NavLink
+            to="/contact"
+            className={({ isActive }) =>
+              `font-mono text-base font-medium ${
+                isActive ? "underline" : "text-black hover:underline"
+              }`
+            }
+          >
+            Contact Us
+          </NavLink>
+          <NavLink
+            to="/about"
+            className={({ isActive }) =>
+              `font-mono text-base font-medium ${
+                isActive ? "underline" : "text-black hover:underline"
+              }`
+            }
+          >
+            About Us
+          </NavLink>
         </div>
       </nav>
     </header>
