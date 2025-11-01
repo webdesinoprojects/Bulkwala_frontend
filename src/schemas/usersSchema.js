@@ -39,14 +39,30 @@ const ResetPasswordSchema = z
   });
 
 const ChangePasswordSchema = z.object({
-  email: z
-    .string()
-    .min(1, "Email is required")
-    .email("Invalid email address"),  
+  email: z.string().min(1, "Email is required").email("Invalid email address"),
 });
 
 const ForgotPasswordSchema = z.object({
   email: z.string().email("Invalid email address").min(1, "Email is required"),
 });
 
-export { SignupSchema, LoginSchema, ResetPasswordSchema, ChangePasswordSchema, ForgotPasswordSchema };
+export const UpdateProfileSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, { message: "Name cannot be empty" })
+    .max(50, { message: "Name must be under 50 characters" }),
+
+  phone: z
+    .string()
+    .trim()
+    .regex(/^[0-9]{10}$/, { message: "Phone number must be 10 digits" }),
+});
+
+export {
+  SignupSchema,
+  LoginSchema,
+  ResetPasswordSchema,
+  ChangePasswordSchema,
+  ForgotPasswordSchema,
+};
