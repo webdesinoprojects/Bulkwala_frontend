@@ -35,7 +35,7 @@ const EditCategoryDialog = ({ open, onOpenChange, category, onSave }) => {
     if (image) uploadData.append("image", image);
     existingImage && uploadData.append("existingImage", existingImage);
 
-    banners.forEach((banner) => uploadData.append("banners", banner));
+    banners.forEach((banner) => uploadData.append("banner", banner));
 
     existingBanners.forEach((bannerUrl) =>
       uploadData.append("existingBanners", bannerUrl)
