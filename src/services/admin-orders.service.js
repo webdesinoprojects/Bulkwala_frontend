@@ -22,3 +22,13 @@ export const updatePaymentStatusService = async (orderId, paymentStatus) => {
   );
   return res.data.data;
 };
+
+// services/admin-orders.service.js
+export const syncShipmentService = async (orderId) => {
+  const res = await axiosInstance.post(
+    `/api/order/${orderId}/sync-shipment`,
+    {},
+    { withCredentials: true }
+  );
+  return res.data.data;
+};

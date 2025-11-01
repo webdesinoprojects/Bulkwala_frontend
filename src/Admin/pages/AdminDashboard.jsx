@@ -777,6 +777,12 @@ const OrdersContent = () => {
     fetchOrders(pagination);
   }, [pagination]);
 
+  useEffect(() => {
+    fetchOrders(pagination);
+    const interval = setInterval(() => fetchOrders(pagination), 60000 * 5); // every 5 min
+    return () => clearInterval(interval);
+  }, [pagination]);
+
   // simple client-side filtering
   const filtered = orders.filter((o) => {
     const q = filters.q.trim().toLowerCase();
@@ -997,100 +1003,44 @@ const OrdersContent = () => {
 
                           {/* Actions */}
                           <td className="p-3 text-center">
-                            <div className="flex items-center justify-center gap-2">
-                              {o.status === "Pending" && (
-                                <Button
-                                  size="sm"
-                                  className="border border-blue-300 text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1 text-xs rounded-md"
-                                  onClick={async () => {
-                                    const res = await updateOrderStatus(
-                                      o._id,
-                                      "Shipped"
-                                    );
-                                    if (res.success) {
-                                      toast.success("Order marked as Shipped");
-                                      fetchOrders();
-                                    } else {
-                                      toast.error(res.message);
-                                    }
-                                  }}
+                            <div className="flex flex-col items-center justify-center gap-1">
+                              {/* courier info below status */}
+                              {o.trackingId && (
+                                <a
+                                  href={`https://www.delhivery.com/tracking?waybill=${o.trackingId}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-[10px] text-blue-600 underline"
                                 >
-                                  Ship
-                                </Button>
+                                  {o.trackingId}
+                                </a>
                               )}
+                              <p className="text-[10px] text-gray-500">
+                                {o.courierName || "Delhivery"}{" "}
+                                {o.shipmentStatus
+                                  ? `· ${o.shipmentStatus}`
+                                  : ""}
+                              </p>
 
-                              {o.status === "Shipped" && (
-                                <Button
-                                  size="sm"
-                                  className="border border-green-300 text-green-600 bg-green-50 hover:bg-green-100 px-3 py-1 text-xs rounded-md"
-                                  onClick={async () => {
-                                    const res = await updateOrderStatus(
-                                      o._id,
-                                      "Delivered"
-                                    );
-                                    if (res.success) {
-                                      toast.success(
-                                        "Order marked as Delivered"
-                                      );
-                                      fetchOrders();
-                                    } else {
-                                      toast.error(res.message);
-                                    }
-                                  }}
-                                >
-                                  Deliver
-                                </Button>
-                              )}
-
-                              {o.status !== "Cancelled" &&
-                                o.status !== "Delivered" && (
-                                  <Button
-                                    size="sm"
-                                    className="border border-red-300 text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1 text-xs rounded-md"
-                                    onClick={async () => {
-                                      const res = await updateOrderStatus(
-                                        o._id,
-                                        "Cancelled"
-                                      );
-                                      if (res.success) {
-                                        toast.success("Order cancelled");
-                                        fetchOrders();
-                                      } else {
-                                        toast.error(res.message);
-                                      }
-                                    }}
-                                  >
-                                    Cancel
-                                  </Button>
-                                )}
-
-                              <span className="text-gray-300 select-none">
-                                |
-                              </span>
-                              <select
-                                className="border border-gray-200 text-xs px-2 py-1 rounded-md bg-gray-50 hover:bg-white transition text-gray-700"
-                                value={(o.paymentStatus || "").toLowerCase()}
-                                onChange={async (e) => {
-                                  const newStatus = e.target.value;
-                                  const res = await updatePaymentStatus(
-                                    o._id,
-                                    newStatus
-                                  );
+                              {/* single sync button */}
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs mt-1"
+                                onClick={async () => {
+                                  const { syncOneOrder, fetchOrders } =
+                                    useAdminOrdersStore.getState();
+                                  const res = await syncOneOrder(o._id);
                                   if (res.success) {
-                                    toast.success(
-                                      `Payment status updated to ${newStatus}`
-                                    );
+                                    toast.success("Synced with Delhivery");
                                     fetchOrders();
                                   } else {
                                     toast.error(res.message);
                                   }
                                 }}
                               >
-                                <option value="pending">Pending</option>
-                                <option value="success">Success</option>
-                                <option value="failed">Failed</option>
-                                <option value="refunded">Refunded</option>
-                              </select>
+                                🔄 Sync Status
+                              </Button>
                             </div>
                           </td>
                         </tr>

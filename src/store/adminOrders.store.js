@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import {
   getAllOrdersService,
+  syncShipmentService,
   updateOrderStatusService,
   updatePaymentStatusService,
 } from "@/services/admin-orders.service";
@@ -113,6 +114,20 @@ export const useAdminOrdersStore = create((set, get) => ({
         message:
           e?.response?.data?.message || "Failed to update payment status",
       };
+    }
+  },
+
+  syncOneOrder: async (orderId) => {
+    try {
+      const updated = await syncShipmentService(orderId);
+      set((s) => ({
+        orders: s.orders.map((o) =>
+          o._id === orderId ? { ...o, ...updated } : o
+        ),
+      }));
+      return { success: true };
+    } catch (e) {
+      return { success: false, message: "Failed to sync shipment" };
     }
   },
 }));
