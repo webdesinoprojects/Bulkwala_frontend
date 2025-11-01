@@ -188,6 +188,7 @@ const Profile = () => {
                       <Input
                         type="email"
                         value={formData.email}
+                        readOnly={true}
                         onChange={(e) =>
                           setFormData({ ...formData, email: e.target.value })
                         }
