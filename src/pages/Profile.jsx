@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { toast } from "sonner";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,56 +7,15 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import useAuthStore from "@/store/auth.store.js";
-import { SellerApplicationSchema } from "@/schemas/sellerSchema.js";
 import { Link } from "react-router-dom";
+
+import useAuthStore from "@/store/auth.store.js";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import UpdateProfileDialog from "@/components/UpdateProfileDialog";
+import SellerFormDialog from "@/Seller/components/SellerFormDialog";
 
 const Profile = () => {
-  const { user, applySeller, isLoading } = useAuthStore();
-  const [open, setOpen] = useState(false);
-
-  const form = useForm({
-    resolver: zodResolver(SellerApplicationSchema),
-    defaultValues: {
-      businessName: "",
-      gstNumber: "",
-      pickupAddress: "",
-      bankName: "",
-      accountNumber: "",
-      ifsc: "",
-    },
-  });
-
-  const onSubmit = async (values) => {
-    const res = await applySeller(values);
-    if (res.success) {
-      toast.success("Seller application submitted successfully!");
-      setOpen(false);
-      form.reset();
-    } else {
-      toast.error(res.error);
-    }
-  };
+  const { user, isLoading } = useAuthStore();
 
   if (isLoading)
     return (
@@ -118,12 +76,15 @@ const Profile = () => {
               </span>
             </div>
 
-            <div className="pt-4 flex justify-center">
-              <Link to="/change-password">
-                <Button variant="outline">
+            <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3 w-full">
+              <Link to="/change-password" className="w-full sm:w-1/2">
+                <Button variant="outline" className="w-full py-2">
                   Change Password
                 </Button>
               </Link>
+              <div className="w-full sm:w-1/2">
+                <UpdateProfileDialog />
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -141,7 +102,7 @@ const Profile = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {user.role === "seller" && (
+              {user.role === "seller" ? (
                 <div className="p-4 bg-green-50 border border-green-200 rounded-md">
                   <p className="text-green-700 font-medium text-lg">
                     Seller Account Active
@@ -153,139 +114,8 @@ const Profile = () => {
                       : "Pending Review ⏳"}
                   </p>
                 </div>
-              )}
-
-              {user.role === "customer" && (
-                <Dialog open={open} onOpenChange={setOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="w-full mt-4">Become a Seller</Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Apply for a Seller</DialogTitle>
-                    </DialogHeader>
-
-                    <Form {...form}>
-                      <form
-                        onSubmit={form.handleSubmit(onSubmit)}
-                        className="space-y-3 mt-3"
-                      >
-                        <FormField
-                          control={form.control}
-                          name="businessName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Business Name</FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder="Enter business name"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="gstNumber"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>GST Number</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Optional" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="pickupAddress"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Pickup Address</FormLabel>
-                              <FormControl>
-                                <textarea
-                                  rows={3}
-                                  placeholder="Enter full pickup address"
-                                  {...field}
-                                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-600 resize-none"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="bankName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Bank Name</FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder="e.g. HDFC Bank"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="accountNumber"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Account Number</FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder="Enter account number"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="ifsc"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>IFSC Code</FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder="e.g. HDFC0001234"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <DialogFooter>
-                          <Button
-                            type="submit"
-                            className="w-full mt-3"
-                            disabled={form.formState.isSubmitting}
-                          >
-                            {form.formState.isSubmitting
-                              ? "Submitting..."
-                              : "Submit Application"}
-                          </Button>
-                        </DialogFooter>
-                      </form>
-                    </Form>
-                  </DialogContent>
-                </Dialog>
+              ) : (
+                <SellerFormDialog />
               )}
             </CardContent>
           </Card>
@@ -314,7 +144,7 @@ const Profile = () => {
             </CardContent>
           </Card>
 
-          {/* 🔹 Placeholder: Order Summary Card */}
+          {/* Order Summary */}
           <Card className="shadow-md border-none bg-white">
             <CardHeader>
               <CardTitle className="text-xl font-semibold text-gray-800">
