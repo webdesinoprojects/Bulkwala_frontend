@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,7 +8,15 @@ import { useReviewStore } from "@/store/review.store";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Star, Heart, Minus, Plus, MessageCircle, Trash2 } from "lucide-react";
+import {
+  Star,
+  Heart,
+  Minus,
+  Plus,
+  MessageCircle,
+  Trash2,
+  Edit3,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import useCartStore from "@/store/cart.store";
@@ -17,17 +25,20 @@ import { useWishlistStore } from "@/store/wishlist.store";
 const ProductDetail = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const formRef = useRef(null);
+
   const { wishlist, toggleWishlist, fetchWishlist } = useWishlistStore();
   const { singleProduct, getProductBySlug, loading } = useProductStore();
   const { addToCart } = useCartStore();
-  const { reviews, fetchReviews, addReview, deleteReview } = useReviewStore();
+  const { reviews, fetchReviews, addReview, deleteReview, updateReview } =
+    useReviewStore();
 
   const [quantity, setQuantity] = useState(1);
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
   const [selectedRating, setSelectedRating] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
-  // const [editReviewId, setEditReviewId] = useState(null);
+  const [editReviewId, setEditReviewId] = useState(null);
 
   // 🔹 Form setup (react-hook-form + zod)
   const {
@@ -95,8 +106,6 @@ const ProductDetail = () => {
 
   // 🔹 Review Submit Handler
   const onSubmitReview = async (data) => {
-    console.log("✅ Form submitted data:", data);
-
     if (!selectedRating) {
       toast.error("Please select a rating before submitting!");
       return;
@@ -105,7 +114,6 @@ const ProductDetail = () => {
     const formData = new FormData();
     formData.append("text", data.text);
     formData.append("rating", selectedRating);
-
     if (data.images && data.images.length > 0) {
       for (const file of data.images) {
         formData.append("images", file);
@@ -113,14 +121,24 @@ const ProductDetail = () => {
     }
 
     try {
-      const newReview = await addReview(product._id, formData);
+      let result;
 
-      if (newReview) {
+      // ✅ If editing → call update API
+      if (isEditing && editReviewId) {
+        result = await updateReview(product._id, editReviewId, formData);
+      } else {
+        // ✅ If adding new → call add API
+        result = await addReview(product._id, formData);
+      }
+
+      // ✅ Success toast
+      if (result) {
         toast.success(
           isEditing
             ? "Review updated successfully ✅"
             : "Review submitted successfully ✅"
         );
+
         reset();
         setSelectedRating(0);
         setIsEditing(false);
@@ -131,13 +149,9 @@ const ProductDetail = () => {
       const message =
         error?.response?.data?.message ||
         error?.message ||
-        "Failed to submit review";
+        "Something went wrong!";
 
-      if (message.includes("already reviewed")) {
-        toast.info("You’ve already reviewed this product 💬");
-      } else {
-        toast.error(message);
-      }
+      toast.error(message);
     }
   };
 
@@ -146,9 +160,9 @@ const ProductDetail = () => {
     setValue("text", review.text);
     setSelectedRating(review.rating);
     setIsEditing(true);
-    // setEditReviewId(review._id);
+    setEditReviewId(review._id);
     toast.info("You can now edit your review ✏️");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
   };
 
   // 🔹 Cancel Edit
@@ -156,7 +170,7 @@ const ProductDetail = () => {
     reset();
     setSelectedRating(0);
     setIsEditing(false);
-    // setEditReviewId(null);
+    setEditReviewId(null);
     toast.info("Edit cancelled 🚫");
   };
 
@@ -297,6 +311,7 @@ const ProductDetail = () => {
 
         {/* Review Form */}
         <form
+          ref={formRef}
           onSubmit={(e) => {
             e.preventDefault();
             console.log("🟢 Form manually submitted");
@@ -370,7 +385,11 @@ const ProductDetail = () => {
             reviews.map((rev) => (
               <Card
                 key={rev._id}
-                className="shadow-sm border-gray-200 relative"
+                className={`shadow-sm relative transition-all duration-200 ${
+                  editReviewId === rev._id
+                    ? "border-2 border-blue-500 ring-2 ring-blue-300 bg-blue-50/50"
+                    : "border border-gray-200"
+                }`}
               >
                 <CardContent className="p-4 text-gray-700">
                   <div className="flex justify-between items-center">
@@ -384,7 +403,7 @@ const ProductDetail = () => {
                         onClick={() => handleEditReview(rev)}
                         className="text-gray-400 hover:text-blue-600"
                       >
-                        ✏️
+                        <Edit3 size={16} />
                       </Button>
                       <Button
                         variant="ghost"

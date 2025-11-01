@@ -6,11 +6,23 @@ export const getReviewsService = async (productId) => {
   return res.data.data;
 };
 
-// ✅ Add or Update a review (multipart form)
+// ✅ Add a review (multipart form)
 export const addReviewService = async (productId, formData) => {
   const res = await axiosInstance.post(`/api/reviews/${productId}`, formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
+  return res.data.data;
+};
+
+// ✅ Update existing review
+export const updateReviewService = async (productId, reviewId, formData) => {
+  const res = await axiosInstance.patch(
+    `/api/reviews/${productId}/${reviewId}`,
+    formData,
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+    }
+  );
   return res.data.data;
 };
 

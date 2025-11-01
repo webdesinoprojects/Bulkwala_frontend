@@ -3,6 +3,7 @@ import {
   getReviewsService,
   addReviewService,
   deleteReviewService,
+  updateReviewService,
 } from "@/services/review.service";
 
 export const useReviewStore = create((set) => ({
@@ -37,7 +38,7 @@ export const useReviewStore = create((set) => ({
     } catch (error) {
       console.error("❌ Add review failed:", error);
       set({ error: error.message, isLoading: false });
-      return null;
+      throw error;
     }
   },
 
@@ -54,6 +55,25 @@ export const useReviewStore = create((set) => ({
     } catch (error) {
       console.error("❌ Delete review failed:", error);
       set({ error: error.message, isLoading: false });
+      throw error;
+    }
+  },
+
+  updateReview: async (productId, reviewId, formData) => {
+    if (!productId || !reviewId) return;
+
+    set({ isLoading: true, error: null });
+    try {
+      const updated = await updateReviewService(productId, reviewId, formData);
+      set((state) => ({
+        reviews: state.reviews.map((r) => (r._id === reviewId ? updated : r)),
+        isLoading: false,
+      }));
+      return updated;
+    } catch (error) {
+      console.error("❌ Update review failed:", error);
+      set({ error: error.message, isLoading: false });
+      throw error;
     }
   },
 
