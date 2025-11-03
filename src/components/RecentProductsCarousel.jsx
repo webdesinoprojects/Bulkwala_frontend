@@ -14,58 +14,73 @@ export default function RecentProductsCarousel() {
 
   if (loading)
     return (
-      <div className="flex justify-center py-16 text-gray-500 text-lg">
+      <div className="flex justify-center py-12 sm:py-16 text-gray-500 text-sm sm:text-base">
         Loading latest products...
       </div>
     );
 
   if (error)
     return (
-      <div className="flex justify-center py-16 text-red-500">
+      <div className="flex justify-center py-12 sm:py-16 text-red-500 text-sm sm:text-base">
         Failed to load products.
       </div>
     );
 
   if (!products || products.length === 0)
     return (
-      <div className="flex justify-center py-16 text-gray-500 text-lg">
+      <div className="flex justify-center py-12 sm:py-16 text-gray-500 text-sm sm:text-base">
         No products found.
       </div>
     );
 
   return (
-    <section className="relative max-w-7xl mx-auto px-4 ">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-semibold text-gray-800">
+    <section className="relative max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-10">
+      {/* ✅ Header */}
+      <div className="flex justify-between items-center mb-4 sm:mb-8">
+        <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800">
           Newly Launched Products
         </h2>
-        <div className="h-[2px] w-24 bg-[#02066F]" />
+        <div className="hidden sm:block h-[2px] w-16 sm:w-24 bg-[#02066F]" />
       </div>
 
-      {/* Carousel */}
+      {/* ✅ Carousel */}
       <div className="relative overflow-visible">
         <Swiper
           modules={[Navigation, Pagination, Autoplay]}
-          spaceBetween={30}
+          spaceBetween={15}
           slidesPerView={1}
           breakpoints={{
-            640: { slidesPerView: 2 },
-            1024: { slidesPerView: 3 },
-            1280: { slidesPerView: 5 },
+            480: { slidesPerView: 2, spaceBetween: 20 },
+            768: { slidesPerView: 3, spaceBetween: 25 },
+            1024: { slidesPerView: 4, spaceBetween: 30 },
+            1280: { slidesPerView: 5, spaceBetween: 35 },
           }}
           autoplay={{ delay: 3000, disableOnInteraction: false }}
-          pagination={{ clickable: true }}
-          navigation
+          pagination={{ clickable: true, dynamicBullets: true }}
+          // navigation
           loop={true}
-          className="pb-12 custom-swiper"
+          className="pb-10 sm:pb-12"
         >
           {products.slice(0, 10).map((product) => (
             <SwiperSlide key={product._id}>
-              <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group cursor-pointer border border-gray-100 flex flex-col h-[340px]">
-                {/* Image Section */}
+              <div
+                className="
+                  bg-white rounded-lg shadow-sm hover:shadow-md 
+                  transition-all duration-300 
+                  overflow-hidden group cursor-pointer 
+                  border border-gray-100 flex flex-col 
+                  h-[300px] sm:h-[340px] md:h-[380px]
+                "
+              >
+                {/* 🔹 Image Section */}
                 <div
-                  className="relative w-full h-[170px] bg-gray-50 overflow-hidden flex items-center justify-center"
+                  className="
+                    relative w-full 
+                    h-[150px] sm:h-[170px] md:h-[200px] 
+                    bg-gray-50 
+                    overflow-hidden 
+                    flex items-center justify-center
+                  "
                   onClick={() => navigate(`/product/${product.slug}`)}
                 >
                   <img
@@ -74,26 +89,33 @@ export default function RecentProductsCarousel() {
                       "https://ik.imagekit.io/bulkwala/demo/default-product.png"
                     }
                     alt={product.title}
-                    className="object-contain w-full h-full group-hover:scale-105 transition-transform duration-300"
+                    className="
+                      object-contain w-full h-full 
+                      group-hover:scale-105 
+                      transition-transform duration-300
+                    "
                   />
                 </div>
 
-                {/* Product Info */}
-                <div className="p-4 flex flex-col justify-between flex-grow">
-                  <h3 className="text-base font-semibold text-gray-800 line-clamp-1">
+                {/* 🔹 Product Info */}
+                <div className="p-3 sm:p-4 flex flex-col justify-between flex-grow">
+                  <h3 className="text-sm sm:text-base font-semibold text-gray-800 line-clamp-1">
                     {product.title}
                   </h3>
-                  <p className="text-sm text-gray-500 line-clamp-2 mt-1">
+                  <p className="text-xs sm:text-sm text-gray-500 line-clamp-2 mt-1">
                     {product.description?.slice(0, 60) || "No description"}
                   </p>
 
-                  <div className="flex justify-between items-center mt-3">
-                    <span className="text-lg font-bold text-[#02066F]">
+                  <div className="flex justify-between items-center mt-2 sm:mt-3">
+                    <span className="text-sm sm:text-lg font-bold text-[#02066F]">
                       ₹{product.price}
                     </span>
                     <button
                       onClick={() => navigate(`/product/${product.slug}`)}
-                      className="text-sm font-semibold text-yellow-500 hover:text-yellow-400 transition-colors"
+                      className="
+                        text-xs sm:text-sm font-semibold text-yellow-500 
+                        hover:text-yellow-400 transition-colors
+                      "
                     >
                       View Details ›
                     </button>
