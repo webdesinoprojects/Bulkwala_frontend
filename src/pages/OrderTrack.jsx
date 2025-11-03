@@ -19,17 +19,17 @@ const OrderTrack = () => {
 
   if (isLoading)
     return (
-      <div className="min-h-screen flex justify-center items-center text-gray-500">
+      <div className="min-h-screen flex justify-center items-center text-gray-500 text-sm sm:text-base px-4 text-center">
         Fetching tracking details...
       </div>
     );
 
   if (!trackingData)
     return (
-      <div className="min-h-screen flex flex-col justify-center items-center text-gray-600">
-        <p>No tracking data available.</p>
+      <div className="min-h-screen flex flex-col justify-center items-center text-gray-600 px-4 text-center">
+        <p className="text-base sm:text-lg">No tracking data available.</p>
         <Button
-          className="mt-4 bg-[#02066F]"
+          className="mt-4 bg-[#02066F] w-full sm:w-auto"
           onClick={() => navigate("/my-orders")}
         >
           Back to Orders
@@ -44,67 +44,80 @@ const OrderTrack = () => {
   const scans = shipmentData?.Shipment?.Scans || [];
 
   return (
-    <div className="max-w-4xl mx-auto py-10 px-4 font-inter">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">
+    <div className="max-w-4xl mx-auto py-8 sm:py-10 px-4 sm:px-6 font-inter">
+      <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-6 text-center sm:text-left">
         Shipment Tracking
       </h1>
 
       {/* === Summary Card === */}
-      <div className="bg-white border rounded-lg p-5 shadow-sm">
-        <p className="text-gray-700 mb-2">
-          <strong>Tracking ID:</strong> {waybill}
-        </p>
-        <p className="text-gray-700 mb-2">
-          <strong>Current Status:</strong> {currentStatus}
-        </p>
-        <p className="text-gray-700 mb-2">
-          <strong>Courier:</strong> Delhivery
-        </p>
+      <div className="bg-white border rounded-lg p-5 sm:p-6 shadow-sm">
+        <div className="space-y-2 sm:space-y-3 text-sm sm:text-base">
+          <p className="text-gray-700">
+            <strong>Tracking ID:</strong> {waybill}
+          </p>
+          <p className="text-gray-700">
+            <strong>Current Status:</strong> {currentStatus}
+          </p>
+          <p className="text-gray-700">
+            <strong>Courier:</strong> Delhivery
+          </p>
 
-        {/* Optional external link */}
-        {waybill !== "N/A" && (
-          <a
-            href={`https://www.delhivery.com/tracking?waybill=${waybill}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[#02066F] underline text-sm"
-          >
-            Track on Delhivery Website
-          </a>
-        )}
+          {/* Optional external link */}
+          {waybill !== "N/A" && (
+            <a
+              href={`https://www.delhivery.com/tracking?waybill=${waybill}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#02066F] underline text-xs sm:text-sm block mt-2"
+            >
+              Track on Delhivery Website →
+            </a>
+          )}
+        </div>
       </div>
 
       {/* === Tracking History === */}
-      <div className="mt-6 bg-white border rounded-lg p-5 shadow-sm">
-        <h2 className="text-lg font-semibold mb-3 text-gray-800">
+      <div className="mt-6 bg-white border rounded-lg p-5 sm:p-6 shadow-sm">
+        <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-800 text-center sm:text-left">
           Tracking Updates
         </h2>
-        <ul className="divide-y divide-gray-100">
-          {scans.length > 0 ? (
-            scans.map((scan, index) => (
-              <li key={index} className="py-3 text-sm">
-                <p className="text-gray-800 font-medium">
-                  {scan?.ScanDetail?.Scan || "Update"}
-                </p>
-                <p className="text-gray-500">
-                  {scan?.ScanDetail?.ScanDateTime
-                    ? new Date(scan.ScanDetail.ScanDateTime).toLocaleString()
-                    : ""}
-                  {scan?.ScanDetail?.ScannedLocation
-                    ? ` - ${scan.ScanDetail.ScannedLocation}`
-                    : ""}
-                </p>
+
+        {scans.length > 0 ? (
+          <ul className="divide-y divide-gray-100">
+            {scans.map((scan, index) => (
+              <li
+                key={index}
+                className="py-3 text-sm sm:text-base flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-3"
+              >
+                <div className="flex-1">
+                  <p className="text-gray-800 font-medium">
+                    {scan?.ScanDetail?.Scan || "Update"}
+                  </p>
+                  <p className="text-gray-500 text-xs sm:text-sm">
+                    {scan?.ScanDetail?.ScanDateTime
+                      ? new Date(scan.ScanDetail.ScanDateTime).toLocaleString()
+                      : ""}
+                    {scan?.ScanDetail?.ScannedLocation
+                      ? ` - ${scan.ScanDetail.ScannedLocation}`
+                      : ""}
+                  </p>
+                </div>
               </li>
-            ))
-          ) : (
-            <p className="text-gray-500 italic">No scans available yet.</p>
-          )}
-        </ul>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-500 italic text-center text-sm sm:text-base">
+            No scans available yet.
+          </p>
+        )}
       </div>
 
       {/* === Back Button === */}
-      <div className="mt-8 flex justify-end">
-        <Button className="bg-[#02066F]" onClick={() => navigate("/my-orders")}>
+      <div className="mt-8 flex flex-col sm:flex-row justify-end items-center gap-3">
+        <Button
+          className="bg-[#02066F] w-full sm:w-auto text-sm sm:text-base"
+          onClick={() => navigate("/my-orders")}
+        >
           Back to My Orders
         </Button>
       </div>

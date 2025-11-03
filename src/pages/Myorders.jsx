@@ -34,10 +34,12 @@ const MyOrders = () => {
 
   if (orders.length === 0)
     return (
-      <div className="min-h-screen flex flex-col justify-center items-center text-gray-600">
-        <p className="text-lg">You haven’t placed any orders yet.</p>
+      <div className="min-h-screen flex flex-col justify-center items-center text-gray-600 text-center px-4">
+        <p className="text-base sm:text-lg">
+          You haven’t placed any orders yet.
+        </p>
         <Button
-          className="mt-4 bg-[#02066F]"
+          className="mt-4 bg-[#02066F] w-full sm:w-auto"
           onClick={() => navigate("/products")}
         >
           Browse Products
@@ -47,9 +49,90 @@ const MyOrders = () => {
 
   return (
     <div className="max-w-6xl mx-auto py-10 px-4 font-inter">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">My Orders</h1>
+      <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-6 text-center sm:text-left">
+        My Orders
+      </h1>
 
-      <div className="overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
+      {/* 📱 Mobile View (Cards) */}
+      <div className="grid grid-cols-1 gap-4 sm:hidden">
+        {paginatedOrders.map((order) => (
+          <div
+            key={order._id}
+            className="bg-white shadow-sm border rounded-xl p-4 space-y-3"
+          >
+            <div className="flex justify-between items-center">
+              <p className="font-semibold text-gray-800 text-sm">
+                #{order._id.slice(-6).toUpperCase()}
+              </p>
+              <span
+                className={`text-xs px-2 py-1 rounded-full ${
+                  order.status === "Delivered"
+                    ? "bg-green-100 text-green-700"
+                    : order.status === "Cancelled"
+                    ? "bg-red-100 text-red-700"
+                    : order.status === "Shipped"
+                    ? "bg-blue-100 text-blue-700"
+                    : "bg-yellow-100 text-yellow-700"
+                }`}
+              >
+                {order.status}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <img
+                src={
+                  order.products[0]?.product?.images?.[0] ||
+                  "https://via.placeholder.com/60"
+                }
+                alt="product"
+                className="w-16 h-16 rounded-md object-cover border"
+              />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-700 line-clamp-2">
+                  {order.products[0]?.product?.title || "Product"}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {order.products?.length} item
+                  {order.products?.length > 1 ? "s" : ""}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <p className="text-base font-semibold text-[#02066F]">
+                ₹{order.totalPrice.toFixed(2)}
+              </p>
+              <div className="flex flex-col gap-2">
+                <Button
+                  variant="outline"
+                  className="text-[#02066F] border-[#02066F] text-xs px-3 py-1"
+                  onClick={() => navigate(`/order/${order._id}`)}
+                >
+                  View
+                </Button>
+
+                {order.trackingId ? (
+                  <Button
+                    variant="outline"
+                    className="text-green-700 border-green-700 text-xs px-3 py-1"
+                    onClick={() => navigate(`/track/${order._id}`)}
+                  >
+                    Track
+                  </Button>
+                ) : (
+                  <p className="text-xs text-gray-400 text-center">
+                    Awaiting ID
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* 💻 Desktop Table View */}
+      <div className="hidden sm:block overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
         <table className="min-w-full divide-y divide-gray-200 text-sm">
           <thead className="bg-[#F7F9FC]">
             <tr>
@@ -150,7 +233,7 @@ const MyOrders = () => {
         </table>
       </div>
 
-      {/* Pagination */}
+      {/* 📄 Pagination */}
       {totalPages > 1 && (
         <div className="flex justify-center items-center mt-8 space-x-2">
           <Button

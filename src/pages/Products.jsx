@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import { useNavigate, useLocation } from "react-router-dom";
+import { Menu } from "lucide-react"; // for mobile sidebar toggle icon
 
 const Products = () => {
   const { products, fetchProducts, loading, error, total, limit } =
@@ -27,6 +28,8 @@ const Products = () => {
     page: 1,
     limit: 20,
   });
+
+  const [sidebarOpen, setSidebarOpen] = useState(false); // 🔹 for mobile toggle
 
   // Initial fetch
   useEffect(() => {
@@ -59,24 +62,48 @@ const Products = () => {
   return (
     <div className="flex flex-col h-screen">
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <aside className="w-full lg:w-1/5 bg-white border-r p-6 space-y-6 shadow-sm overflow-y-auto">
-          <h2 className="text-xl font-semibold text-gray-700">Filters</h2>
+        {/* 🔹 Mobile Sidebar Toggle */}
+        <div className="lg:hidden fixed top-16 left-4 z-40">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="shadow-md bg-white"
+          >
+            <Menu className="w-5 h-5 text-gray-700" />
+          </Button>
+        </div>
+
+        {/* 🔹 Sidebar */}
+        <aside
+          className={cn(
+            "fixed lg:static top-0 left-0 z-30 bg-white border-r p-5 sm:p-6 space-y-6 shadow-lg lg:shadow-sm overflow-y-auto transition-all duration-300 ease-in-out",
+            sidebarOpen
+              ? "w-3/4 sm:w-1/2 md:w-1/3 translate-x-0"
+              : "-translate-x-full lg:translate-x-0 lg:w-1/5"
+          )}
+        >
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-700">
+            Filters
+          </h2>
 
           {/* Search */}
           <div className="space-y-2">
-            <Label htmlFor="search">Search</Label>
+            <Label htmlFor="search" className="text-sm sm:text-base">
+              Search
+            </Label>
             <Input
               id="search"
               placeholder="Search products..."
               value={filters.search}
               onChange={(e) => handleFilterChange("search", e.target.value)}
+              className="text-sm sm:text-base"
             />
           </div>
 
           {/* Category */}
           <div className="space-y-2">
-            <Label>Category</Label>
+            <Label className="text-sm sm:text-base">Category</Label>
             <div className="flex flex-col space-y-1 max-h-48 overflow-y-auto">
               {categories.map((cat) => (
                 <label
@@ -100,7 +127,7 @@ const Products = () => {
 
           {/* Price Range */}
           <div className="space-y-2">
-            <Label>
+            <Label className="text-sm sm:text-base">
               Price Range: ₹{filters.minPrice} - ₹{filters.maxPrice}
             </Label>
             <Slider
@@ -121,7 +148,7 @@ const Products = () => {
 
           <Button
             variant="outline"
-            className="w-full mt-4"
+            className="w-full mt-4 text-sm sm:text-base"
             onClick={() =>
               setFilters({
                 category: "",
@@ -137,20 +164,32 @@ const Products = () => {
           </Button>
         </aside>
 
-        {/* Product Grid */}
-        <main className="flex-1 overflow-y-auto p-6 bg-gray-50">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+        {/* 🔹 Overlay for Mobile */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-40 z-20 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        {/* 🔹 Product Grid */}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-gray-50 mt-14 lg:mt-0">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6">
             Products
           </h2>
 
           {loading ? (
-            <p>Loading products...</p>
+            <p className="text-sm sm:text-base text-gray-500">
+              Loading products...
+            </p>
           ) : error ? (
-            <p className="text-red-500">{error}</p>
+            <p className="text-red-500 text-sm sm:text-base">{error}</p>
           ) : productList.length === 0 ? (
-            <p>No products found.</p>
+            <p className="text-gray-500 text-sm sm:text-base">
+              No products found.
+            </p>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
               {productList.map((product) => (
                 <Card
                   key={product._id}
@@ -159,26 +198,29 @@ const Products = () => {
                 >
                   <CardContent>
                     {/* 🖼 Product Image */}
-                    <div className="w-full h-48 flex items-center justify-center bg-white rounded-md overflow-hidden">
+                    <div className="w-full h-40 sm:h-48 md:h-56 flex items-center justify-center bg-white rounded-md overflow-hidden">
                       <img
-                        src={product.images?.[0]}
+                        src={
+                          product.images?.[0] ||
+                          "https://ik.imagekit.io/bulkwala/demo/default-product.png"
+                        }
                         alt={product.title}
                         className="max-h-full max-w-full object-contain transition-transform duration-300 hover:scale-105"
                       />
                     </div>
 
                     {/* 🏷 Title */}
-                    <h3 className="truncate text-[#02066F] font-semibold mt-3">
+                    <h3 className="truncate text-[#02066F] font-semibold mt-3 text-sm sm:text-base">
                       {product.title}
                     </h3>
 
                     {/* 💰 Price */}
-                    <p className="font-semibold mt-2 text-lg text-gray-900">
+                    <p className="font-semibold mt-2 text-base sm:text-lg text-gray-900">
                       ₹{product.price}
                     </p>
 
                     {/* 📝 Description */}
-                    <p className="mt-2 text-gray-600 line-clamp-2 text-sm">
+                    <p className="mt-2 text-gray-600 line-clamp-2 text-xs sm:text-sm">
                       {product.description}
                     </p>
                   </CardContent>
@@ -189,9 +231,10 @@ const Products = () => {
 
           {/* Pagination */}
           {total > limit && (
-            <div className="flex justify-center items-center gap-4 mt-10">
+            <div className="flex justify-center items-center gap-4 mt-8 sm:mt-10">
               <Button
                 variant="outline"
+                size="sm"
                 disabled={filters.page === 1}
                 onClick={() =>
                   setFilters((prev) => ({ ...prev, page: prev.page - 1 }))
@@ -199,11 +242,12 @@ const Products = () => {
               >
                 Prev
               </Button>
-              <span>
+              <span className="text-sm sm:text-base">
                 Page {filters.page} of {totalPages}
               </span>
               <Button
                 variant="outline"
+                size="sm"
                 disabled={filters.page === totalPages}
                 onClick={() =>
                   setFilters((prev) => ({ ...prev, page: prev.page + 1 }))

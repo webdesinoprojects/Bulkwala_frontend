@@ -2,7 +2,7 @@ import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { CheckCircle2, Download } from "lucide-react";
 import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable"; // ✅ fixed import
+import autoTable from "jspdf-autotable";
 
 const OrderSuccess = () => {
   const location = useLocation();
@@ -20,15 +20,11 @@ const OrderSuccess = () => {
   const paymentMode = orderData?.paymentMode?.toUpperCase() || "N/A";
   const date = new Date(orderData?.createdAt).toLocaleDateString();
 
-  const items = orderData?.products || [];
-
   // 🧾 Generate Invoice PDF
   const generateInvoice = () => {
-    console.log("🧾 Generating Invoice...");
-
     const doc = new jsPDF();
 
-    // 🏢 Company Header
+    // Header
     doc.setFontSize(18);
     doc.text("Bulkwala Pvt. Ltd.", 14, 20);
     doc.setFontSize(11);
@@ -40,13 +36,11 @@ const OrderSuccess = () => {
       36
     );
 
-    // 📦 Invoice Title
     doc.setFontSize(15);
     doc.text("Invoice / Tax Invoice", 150, 20);
-    doc.setLineWidth(0.5);
     doc.line(14, 38, 195, 38);
 
-    // 🧍 Customer Info
+    // Customer Info
     doc.setFontSize(12);
     doc.text("Bill To:", 14, 46);
     doc.setFontSize(11);
@@ -61,18 +55,16 @@ const OrderSuccess = () => {
     );
     doc.text(`Phone: ${orderData?.shippingAddress?.phone || ""}`, 14, 67);
 
-    // 🧾 Invoice Meta Info
     doc.text(`Invoice No: ${orderId.slice(-6).toUpperCase()}`, 150, 46);
     doc.text(`Date: ${date}`, 150, 52);
     doc.text(`Payment Mode: ${paymentMode}`, 150, 57);
     doc.text(`Payment Status: ${paymentStatus.toUpperCase()}`, 150, 62);
 
-    // 🛍️ Items Table
+    // Items
     const tableColumn = ["Product", "Qty", "Price (₹)", "Subtotal (₹)"];
     const tableRows = [];
 
     orderData?.products?.forEach((item) => {
-      // Handle both populated & raw product cases
       const title =
         item?.product?.title ||
         item?.title ||
@@ -80,7 +72,6 @@ const OrderSuccess = () => {
         "Unknown Product";
 
       const price = item?.product?.price || item?.priceAtPurchase || 0;
-
       const subtotal = (price * (item?.quantity || 1)).toFixed(2);
 
       tableRows.push([
@@ -100,7 +91,6 @@ const OrderSuccess = () => {
       headStyles: { fillColor: [32, 32, 32], textColor: 255 },
     });
 
-    // 🧮 Price Summary
     const summaryY = doc.lastAutoTable.finalY + 10;
     const itemsPrice = orderData?.itemsPrice || totalAmount / 1.18;
     const taxPrice = orderData?.taxPrice || totalAmount - itemsPrice;
@@ -115,7 +105,6 @@ const OrderSuccess = () => {
     doc.text(`Grand Total: ₹${totalAmount.toFixed(2)}`, 150, summaryY + 18);
     doc.setFont(undefined, "normal");
 
-    // 💬 Footer
     doc.line(14, summaryY + 30, 195, summaryY + 30);
     doc.setFontSize(10);
     doc.text(
@@ -124,30 +113,29 @@ const OrderSuccess = () => {
       summaryY + 38
     );
 
-    // 💾 Save File
     doc.save(`Invoice_${orderId}.pdf`);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="bg-white shadow-lg rounded-2xl p-10 text-center max-w-lg w-full">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 sm:px-6 py-8">
+      <div className="bg-white shadow-lg rounded-2xl p-6 sm:p-8 md:p-10 text-center max-w-md sm:max-w-lg w-full">
         {/* ✅ Success Icon */}
-        <div className="flex justify-center mb-6">
-          <CheckCircle2 size={80} className="text-green-500" />
+        <div className="flex justify-center mb-4 sm:mb-6">
+          <CheckCircle2 size={70} className="text-green-500" />
         </div>
 
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
           Order Placed Successfully 🎉
         </h1>
 
-        <p className="text-gray-600 mb-6">
+        <p className="text-gray-600 mb-6 text-sm sm:text-base">
           Thank you for your purchase! Your{" "}
           <span className="font-semibold">{paymentType}</span> order has been
           confirmed.
         </p>
 
         {/* 🧾 Order Info */}
-        <div className="bg-gray-100 rounded-lg text-left p-4 mb-6 text-gray-700 space-y-1">
+        <div className="bg-gray-100 rounded-lg text-left p-3 sm:p-4 mb-6 text-gray-700 text-sm sm:text-base space-y-1">
           <p>
             <strong>Order ID:</strong> {orderId}
           </p>
@@ -155,7 +143,7 @@ const OrderSuccess = () => {
             <strong>Customer:</strong> {customerName}
           </p>
           <p>
-            <strong>Total Amount:</strong> ₹{totalAmount}
+            <strong>Total Amount:</strong> ₹{totalAmount.toFixed(2)}
           </p>
           <p>
             <strong>Items:</strong> {itemCount}
@@ -171,10 +159,10 @@ const OrderSuccess = () => {
           </p>
         </div>
 
-        {/* 🧾 Download Invoice Button */}
+        {/* 🧾 Download Invoice */}
         <button
           onClick={generateInvoice}
-          className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition mb-4"
+          className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition text-sm sm:text-base mb-3 sm:mb-4"
         >
           <Download size={18} />
           Download Invoice (PDF)
@@ -183,14 +171,14 @@ const OrderSuccess = () => {
         {/* 🧭 Navigation */}
         <button
           onClick={() => navigate("/orders")}
-          className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition"
+          className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition text-sm sm:text-base"
         >
           View My Orders
         </button>
 
         <button
           onClick={() => navigate("/")}
-          className="mt-4 text-gray-600 hover:underline text-sm"
+          className="mt-4 text-gray-600 hover:underline text-xs sm:text-sm"
         >
           Back to Home
         </button>

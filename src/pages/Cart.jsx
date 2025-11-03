@@ -19,11 +19,11 @@ const Cart = () => {
     removeCartItem,
     clearCart,
   } = useCartStore();
-  const navigate = useNavigate();
 
+  const navigate = useNavigate();
   const [isFetched, setIsFetched] = useState(false);
 
-  // Fetch cart data on mount
+  // ✅ Fetch cart data on mount
   useEffect(() => {
     const loadCart = async () => {
       await fetchCart();
@@ -32,160 +32,156 @@ const Cart = () => {
     loadCart();
   }, [fetchCart]);
 
-  // Check if the cart data is null or loading
+  // ✅ Loading state
   if (isLoading || !isFetched) {
     return (
-      <div className="min-h-screen flex justify-center items-center text-gray-600">
+      <div className="min-h-screen flex justify-center items-center text-gray-600 text-base sm:text-lg">
         Loading cart...
       </div>
     );
   }
 
-  // If cart is null or empty, show a friendly message
+  // ✅ Empty cart
   if (!cart || !cart.items || cart.items.length === 0) {
     return (
-      <div className="min-h-screen flex justify-center items-center text-gray-600">
+      <div className="min-h-screen flex flex-col justify-center items-center gap-4 text-gray-600 text-base sm:text-lg">
         <p>Your cart is empty.</p>
         <Button onClick={() => navigate("/products")}>Browse Products</Button>
       </div>
     );
   }
 
-  // Handle updating quantity
+  // ✅ Handlers
   const handleUpdateQuantity = async (productId, quantity) => {
     try {
       await updateCart(productId, quantity);
       await fetchCart();
       toast.success("Quantity updated");
-    } catch (error) {
+    } catch {
       toast.error("Failed to update quantity");
     }
   };
 
-  // Handle remove item
   const handleRemoveItem = async (productId) => {
     try {
       await removeCartItem(productId);
       toast.success("Item removed from cart");
-    } catch (error) {
+    } catch {
       toast.error("Failed to remove item");
     }
   };
 
-  // Handle clear cart
   const handleClearCart = async () => {
     try {
       await clearCart();
       toast.success("Cart cleared");
-    } catch (error) {
+    } catch {
       toast.error("Failed to clear cart");
     }
   };
 
+  // ✅ Layout
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-lg p-6">
-        <h1 className="text-3xl font-semibold text-center mb-6">Your Cart</h1>
+    <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
+      <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-lg p-4 sm:p-6 md:p-8">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-6">
+          Your Cart
+        </h1>
+
+        {/* Cart Items */}
         <div className="space-y-6">
-          {cart.items && cart.items.length > 0 ? (
-            cart.items.map((item) => (
-              <div
-                key={item.product._id}
-                className="flex flex-col sm:flex-row items-center justify-between border-b py-4"
-              >
-                <div className="flex items-center space-x-4 w-full sm:w-3/4">
-                  <img
-                    src={item.product.images[0]}
-                    alt={item.product.title}
-                    className="w-40 h-40 object-cover rounded-md"
-                  />
-                  <div className="flex flex-col gap-2 ml-10 w-full sm:w-3/4">
-                    <h3 className="text-xl font-medium">
-                      {item.product.title}
-                    </h3>
-                    <p className="text-gray-500 text-sm line-clamp-2">
-                      {item.product.description}
-                    </p>
-                    <p className="text-black-500 font-semibold text-lg">
-                      {`₹${item.product.price}`}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-4 w-full sm:w-1/4 justify-end mt-4 sm:mt-0">
-                  <div className="flex items-center">
-                    <Input
-                      type="number"
-                      value={item.quantity}
-                      onChange={(e) =>
-                        handleUpdateQuantity(
-                          item.product._id,
-                          parseInt(e.target.value)
-                        )
-                      }
-                      className="w-16 text-center border border-gray-300 rounded-md shadow px-2 py-1"
-                      min={1}
-                      disabled={isUpdating}
-                    />
-                  </div>
-                  <Button
-                    variant="destructive"
-                    color="red"
-                    onClick={() => handleRemoveItem(item.product._id)}
-                    disabled={isUpdating}
-                  >
-                    Remove
-                  </Button>
+          {cart.items.map((item) => (
+            <div
+              key={item.product._id}
+              className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b py-4 gap-4 sm:gap-6"
+            >
+              {/* Left: Product Info */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 w-full">
+                <img
+                  src={
+                    item.product.images?.[0] ||
+                    "https://ik.imagekit.io/bulkwala/demo/default-product.png"
+                  }
+                  alt={item.product.title}
+                  className="w-28 h-28 sm:w-32 sm:h-32 md:w-40 md:h-40 object-cover rounded-md mx-auto sm:mx-0"
+                />
+                <div className="flex flex-col gap-2 w-full">
+                  <h3 className="text-lg sm:text-xl font-medium text-gray-800">
+                    {item.product.title}
+                  </h3>
+                  <p className="text-gray-500 text-sm line-clamp-2">
+                    {item.product.description}
+                  </p>
+                  <p className="text-gray-900 font-semibold text-base sm:text-lg">
+                    ₹{item.product.price}
+                  </p>
                 </div>
               </div>
-            ))
-          ) : (
-            <p>Your cart is empty.</p>
-          )}
+
+              {/* Right: Quantity + Remove */}
+              <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
+                <Input
+                  type="number"
+                  min={1}
+                  value={item.quantity}
+                  onChange={(e) =>
+                    handleUpdateQuantity(
+                      item.product._id,
+                      parseInt(e.target.value)
+                    )
+                  }
+                  className="w-16 text-center border border-gray-300 rounded-md shadow-sm text-sm"
+                  disabled={isUpdating}
+                />
+                <Button
+                  variant="destructive"
+                  onClick={() => handleRemoveItem(item.product._id)}
+                  disabled={isUpdating}
+                  className="text-sm sm:text-base px-3 sm:px-4"
+                >
+                  Remove
+                </Button>
+              </div>
+            </div>
+          ))}
         </div>
 
-        {/* Subtotal and Deductions Section */}
-        <div className="mt-6">
+        {/* Summary Section */}
+        <div className="mt-8 border-t pt-6 space-y-3 text-sm sm:text-base md:text-lg">
           <div className="flex justify-between">
-            <h2 className="text-2xl font-semibold">Items Price</h2>
-            <p className="text-xl font-medium">{`₹${(itemsPrice || 0).toFixed(
-              2
-            )}`}</p>
+            <span className="font-semibold text-gray-700">Items Price</span>
+            <span className="font-medium">₹{(itemsPrice || 0).toFixed(2)}</span>
           </div>
-          <div className="flex justify-between mt-2">
-            <h2 className="text-2xl font-semibold">Shipping</h2>
-            <p className="text-xl font-medium">{`₹${(
-              shippingPrice || 0
-            ).toFixed(2)}`}</p>
+          <div className="flex justify-between">
+            <span className="font-semibold text-gray-700">Shipping</span>
+            <span className="font-medium">
+              ₹{(shippingPrice || 0).toFixed(2)}
+            </span>
           </div>
-          <div className="flex justify-between mt-2">
-            <h2 className="text-2xl font-semibold">Tax</h2>
-            <p className="text-xl font-medium">{`₹${(taxPrice || 0).toFixed(
-              2
-            )}`}</p>
+          <div className="flex justify-between">
+            <span className="font-semibold text-gray-700">Tax</span>
+            <span className="font-medium">₹{(taxPrice || 0).toFixed(2)}</span>
           </div>
-          <div className="flex justify-between mt-4">
-            <h2 className="text-2xl font-semibold">Total Price</h2>
-            <p className="text-xl font-medium">{`₹${(totalPrice || 0).toFixed(
-              2
-            )}`}</p>
+          <div className="flex justify-between border-t pt-4 text-base sm:text-lg md:text-xl font-semibold">
+            <span>Total Price</span>
+            <span>₹{(totalPrice || 0).toFixed(2)}</span>
           </div>
         </div>
 
-        {/* Clear Cart and Checkout Buttons */}
-        <div className="flex justify-between mt-6 gap-4 flex-wrap">
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4 mt-8">
           <Button
             variant="outline"
-            color="gray"
             onClick={handleClearCart}
             disabled={isUpdating}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto text-sm sm:text-base"
           >
             Clear Cart
           </Button>
           <Button
-            className="w-full sm:w-auto mt-4 sm:mt-0 bg-blue-600 text-white"
             onClick={() => navigate("/payment")}
             disabled={isUpdating}
+            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white text-sm sm:text-base"
           >
             Proceed to Checkout
           </Button>
