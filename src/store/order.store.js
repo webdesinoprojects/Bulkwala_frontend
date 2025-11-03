@@ -92,6 +92,12 @@ const useOrderStore = create((set, get) => ({
           } catch (error) {
             console.error("Error verifying payment:", error);
             set({ isLoading: false, paymentStatus: "FAILED" });
+            // Optionally, pass error details if component wants to handle message
+            window.dispatchEvent(
+              new CustomEvent("razorpay-failed", {
+                detail: { error },
+              })
+            );
           }
         },
 

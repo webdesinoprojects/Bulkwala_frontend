@@ -46,7 +46,13 @@ const PaymentPage = () => {
       const verifiedOrder = e.detail.order;
       console.log("✅ Received Razorpay success:", verifiedOrder);
       if (verifiedOrder) {
-        toast.success("Payment Successful!");
+        if (verifiedOrder.shipmentStatus?.startsWith("Error")) {
+          toast.warning(
+            "Payment successful! We're processing your order. Tracking details will be shared shortly."
+          );
+        } else {
+          toast.success("Payment Successful!");
+        }
         await clearCart();
         navigate("/order-success", {
           state: { orderData: verifiedOrder, paymentType: "Online Payment" },

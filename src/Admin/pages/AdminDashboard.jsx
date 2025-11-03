@@ -762,6 +762,7 @@ const OrdersContent = () => {
     filters,
     setFilters,
     fetchOrders,
+    lastRefreshed,
     updateOrderStatus,
     updatePaymentStatus,
     stats,
@@ -907,6 +908,12 @@ const OrdersContent = () => {
           <Button variant="outline" onClick={() => fetchOrders(pagination)}>
             Refresh
           </Button>
+
+          {lastRefreshed && (
+            <p className="text-xs text-gray-500 ml-2">
+              Last updated: {new Date(lastRefreshed).toLocaleTimeString()}
+            </p>
+          )}
         </CardContent>
       </Card>
 
@@ -1041,6 +1048,30 @@ const OrdersContent = () => {
                               >
                                 🔄 Sync Status
                               </Button>
+                              {/* Retry Shipment Button (only when failed or missing) */}
+                              {(!o.trackingId ||
+                                o.shipmentStatus?.startsWith("Error")) && (
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  className="text-xs mt-1"
+                                  onClick={async () => {
+                                    const { retryShipment, fetchOrders } =
+                                      useAdminOrdersStore.getState();
+                                    const res = await retryShipment(o._id);
+                                    if (res.success) {
+                                      toast.success(
+                                        "Shipment recreated successfully"
+                                      );
+                                      fetchOrders();
+                                    } else {
+                                      toast.error(res.message);
+                                    }
+                                  }}
+                                >
+                                  🚚 Retry Shipment
+                                </Button>
+                              )}
                             </div>
                           </td>
                         </tr>

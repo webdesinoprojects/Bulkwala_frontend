@@ -172,12 +172,17 @@ export default function Navbar() {
     <header className="w-full border-b border-gray-300 bg-white relative z-50">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between p-4">
         {/* Logo */}
-        <h1
+        {/* <h1
           className="font-bold text-xl tracking-wide cursor-pointer"
           onClick={() => navigate("/")}
         >
           BULKWALA
-        </h1>
+        </h1> */}
+        <img
+          src="https://ik.imagekit.io/bulkwala/demo/bulkwalalogo.jpg?updatedAt=1762145179195"
+          alt=""
+          className="w-17 h-17"
+        />
 
         {/* 🔍 SEARCH BAR */}
         <div className="relative w-full md:w-[450px] mb-2 md:mb-0">

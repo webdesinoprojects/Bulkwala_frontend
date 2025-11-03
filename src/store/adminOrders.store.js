@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import {
   getAllOrdersService,
+  retryShipmentService,
   syncShipmentService,
   updateOrderStatusService,
   updatePaymentStatusService,
@@ -10,6 +11,7 @@ export const useAdminOrdersStore = create((set, get) => ({
   orders: [],
   loading: false,
   error: null,
+  lastRefreshed: null,
 
   filters: {
     q: "",
@@ -29,6 +31,9 @@ export const useAdminOrdersStore = create((set, get) => ({
   setFilters: (patch) => set((s) => ({ filters: { ...s.filters, ...patch } })),
 
   fetchOrders: async () => {
+    const { loading } = get();
+    if (loading) return; // prevent overlap fetches
+
     set({ loading: true, error: null });
     try {
       const data = await getAllOrdersService();
@@ -47,6 +52,8 @@ export const useAdminOrdersStore = create((set, get) => ({
       set({
         orders: data,
         loading: false,
+        lastRefreshed: new Date().toISOString(),
+
         stats: {
           totalOrders,
           totalRevenue,
@@ -128,6 +135,24 @@ export const useAdminOrdersStore = create((set, get) => ({
       return { success: true };
     } catch (e) {
       return { success: false, message: "Failed to sync shipment" };
+    }
+  },
+
+  retryShipment: async (orderId) => {
+    try {
+      const updated = await retryShipmentService(orderId);
+      set((s) => ({
+        orders: s.orders.map((o) =>
+          o._id === orderId ? { ...o, ...updated } : o
+        ),
+      }));
+      return { success: true };
+    } catch (e) {
+      console.error(e);
+      return {
+        success: false,
+        message: e?.response?.data?.message || "Failed to retry shipment",
+      };
     }
   },
 }));
