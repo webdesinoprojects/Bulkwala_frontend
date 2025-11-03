@@ -5,7 +5,11 @@ export default function CategorySlider({ category }) {
   // If category is selected, use its banners, else show default slider images
   const images = category?.banner?.length
     ? category.banner
-    : ["/assets/banner1.jpg", "/assets/banner2.png", "/assets/banner3.png"];
+    : [
+        "https://ik.imagekit.io/bulkwala/Banner/Banner.png?updatedAt=1762157575989",
+        "https://ik.imagekit.io/bulkwala/Banner/Phone%20Cover%20Banner.png?updatedAt=1762157575947",
+        "",
+      ];
 
   return (
     <div className="w-full h-[350px] md:h-[650px]">

@@ -16,6 +16,7 @@ import {
   MessageCircle,
   Trash2,
   Edit3,
+  CheckCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
@@ -28,7 +29,8 @@ const ProductDetail = () => {
   const formRef = useRef(null);
 
   const { wishlist, toggleWishlist, fetchWishlist } = useWishlistStore();
-  const { singleProduct, getProductBySlug, loading } = useProductStore();
+  const { singleProduct, getProductBySlug, products, fetchProducts, loading } =
+    useProductStore();
   const { addToCart } = useCartStore();
   const { reviews, fetchReviews, addReview, deleteReview, updateReview } =
     useReviewStore();
@@ -39,8 +41,8 @@ const ProductDetail = () => {
   const [selectedRating, setSelectedRating] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [editReviewId, setEditReviewId] = useState(null);
+  const [isAddedToCart, setIsAddedToCart] = useState(false);
 
-  // 🔹 Form setup (react-hook-form + zod)
   const {
     register,
     handleSubmit,
@@ -52,7 +54,6 @@ const ProductDetail = () => {
     defaultValues: { text: "", rating: 0 },
   });
 
-  // 🔹 Fetch product & reviews
   useEffect(() => {
     getProductBySlug(slug);
   }, [slug]);
@@ -61,9 +62,12 @@ const ProductDetail = () => {
     if (singleProduct?._id) fetchReviews(singleProduct._id);
   }, [singleProduct]);
 
-  // 🔹 Wishlist setup
   useEffect(() => {
     fetchWishlist();
+  }, []);
+
+  useEffect(() => {
+    fetchProducts({ limit: 8 }); // fetch top 8 products
   }, []);
 
   useEffect(() => {
@@ -83,7 +87,6 @@ const ProductDetail = () => {
 
   const product = singleProduct;
 
-  // 🔹 Wishlist toggle
   const handleAddToWishlist = async () => {
     try {
       setIsWishlistLoading(true);
@@ -104,7 +107,6 @@ const ProductDetail = () => {
     }
   };
 
-  // 🔹 Review Submit Handler
   const onSubmitReview = async (data) => {
     if (!selectedRating) {
       toast.error("Please select a rating before submitting!");
@@ -115,47 +117,39 @@ const ProductDetail = () => {
     formData.append("text", data.text);
     formData.append("rating", selectedRating);
     if (data.images && data.images.length > 0) {
-      for (const file of data.images) {
-        formData.append("images", file);
-      }
+      for (const file of data.images) formData.append("images", file);
     }
 
     try {
       let result;
-
-      // ✅ If editing → call update API
       if (isEditing && editReviewId) {
         result = await updateReview(product._id, editReviewId, formData);
       } else {
-        // ✅ If adding new → call add API
         result = await addReview(product._id, formData);
       }
 
-      // ✅ Success toast
       if (result) {
         toast.success(
           isEditing
             ? "Review updated successfully ✅"
             : "Review submitted successfully ✅"
         );
-
         reset();
         setSelectedRating(0);
         setIsEditing(false);
         setEditReviewId(null);
         await fetchReviews(product._id);
+        await getProductBySlug(slug);
       }
     } catch (error) {
-      const message =
+      toast.error(
         error?.response?.data?.message ||
-        error?.message ||
-        "Something went wrong!";
-
-      toast.error(message);
+          error?.message ||
+          "Something went wrong!"
+      );
     }
   };
 
-  // 🔹 Edit Review
   const handleEditReview = (review) => {
     setValue("text", review.text);
     setSelectedRating(review.rating);
@@ -165,7 +159,6 @@ const ProductDetail = () => {
     formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
   };
 
-  // 🔹 Cancel Edit
   const handleCancelEdit = () => {
     reset();
     setSelectedRating(0);
@@ -177,11 +170,15 @@ const ProductDetail = () => {
   const handleDeleteReview = async (reviewId) => {
     await deleteReview(product._id, reviewId);
     toast.success("Review deleted successfully 🗑️");
+    await fetchReviews(product._id);
+    await getProductBySlug(slug);
   };
 
   const handleAddToCart = async () => {
     await addToCart(product._id, quantity);
+    setIsAddedToCart(true);
     toast.success(`${product.title} added to your cart 🛒`);
+    setTimeout(() => setIsAddedToCart(false), 2500);
   };
 
   const handleViewCart = () => navigate("/cart");
@@ -189,64 +186,71 @@ const ProductDetail = () => {
   const decreaseQty = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
   return (
-    <section className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-12">
-      <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10">
+    <section className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-10">
         {/* ---------------- IMAGE SECTION ---------------- */}
         <div className="flex flex-col items-center">
-          <div className="w-full h-[400px] flex justify-center items-center bg-white rounded-xl shadow-md overflow-hidden">
+          <div className="w-full h-[300px] sm:h-[400px] bg-white rounded-xl shadow-md flex justify-center items-center overflow-hidden">
             <img
               src={product.images?.[0]}
               alt={product.title}
               className="max-h-full max-w-full object-contain"
             />
           </div>
-
-          {/* Thumbnails */}
-          <div className="flex gap-3 mt-4">
-            {product.images?.slice(0, 3).map((img, i) => (
+          <div className="flex flex-wrap justify-center gap-3 mt-4">
+            {product.images?.slice(0, 4).map((img, i) => (
               <img
                 key={i}
                 src={img}
                 alt={`thumb-${i}`}
-                className="w-16 h-16 border rounded-md object-cover cursor-pointer hover:ring-2 hover:ring-[#02066F]"
+                className="w-16 h-16 sm:w-20 sm:h-20 border rounded-md object-cover cursor-pointer hover:ring-2 hover:ring-[#02066F]"
               />
             ))}
           </div>
         </div>
 
         {/* ---------------- DETAILS SECTION ---------------- */}
-        <div className="space-y-4">
-          <h1 className="text-2xl font-bold text-gray-900">{product.title}</h1>
-          <p className="text-gray-600 text-sm leading-relaxed">
-            {product.description}
-          </p>
-
-          {/* Price + Rating */}
-          <div className="flex items-center justify-between">
-            <p className="text-3xl font-semibold text-[#02066F]">
-              ₹{product.price}
+        <div className="flex flex-col justify-between space-y-6">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              {product.title}
+            </h1>
+            <p className="text-gray-600 mt-2 text-sm sm:text-base leading-relaxed">
+              {product.description}
             </p>
-            <div className="flex items-center gap-1">
-              {[...Array(4)].map((_, i) => (
-                <Star
-                  key={i}
-                  size={18}
-                  className="text-yellow-400 fill-yellow-400"
-                />
-              ))}
-              <Star size={18} className="text-gray-300" />
+
+            <div className="flex items-center justify-between mt-4 flex-wrap gap-3">
+              <p className="text-3xl font-semibold text-[#02066F]">
+                ₹{product.price}
+              </p>
+              <div className="flex items-center gap-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    size={18}
+                    className={`${
+                      i < Math.round(product.averageRating || 0)
+                        ? "text-yellow-400 fill-yellow-400"
+                        : "text-gray-300"
+                    }`}
+                  />
+                ))}
+                <span className="ml-1 text-sm text-gray-600">
+                  ({product.totalReviews || 0})
+                </span>
+              </div>
             </div>
           </div>
 
-          <Separator className="my-4" />
+          <Separator className="my-2" />
 
-          {/* Wishlist & WhatsApp */}
-          <div className="flex items-center gap-4">
+          {/* Wishlist + WhatsApp */}
+          <div className="flex flex-wrap items-center gap-4">
             <Button
               onClick={handleAddToWishlist}
               disabled={isWishlistLoading}
               variant="outline"
-              className={`flex items-center gap-2 transition-all ${
+              className={`flex items-center gap-2 ${
                 isInWishlist
                   ? "border-red-500 text-red-600 bg-red-50 hover:bg-red-100"
                   : "border-gray-300 text-gray-700 hover:bg-gray-50"
@@ -275,49 +279,59 @@ const ProductDetail = () => {
             </Button>
           </div>
 
-          {/* Quantity Selector */}
-          <div className="mt-6 flex items-center gap-4">
-            <Button size="icon" variant="outline" onClick={decreaseQty}>
-              <Minus size={18} />
-            </Button>
-            <span className="text-lg font-semibold">{quantity}</span>
-            <Button size="icon" variant="outline" onClick={increaseQty}>
-              <Plus size={18} />
-            </Button>
-          </div>
+          {/* Quantity + Add to Cart */}
+          <div className="flex flex-col sm:flex-row items-center gap-4 mt-4">
+            <div className="flex items-center gap-3">
+              <Button size="icon" variant="outline" onClick={decreaseQty}>
+                <Minus size={18} />
+              </Button>
+              <span className="text-lg font-semibold">{quantity}</span>
+              <Button size="icon" variant="outline" onClick={increaseQty}>
+                <Plus size={18} />
+              </Button>
+            </div>
 
-          {/* Add to Cart */}
-          <div className="mt-6 flex items-center justify-center gap-4 ">
-            <Button
-              onClick={handleAddToCart}
-              className="w-50 bg-blue-600 text-white"
-            >
-              Add to Cart
-            </Button>
-            <Button
-              onClick={handleViewCart}
-              className="w-50 bg-gray-500 text-white"
-            >
-              View Cart
-            </Button>
+            <div className="flex gap-3 w-full sm:w-auto">
+              <Button
+                onClick={handleAddToCart}
+                className={`flex-1 bg-blue-600 text-white hover:bg-blue-700 ${
+                  isAddedToCart ? "opacity-80" : ""
+                }`}
+              >
+                {isAddedToCart ? (
+                  <span className="flex items-center gap-2">
+                    <CheckCircle size={18} /> Added
+                  </span>
+                ) : (
+                  "Add to Cart"
+                )}
+              </Button>
+
+              <Button
+                onClick={handleViewCart}
+                className="flex-1 bg-gray-500 text-white hover:bg-gray-600"
+              >
+                View Cart
+              </Button>
+            </div>
           </div>
         </div>
       </div>
 
       {/* ---------------- REVIEWS SECTION ---------------- */}
-
-      <div className="max-w-6xl mx-auto mt-16 px-6">
-        <h2 className="text-2xl font-semibold text-[#02066F] mb-4">Reviews</h2>
+      <div className="max-w-7xl mx-auto mt-16 px-4 sm:px-6 lg:px-8">
+        <h2 className="text-2xl font-semibold text-[#02066F] mb-6">
+          Customer Reviews
+        </h2>
 
         {/* Review Form */}
         <form
           ref={formRef}
           onSubmit={(e) => {
             e.preventDefault();
-            console.log("🟢 Form manually submitted");
             handleSubmit(onSubmitReview)(e);
           }}
-          className="mb-8 space-y-4"
+          className="mb-8 space-y-4 bg-white p-4 sm:p-6 rounded-lg shadow"
         >
           {/* Rating Stars */}
           <div className="flex gap-2">
@@ -341,7 +355,6 @@ const ProductDetail = () => {
             <p className="text-red-500 text-sm">{errors.rating.message}</p>
           )}
 
-          {/* Text Input */}
           <textarea
             {...register("text")}
             placeholder="Write your review..."
@@ -351,7 +364,6 @@ const ProductDetail = () => {
             <p className="text-red-500 text-sm">{errors.text.message}</p>
           )}
 
-          {/* Image Upload */}
           <Input
             type="file"
             accept="image/*"
@@ -359,7 +371,8 @@ const ProductDetail = () => {
             {...register("images")}
             className="border border-gray-300 rounded-md p-2"
           />
-          <div className="flex gap-3">
+
+          <div className="flex flex-wrap gap-3">
             <Button
               type="submit"
               className="bg-[#02066F] text-white hover:bg-[#01054f]"
@@ -379,20 +392,20 @@ const ProductDetail = () => {
           </div>
         </form>
 
-        {/* Review List */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Review Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {reviews?.length > 0 ? (
             reviews.map((rev) => (
               <Card
                 key={rev._id}
-                className={`shadow-sm relative transition-all duration-200 ${
+                className={`transition-all ${
                   editReviewId === rev._id
-                    ? "border-2 border-blue-500 ring-2 ring-blue-300 bg-blue-50/50"
+                    ? "border-2 border-blue-500 bg-blue-50/40"
                     : "border border-gray-200"
                 }`}
               >
                 <CardContent className="p-4 text-gray-700">
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center mb-2">
                     <p className="font-semibold">
                       {rev.user?.name || "Anonymous"}
                     </p>
@@ -416,7 +429,7 @@ const ProductDetail = () => {
                     </div>
                   </div>
 
-                  <div className="flex gap-1 my-1">
+                  <div className="flex gap-1 mb-2">
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
@@ -429,16 +442,17 @@ const ProductDetail = () => {
                       />
                     ))}
                   </div>
-                  <p className="text-sm mb-2">"{rev.text}"</p>
+
+                  <p className="text-sm mb-2 break-words">"{rev.text}"</p>
 
                   {rev.images?.length > 0 && (
-                    <div className="flex gap-2 mt-2">
+                    <div className="flex flex-wrap gap-2 mt-2">
                       {rev.images.map((img, i) => (
                         <img
                           key={i}
                           src={img}
-                          alt={`review-img-${i}`}
-                          className="w-12 h-12 object-cover rounded-md"
+                          alt={`review-${i}`}
+                          className="w-14 h-14 object-cover rounded-md"
                         />
                       ))}
                     </div>
@@ -450,6 +464,62 @@ const ProductDetail = () => {
             <p className="text-gray-500 text-sm">No reviews yet.</p>
           )}
         </div>
+      </div>
+
+      {/* ---------------- TOP SUGGESTIONS SECTION ---------------- */}
+      <div className="max-w-7xl mx-auto mt-20 px-4 sm:px-6 lg:px-8">
+        <h2 className="text-2xl font-semibold text-[#02066F] mb-6">
+          Top Suggestions
+        </h2>
+
+        {loading ? (
+          <p className="text-gray-500">Loading suggestions...</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {products
+              ?.filter((p) => p._id !== product._id)
+              ?.slice(0, 4)
+              .map((item) => (
+                <div
+                  key={item._id}
+                  onClick={() => navigate(`/product/${item.slug}`)}
+                  className="cursor-pointer bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden"
+                >
+                  <div className="w-full h-56 flex justify-center items-center bg-gray-50">
+                    <img
+                      src={item.images?.[0]}
+                      alt={item.title}
+                      className="h-full object-contain"
+                    />
+                  </div>
+                  <div className="p-4 space-y-2">
+                    <h3 className="font-semibold text-gray-800 truncate">
+                      {item.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 line-clamp-2">
+                      {item.description}
+                    </p>
+                    <div className="flex justify-between items-center mt-2">
+                      <span className="text-[#02066F] font-semibold">
+                        ₹{item.price}
+                      </span>
+                      <Button
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addToCart(item._id, 1);
+                          toast.success(`${item.title} added to cart 🛒`);
+                        }}
+                        className="bg-blue-600 hover:bg-blue-700 text-white text-xs"
+                      >
+                        Add
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+          </div>
+        )}
       </div>
     </section>
   );

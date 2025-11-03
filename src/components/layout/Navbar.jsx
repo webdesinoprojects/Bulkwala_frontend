@@ -20,6 +20,7 @@ export default function Navbar() {
     JSON.parse(localStorage.getItem("recentSearches") || "[]")
   );
 
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false); // ✅ New state for hamburger
   const dropdownRef = useRef();
   const searchRef = useRef();
   const suggestionRef = useRef();
@@ -55,6 +56,7 @@ export default function Navbar() {
   // ✅ Clear suggestions when route changes
   useEffect(() => {
     setSuggestions([]);
+    setMobileMenuOpen(false);
   }, [location.pathname]);
 
   // ✅ Voice Search
@@ -170,22 +172,17 @@ export default function Navbar() {
 
   return (
     <header className="w-full border-b border-gray-300 bg-white relative z-50">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between p-4">
-        {/* Logo */}
-        {/* <h1
-          className="font-bold text-xl tracking-wide cursor-pointer"
-          onClick={() => navigate("/")}
-        >
-          BULKWALA
-        </h1> */}
+      <div className="max-w-7xl mx-auto w-full flex items-center justify-between p-4">
+        {/* 🧩 Logo - Left */}
         <img
           src="https://ik.imagekit.io/bulkwala/demo/bulkwalalogo.jpg?updatedAt=1762145179195"
-          alt=""
-          className="w-17 h-17"
+          alt="Bulkwala Logo"
+          className="w-20 h-20 cursor-pointer"
+          onClick={() => navigate("/")}
         />
 
-        {/* 🔍 SEARCH BAR */}
-        <div className="relative w-full md:w-[450px] mb-2 md:mb-0">
+        {/* 🔍 Search Bar (Hidden on Mobile) */}
+        <div className="hidden md:block w-[450px]">
           <form
             onSubmit={handleSearchSubmit}
             className="flex items-center bg-gray-100 rounded-md px-4 py-2"
@@ -222,7 +219,7 @@ export default function Navbar() {
           {suggestions.length > 0 && (
             <div
               ref={suggestionRef}
-              className="absolute bg-white shadow-md rounded-md mt-1 w-full border border-gray-200 z-50"
+              className="absolute bg-white shadow-md rounded-md mt-1 w-[450px] border border-gray-200 z-50"
             >
               {suggestions.map((item, idx) => (
                 <div
@@ -241,137 +238,134 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* ❤️ 🛒 👤 */}
-        <div className="flex items-center space-x-8 relative">
-          {/* Wishlist */}
-          <Link to="/wishlist" className="relative flex items-center space-x-1">
-            <ion-icon name="heart-outline" className="text-xl"></ion-icon>
-            <span className="text-base font-medium">Wishlist</span>
-            {wishlist.length > 0 && (
-              <span className="absolute -top-2 -right-3 bg-red-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
-                {wishlist.length}
-              </span>
-            )}
-          </Link>
+        {/* ❤️ 🛒 👤 + Hamburger */}
+        <div className="flex items-center space-x-4">
+          {/* Hamburger only on mobile */}
+          <button
+            className="md:hidden flex items-center justify-center w-10 h-10 rounded-md border border-gray-300"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            <ion-icon
+              name={mobileMenuOpen ? "close" : "menu"}
+              class="text-2xl text-gray-800"
+            ></ion-icon>
+          </button>
 
-          {/* Cart */}
-          <Link to="/cart" className="relative flex items-center space-x-1">
-            <ion-icon name="cart-outline" className="text-xl"></ion-icon>
-            <span className="text-base font-medium">Cart</span>
-            {totalItems > 0 && (
-              <span className="absolute -top-2 -right-3 bg-red-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
-                {totalItems}
-              </span>
-            )}
-          </Link>
-
-          {/* Profile / Dropdown */}
-          {user ? (
-            <div ref={dropdownRef} className="relative">
-              <button
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center space-x-2 px-3 py-1 bg-gray-100 rounded-md hover:bg-gray-200 transition"
-              >
-                <ion-icon
-                  name="person-circle-outline"
-                  class="text-xl"
-                ></ion-icon>
-                <span className="text-base font-medium">{user.name}</span>
-
-                {/* Role Badges */}
-                {user.role === "admin" && (
-                  <span className="ml-2 px-2 py-0.5 text-xs font-semibold text-white bg-red-500 rounded-full">
-                    Admin
-                  </span>
-                )}
-                {user.role === "seller" && (
-                  <span className="ml-2 px-2 py-0.5 text-xs font-semibold text-white bg-blue-500 rounded-full">
-                    Seller
-                  </span>
-                )}
-                {user.role === "customer" && (
-                  <span className="ml-2 px-2 py-0.5 text-xs font-semibold text-white bg-yellow-500 rounded-full">
-                    Customer
-                  </span>
-                )}
-              </button>
-
-              {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-lg rounded-md z-50">
-                  {/* Role-based Links */}
-                  {user.role === "admin" && (
-                    <Link
-                      to="/admin"
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                      onClick={() => setDropdownOpen(false)}
-                    >
-                      Manage Dashboard
-                    </Link>
-                  )}
-                  {user.role === "seller" && (
-                    <Link
-                      to="/seller"
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                      onClick={() => setDropdownOpen(false)}
-                    >
-                      Manage Dashboard
-                    </Link>
-                  )}
-
-                  <Link
-                    to="/profile"
-                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    onClick={() => setDropdownOpen(false)}
-                  >
-                    My Profile
-                  </Link>
-
-                  {user.role === "customer" && (
-                    <Link
-                      to="/my-orders"
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                      onClick={() => setDropdownOpen(false)}
-                    >
-                      My Orders
-                    </Link>
-                  )}
-
-                  <button
-                    onClick={handleLogout}
-                    className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
-                  >
-                    Logout
-                  </button>
-                </div>
+          {/* Desktop Icons */}
+          <div className="hidden md:flex items-center space-x-6 relative">
+            <Link
+              to="/wishlist"
+              className="relative flex items-center space-x-1"
+            >
+              <ion-icon name="heart-outline" className="text-xl"></ion-icon>
+              <span className="text-base font-medium">Wishlist</span>
+              {wishlist.length > 0 && (
+                <span className="absolute -top-2 -right-3 bg-red-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                  {wishlist.length}
+                </span>
               )}
-            </div>
-          ) : (
-            <div className="flex items-center space-x-1">
-              <Link
-                to="/login"
-                className="text-base font-medium hover:underline"
-              >
-                Login
-              </Link>
-              <span>/</span>
-              <Link
-                to="/signup"
-                className="text-base font-medium hover:underline"
-              >
-                Signup
-              </Link>
-            </div>
-          )}
+            </Link>
+
+            <Link to="/cart" className="relative flex items-center space-x-1">
+              <ion-icon name="cart-outline" className="text-xl"></ion-icon>
+              <span className="text-base font-medium">Cart</span>
+              {totalItems > 0 && (
+                <span className="absolute -top-2 -right-3 bg-red-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                  {totalItems}
+                </span>
+              )}
+            </Link>
+
+            {user ? (
+              <div ref={dropdownRef} className="relative">
+                <button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="flex items-center space-x-2 px-3 py-1 bg-gray-100 rounded-md hover:bg-gray-200 transition"
+                >
+                  <ion-icon
+                    name="person-circle-outline"
+                    class="text-xl"
+                  ></ion-icon>
+                  <span className="text-base font-medium">{user.name}</span>
+                </button>
+
+                {dropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-lg rounded-md z-50">
+                    {user.role === "admin" && (
+                      <Link
+                        to="/admin"
+                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                        onClick={() => setDropdownOpen(false)}
+                      >
+                        Manage Dashboard
+                      </Link>
+                    )}
+                    {user.role === "seller" && (
+                      <Link
+                        to="/seller"
+                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                        onClick={() => setDropdownOpen(false)}
+                      >
+                        Manage Dashboard
+                      </Link>
+                    )}
+                    <Link
+                      to="/profile"
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      onClick={() => setDropdownOpen(false)}
+                    >
+                      My Profile
+                    </Link>
+                    {user.role === "customer" && (
+                      <Link
+                        to="/my-orders"
+                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                        onClick={() => setDropdownOpen(false)}
+                      >
+                        My Orders
+                      </Link>
+                    )}
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center space-x-1">
+                <Link
+                  to="/login"
+                  className="text-base font-medium hover:underline"
+                >
+                  Login
+                </Link>
+                <span>/</span>
+                <Link
+                  to="/signup"
+                  className="text-base font-medium hover:underline"
+                >
+                  Signup
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* 🧭 Bottom Nav */}
+      {/* 🧭 NAV LINKS (desktop + mobile responsive) */}
       <nav className="w-full bg-[#C9E0EF] shadow-sm">
-        <div className="max-w-7xl mx-auto flex gap-10 px-12 py-5">
+        <div
+          className={`max-w-7xl mx-auto flex-col md:flex-row md:flex gap-8 px-6 py-4 md:py-5 transition-all duration-300 ${
+            mobileMenuOpen ? "flex" : "hidden md:flex"
+          }`}
+        >
           <NavLink
             to="/"
             className={({ isActive }) =>
-              `font-mono text-base font-medium ${
+              `text-base font-medium ${
                 isActive ? "underline" : "text-black hover:underline"
               }`
             }
@@ -381,7 +375,7 @@ export default function Navbar() {
           <NavLink
             to="/products"
             className={({ isActive }) =>
-              `font-mono text-base font-medium ${
+              `text-base font-medium ${
                 isActive ? "underline" : "text-black hover:underline"
               }`
             }
@@ -391,7 +385,7 @@ export default function Navbar() {
           <NavLink
             to="/contact"
             className={({ isActive }) =>
-              `font-mono text-base font-medium ${
+              `text-base font-medium ${
                 isActive ? "underline" : "text-black hover:underline"
               }`
             }
@@ -401,7 +395,7 @@ export default function Navbar() {
           <NavLink
             to="/about"
             className={({ isActive }) =>
-              `font-mono text-base font-medium ${
+              `text-base font-medium ${
                 isActive ? "underline" : "text-black hover:underline"
               }`
             }
