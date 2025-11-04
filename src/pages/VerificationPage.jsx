@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useAuthStore } from "../store/auth.store.js";
+import useAuthStore from "@/store/auth.store.js";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -51,60 +51,86 @@ const VerificationPage = () => {
     });
 
     if (res.success) {
-      toast.success("New verification token sent! Please check your email.");
+      toast.success("New verification code sent! Please check your email.");
     } else {
-      toast.error(res.error || "Failed to resend token.");
+      toast.error(res.error || "Failed to resend code.");
     }
   };
 
-  if (!pendingVerificationUser) {
-    // navigate("/signup");
-    // return null;
-  }
-
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-black via-gray-900 to-black">
-      <Card className="w-full max-w-sm bg-gradient-to-l from-zinc-400 to-white border-none">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">
+    <div className="flex justify-center items-center min-h-screen bg-gray-50 px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md shadow-lg border border-gray-200 rounded-2xl bg-white">
+        <CardHeader className="text-center space-y-2 pt-6">
+          <CardTitle className="text-2xl sm:text-3xl font-semibold text-[#02066F]">
             Verify Your Email
           </CardTitle>
-          <CardDescription>
-            A 6-digit code has been sent to{" "}
-            <span className="font-semibold">
-              {pendingVerificationUser.email}
+          <CardDescription className="text-gray-600 text-sm sm:text-base">
+            A 6-digit verification code has been sent to{" "}
+            <span className="font-medium text-[#02066F]">
+              {pendingVerificationUser?.email || "your registered email"}
             </span>
             . Please enter it below to verify your account.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleVerify} className="space-y-4">
-            <Input
-              type="text"
-              placeholder="Enter 6-digit code"
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-              maxLength={6}
-              className="text-center text-lg tracking-widest border-gray-900"
-              required
-            />
+
+        <CardContent className="p-6 sm:p-8">
+          <form onSubmit={handleVerify} className="space-y-6">
+            {/* Token Input */}
+            <div>
+              <label
+                htmlFor="token"
+                className="block text-gray-700 font-medium mb-2"
+              >
+                Verification Code
+              </label>
+              <Input
+                id="token"
+                type="text"
+                placeholder="Enter 6-digit code"
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+                maxLength={6}
+                className="text-center text-lg tracking-widest rounded-lg border-gray-300 focus:ring-2 focus:ring-[#02066F] transition-all"
+                required
+              />
+            </div>
+
+            {/* Verify Button */}
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full py-5 px-5 rounded-full cursor-pointer"
+              className="w-full bg-[#02066F] hover:bg-[#04127A] text-white font-semibold rounded-lg py-2.5 mt-2 transition-all"
             >
               {isLoading ? "Verifying..." : "Submit Code"}
             </Button>
           </form>
+
+          {/* Resend Code */}
+          <div className="text-center mt-5">
+            <p className="text-gray-600 text-sm">
+              Didn’t receive the code?{" "}
+              <Button
+                variant="link"
+                onClick={handleResend}
+                disabled={isLoading}
+                className="text-[#02066F] font-medium hover:underline p-0"
+              >
+                Resend
+              </Button>
+            </p>
+          </div>
+
+          {/* Back to Login */}
           <div className="text-center mt-4">
-            <Button
-              variant="link"
-              onClick={handleResend}
-              disabled={isLoading}
-              className="cursor-pointer"
-            >
-              Resend Code
-            </Button>
+            <p className="text-sm text-gray-600">
+              Already verified?{" "}
+              <span
+                className="text-[#02066F] font-medium cursor-pointer hover:underline"
+                onClick={() => navigate("/login")}
+              >
+                Login
+              </span>
+            </p>
           </div>
         </CardContent>
       </Card>

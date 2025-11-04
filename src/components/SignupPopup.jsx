@@ -1,40 +1,52 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useAuthStore } from "@/store/auth.store";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+import { SignupSchema } from "@/schemas/usersSchema";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Form,
-  FormField,
   FormItem,
   FormLabel,
   FormControl,
   FormMessage,
+  FormField,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import useAuthStore from "@/store/auth.store.js";
-import { SignupSchema } from "@/schemas/usersSchema.js";
+import { toast } from "sonner";
 
-const Signup = () => {
+export default function SignupPopup() {
+  const [open, setOpen] = useState(false);
+  const { user, signup } = useAuthStore();
+  const navigate = useNavigate();
+
   const form = useForm({
     resolver: zodResolver(SignupSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      password: "",
-    },
+    defaultValues: { name: "", email: "", password: "" },
   });
 
-  const signup = useAuthStore((state) => state.signup);
-  const navigate = useNavigate();
+  // Auto popup every 30s
+  useEffect(() => {
+    if (user?._id) return;
+    const timer = setInterval(() => {
+      if (!user?._id) setOpen(true);
+    }, 15000);
+    return () => clearInterval(timer);
+  }, [user]);
 
   const onSubmit = async (values) => {
     const res = await signup(values);
     if (res.success && res.user?._id) {
       toast.success("Account created successfully! Please verify your email.");
       form.reset();
+      setOpen(false);
       navigate(`/verify/${res.user._id}`);
     } else {
       toast.error(res.error || "Signup failed");
@@ -42,12 +54,21 @@ const Signup = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-50 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md shadow-lg border border-gray-200 rounded-2xl bg-white">
-        <CardContent className="p-6 sm:p-8">
-          <h2 className="text-center text-2xl sm:text-3xl font-semibold text-[#02066F] mb-6">
-            Create Your Account
-          </h2>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="max-w-md w-[92%] bg-white rounded-2xl shadow-2xl overflow-hidden border-0 p-0 animate-fadeIn text-gray-500">
+        {/* Header */}
+        <DialogHeader className="relative bg-gradient-to-r from-[#02066F] to-[#04127A] text-white py-5 px-6">
+          <DialogTitle className="text-xl font-semibold text-center w-full">
+            Join Bulkwala
+          </DialogTitle>
+        </DialogHeader>
+
+        {/* Body */}
+        <div className="p-6 sm:p-8 bg-white">
+          <p className="text-sm text-gray-600 text-center mb-5">
+            Sign up to get exclusive offers, member discounts & faster checkout
+            🚀
+          </p>
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
@@ -56,12 +77,14 @@ const Signup = () => {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700">Full Name</FormLabel>
+                    <FormLabel className="text-gray-700 text-sm">
+                      Full Name
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Enter your name"
                         {...field}
-                        className="rounded-lg focus:ring-2 focus:ring-[#02066F]"
+                        className="rounded-lg border-gray-300 focus:ring-2 focus:ring-[#02066F] transition-all"
                       />
                     </FormControl>
                     <FormMessage />
@@ -74,7 +97,7 @@ const Signup = () => {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700">
+                    <FormLabel className="text-gray-700 text-sm">
                       Email Address
                     </FormLabel>
                     <FormControl>
@@ -82,7 +105,7 @@ const Signup = () => {
                         type="email"
                         placeholder="Enter your email"
                         {...field}
-                        className="rounded-lg focus:ring-2 focus:ring-[#02066F]"
+                        className="rounded-lg border-gray-300 focus:ring-2 focus:ring-[#02066F]"
                       />
                     </FormControl>
                     <FormMessage />
@@ -95,13 +118,15 @@ const Signup = () => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700">Password</FormLabel>
+                    <FormLabel className="text-gray-700 text-sm">
+                      Password
+                    </FormLabel>
                     <FormControl>
                       <Input
                         type="password"
                         placeholder="Enter your password"
                         {...field}
-                        className="rounded-lg focus:ring-2 focus:ring-[#02066F]"
+                        className="rounded-lg border-gray-300 focus:ring-2 focus:ring-[#02066F]"
                       />
                     </FormControl>
                     <FormMessage />
@@ -111,27 +136,28 @@ const Signup = () => {
 
               <Button
                 type="submit"
-                className="w-full mt-4 bg-[#02066F] hover:bg-[#04127A] text-white font-semibold rounded-lg py-2.5 transition-all"
+                className="w-full bg-[#02066F] hover:bg-[#04127A] text-white font-semibold rounded-lg py-2.5 mt-2"
                 disabled={form.formState.isSubmitting}
               >
                 {form.formState.isSubmitting ? "Signing up..." : "Sign Up"}
               </Button>
 
-              <p className="text-center text-sm text-gray-500 mt-3">
+              <p className="text-center text-sm text-gray-600 mt-2">
                 Already have an account?{" "}
                 <span
                   className="text-[#02066F] font-medium cursor-pointer hover:underline"
-                  onClick={() => navigate("/login")}
+                  onClick={() => {
+                    setOpen(false);
+                    navigate("/login");
+                  }}
                 >
                   Log in
                 </span>
               </p>
             </form>
           </Form>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
-};
-
-export default Signup;
+}

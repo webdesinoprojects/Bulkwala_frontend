@@ -46,7 +46,9 @@ const Cart = () => {
     return (
       <div className="min-h-screen flex flex-col justify-center items-center gap-4 text-gray-600 text-base sm:text-lg">
         <p>Your cart is empty.</p>
-        <Button onClick={() => navigate("/products")}>Browse Products</Button>
+        <Button onClick={() => navigate("/products")} className="bg-[#02066F]">
+          Browse Products
+        </Button>
       </div>
     );
   }

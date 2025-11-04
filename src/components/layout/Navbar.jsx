@@ -257,8 +257,13 @@ export default function Navbar() {
               to="/wishlist"
               className="relative flex items-center space-x-1"
             >
-              <ion-icon name="heart-outline" className="text-xl"></ion-icon>
-              <span className="text-base font-medium">Wishlist</span>
+              <ion-icon
+                name="heart-outline"
+                className="text-xl text-[#02066F]"
+              ></ion-icon>
+              <span className="text-base text-[#02066F] font-medium">
+                Wishlist
+              </span>
               {wishlist.length > 0 && (
                 <span className="absolute -top-2 -right-3 bg-red-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
                   {wishlist.length}
@@ -267,8 +272,11 @@ export default function Navbar() {
             </Link>
 
             <Link to="/cart" className="relative flex items-center space-x-1">
-              <ion-icon name="cart-outline" className="text-xl"></ion-icon>
-              <span className="text-base font-medium">Cart</span>
+              <ion-icon
+                name="cart-outline"
+                className="text-xl text-[#02066F]"
+              ></ion-icon>
+              <span className="text-base text-[#02066F] font-medium">Cart</span>
               {totalItems > 0 && (
                 <span className="absolute -top-2 -right-3 bg-red-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
                   {totalItems}
@@ -284,9 +292,11 @@ export default function Navbar() {
                 >
                   <ion-icon
                     name="person-circle-outline"
-                    class="text-xl"
+                    class="text-xl text-[#02066F]"
                   ></ion-icon>
-                  <span className="text-base font-medium">{user.name}</span>
+                  <span className="text-base text-[#02066F] font-medium">
+                    {user.name}
+                  </span>
                 </button>
 
                 {dropdownOpen && (
@@ -356,7 +366,7 @@ export default function Navbar() {
       </div>
 
       {/* 🧭 NAV LINKS (desktop + mobile responsive) */}
-      <nav className="w-full bg-[#C9E0EF] shadow-sm">
+      <nav className="w-full bg-[#AFC2D5] shadow-sm">
         <div
           className={`max-w-7xl mx-auto flex-col md:flex-row md:flex gap-8 px-6 py-4 md:py-5 transition-all duration-300 ${
             mobileMenuOpen ? "flex" : "hidden md:flex"
@@ -366,7 +376,7 @@ export default function Navbar() {
             to="/"
             className={({ isActive }) =>
               `text-base font-medium ${
-                isActive ? "underline" : "text-black hover:underline"
+                isActive ? "underline" : "text-[#02066F] hover:underline"
               }`
             }
           >
@@ -376,7 +386,7 @@ export default function Navbar() {
             to="/products"
             className={({ isActive }) =>
               `text-base font-medium ${
-                isActive ? "underline" : "text-black hover:underline"
+                isActive ? "underline" : "text-[#02066F] hover:underline"
               }`
             }
           >
@@ -386,7 +396,7 @@ export default function Navbar() {
             to="/contact"
             className={({ isActive }) =>
               `text-base font-medium ${
-                isActive ? "underline" : "text-black hover:underline"
+                isActive ? "underline" : "text-[#02066F] hover:underline"
               }`
             }
           >
@@ -396,7 +406,7 @@ export default function Navbar() {
             to="/about"
             className={({ isActive }) =>
               `text-base font-medium ${
-                isActive ? "underline" : "text-black hover:underline"
+                isActive ? "underline" : "text-[#02066F] hover:underline"
               }`
             }
           >
