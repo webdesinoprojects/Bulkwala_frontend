@@ -107,7 +107,7 @@ export default function BannerManager() {
             <Label>Title</Label>
             <Input
               type="text"
-              placeholder="Banner title (optional)"
+              placeholder="Banner title"
               {...form.register("title")}
             />
             {form.formState.errors.title && (
@@ -122,7 +122,7 @@ export default function BannerManager() {
             <Label>CTA Link</Label>
             <Input
               type="url"
-              placeholder="https://example.com (optional)"
+              placeholder="https://example.com"
               {...form.register("ctaLink")}
             />
             {form.formState.errors.ctaLink && (
