@@ -85,9 +85,9 @@ export default function BannerManager() {
   };
 
   return (
-    <Card className="bg-white border border-gray-200 rounded-xl shadow-sm w-full max-w-4xl mx-auto">
+    <Card className="bg-white border border-gray-200 rounded-xl shadow-sm w-full ">
       <CardHeader>
-        <CardTitle className="text-[#02066F] text-xl font-semibold">
+        <CardTitle className="text-[#02066F] font-semibold">
           Manage Banners
         </CardTitle>
         <CardDescription>

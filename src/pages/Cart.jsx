@@ -14,14 +14,21 @@ const Cart = () => {
     itemsPrice,
     isLoading,
     isUpdating,
+    couponError, // From store for error messages
     fetchCart,
     updateCart,
     removeCartItem,
     clearCart,
+    applyCoupon, // From store to apply coupon
+    removeCoupon, // From store to remove coupon
+    discount, // From store for the discount value
+    couponApplied, // From store to check if coupon is applied
+    appliedCouponCode, // From store to show applied coupon code
   } = useCartStore();
-
+  console.log("total price in cart page:", totalPrice);
   const navigate = useNavigate();
   const [isFetched, setIsFetched] = useState(false);
+  const [couponCode, setCouponCode] = useState(""); // State to store coupon code
 
   // ✅ Fetch cart data on mount
   useEffect(() => {
@@ -82,14 +89,49 @@ const Cart = () => {
     }
   };
 
+  const handleApplyCoupon = async () => {
+    try {
+      if (couponApplied) {
+        toast.error("Coupon has already been applied.");
+        return;
+      }
+
+      const result = await applyCoupon(couponCode); // 👈 now returns success/message
+
+      if (!result.success) {
+        toast.error(result.message || "Invalid coupon code");
+        return;
+      }
+
+      toast.success(result.message || "Coupon applied successfully!");
+      setCouponCode("");
+    } catch (error) {
+      toast.error("Something went wrong while applying coupon");
+    }
+  };
+
+  // Remove coupon
+  const handleRemoveCoupon = async () => {
+    try {
+      await removeCoupon();
+      await fetchCart();
+      toast.success("Coupon removed");
+    } catch (error) {
+      toast.error("Failed to remove coupon");
+    }
+  };
+
+  // NOTE: totalPrice coming from store already contains discount (store/calculation),
+  // so we should display totalPrice directly and avoid subtracting discount again here.
+  const displayedTotal =
+    totalPrice != null ? Number(totalPrice).toFixed(2) : "0.00";
+
   // ✅ Layout
   return (
     <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
       <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-lg p-4 sm:p-6 md:p-8">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-6">
-          Your Cart
-        </h1>
-
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-6"></h1>
+        Your Cart
         {/* Cart Items */}
         <div className="space-y-6">
           {cart.items.map((item) => (
@@ -147,7 +189,6 @@ const Cart = () => {
             </div>
           ))}
         </div>
-
         {/* Summary Section */}
         <div className="mt-8 border-t pt-6 space-y-3 text-sm sm:text-base md:text-lg">
           <div className="flex justify-between">
@@ -164,12 +205,69 @@ const Cart = () => {
             <span className="font-semibold text-gray-700">Tax</span>
             <span className="font-medium">₹{(taxPrice || 0).toFixed(2)}</span>
           </div>
+
+          {/* Discount row (show only if discount > 0) */}
+          {discount > 0 && (
+            <div className="flex justify-between text-green-600 font-medium">
+              <span>Discount</span>
+              <span>-₹{Number(discount).toFixed(2)}</span>
+            </div>
+          )}
+
           <div className="flex justify-between border-t pt-4 text-base sm:text-lg md:text-xl font-semibold">
             <span>Total Price</span>
-            <span>₹{(totalPrice || 0).toFixed(2)}</span>
+            <span>₹{displayedTotal}</span>
           </div>
         </div>
+        {/* Coupon Input / Applied Coupon */}
+        <div className="mt-8">
+          {!couponApplied ? (
+            <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4 mt-8">
+              <Input
+                type="text"
+                placeholder="Enter coupon code"
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value)}
+                className="w-full sm:w-auto text-sm sm:text-base"
+              />
+              <Button
+                onClick={handleApplyCoupon}
+                disabled={isUpdating || !couponCode}
+                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white text-sm sm:text-base"
+              >
+                Apply Coupon
+              </Button>
+            </div>
+          ) : (
+            <div className="mt-4 flex items-center justify-between bg-green-50 border border-green-200 p-3 rounded-md">
+              <div>
+                <p className="text-green-800 font-medium">
+                  ✅ Coupon applied
+                  {appliedCouponCode ? ` — ${appliedCouponCode}` : ""}
+                </p>
+                <p className="text-sm text-gray-600 mt-1">
+                  {discount > 0
+                    ? `You saved ₹${Number(discount).toFixed(2)}`
+                    : null}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleRemoveCoupon}
+                  disabled={isUpdating}
+                  className="text-sm sm:text-base"
+                >
+                  Remove Coupon
+                </Button>
+              </div>
+            </div>
+          )}
 
+          {couponError && (
+            <p className="text-red-500 text-sm mt-2">{couponError}</p>
+          )}
+        </div>
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4 mt-8">
           <Button

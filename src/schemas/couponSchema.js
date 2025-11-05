@@ -3,7 +3,9 @@ import { z } from "zod";
 export const couponSchema = z.object({
   code: z.string().min(2, "Coupon code is required"),
   discountType: z.enum(["percentage", "flat"], {
-    errorMap: () => ({ message: "Select valid discount type" }),
+    errorMap: () => ({
+      message: "Discount type must be either 'percentage' or 'flat'",
+    }),
   }),
   discountValue: z
     .union([z.string(), z.number()])
