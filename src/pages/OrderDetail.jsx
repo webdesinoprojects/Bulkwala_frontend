@@ -1,6 +1,7 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { AlertTriangle } from "lucide-react";
 import useOrderStore from "@/store/order.store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,9 +12,11 @@ const OrderDetail = () => {
     singleOrder: order,
     isLoading,
     fetchSingleOrder,
+    cancelOrder,
     error,
   } = useOrderStore();
   const navigate = useNavigate();
+  const [isCancelling, setIsCancelling] = useState(false);
 
   useEffect(() => {
     fetchSingleOrder(orderId);
@@ -22,6 +25,23 @@ const OrderDetail = () => {
   useEffect(() => {
     if (error) toast.error(error);
   }, [error]);
+
+  const handleCancelOrder = async () => {
+    const confirmCancel = window.confirm(
+      "Are you sure you want to cancel this order?"
+    );
+    if (!confirmCancel) return;
+
+    try {
+      setIsCancelling(true);
+      await cancelOrder(order._id);
+      toast.success("Order cancelled successfully");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to cancel order");
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   if (isLoading)
     return (
@@ -195,8 +215,20 @@ const OrderDetail = () => {
         </CardContent>
       </Card>
 
-      {/* 🔙 BACK BUTTON */}
+      {/* 🔙 BACK + CANCEL BUTTON */}
       <div className="mt-8 flex flex-col sm:flex-row justify-end gap-3">
+        {(order.status === "Pending" || order.status === "Processing") && (
+          <Button
+            variant="destructive"
+            disabled={isCancelling}
+            onClick={handleCancelOrder}
+            className="bg-red-600 hover:bg-red-700 text-white w-full sm:w-auto flex items-center gap-2"
+          >
+            <AlertTriangle className="w-4 h-4" />
+            {isCancelling ? "Cancelling..." : "Cancel Order"}
+          </Button>
+        )}
+
         <Button
           className="bg-[#02066F] hover:bg-[#03136e] w-full sm:w-auto"
           onClick={() => navigate("/my-orders")}

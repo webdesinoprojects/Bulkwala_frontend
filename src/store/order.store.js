@@ -5,6 +5,7 @@ import {
   getSingleOrderService,
   trackOrderService,
   verifyOrderService,
+  cancelOrderService,
 } from "@/services/order.service";
 
 const useOrderStore = create((set, get) => ({
@@ -167,6 +168,22 @@ const useOrderStore = create((set, get) => ({
           "Failed to fetch tracking information",
         isLoading: false,
       });
+    }
+  },
+  cancelOrder: async (orderId) => {
+    set({ isLoading: true, error: null });
+    try {
+      const updatedOrder = await cancelOrderService(orderId);
+      set({ singleOrder: updatedOrder, isLoading: false });
+      console.log("Order cancelled:", updatedOrder);
+      return updatedOrder;
+    } catch (error) {
+      console.error("Cancel order failed:", error);
+      set({
+        isLoading: false,
+        error: error.response?.data?.message || "Failed to cancel order",
+      });
+      throw error;
     }
   },
 }));
