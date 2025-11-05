@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { bannerSchema } from "@/validators/banner.schema";
+import { bannerSchema } from "@/schemas/bannerSchema";
 import { useBannerStore } from "@/store/banner.store";
 import { toast } from "sonner";
 import {

@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { referralSchema } from "@/validators/referral.schema";
+import { referralSchema } from "@/schemas/referralSchema";
 import { useReferralStore } from "@/store/referral.store";
 import { toast } from "sonner";
 import {

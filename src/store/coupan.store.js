@@ -3,7 +3,7 @@ import {
   createCouponService,
   fetchCouponsService,
   validateCouponService,
-} from "@/services/coupon.service";
+} from "@/services/coupan.service";
 
 export const useCouponStore = create((set, get) => ({
   coupons: [],

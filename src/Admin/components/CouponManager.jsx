@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { couponSchema } from "@/validators/coupon.schema";
-import { useCouponStore } from "@/store/coupon.store";
+import { couponSchema } from "@/schemas/coupanSchema";
+import { useCouponStore } from "@/store/coupan.store";
 import { toast } from "sonner";
 import {
   Card,
