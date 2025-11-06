@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export default function OfferManager() {
-  const { activeOffer, fetchActiveOffer, startOffer, isLoading } =
+  const { activeOffer, fetchActiveOffer, startOffer, deleteOffer, isLoading } =
     useOfferStore();
   const form = useForm({ resolver: zodResolver(offerSchema) });
 
@@ -27,6 +27,12 @@ export default function OfferManager() {
     const res = await startOffer(data);
     if (res.success) toast.success("15-minute offer activated!");
     else toast.error(res.message || "Failed to activate offer");
+  };
+
+  const handleDeleteOffer = async () => {
+    const res = await deleteOffer();
+    if (res.success) toast.success("Offer deleted successfully!");
+    else toast.error("Failed to delete offer");
   };
 
   return (
@@ -65,11 +71,18 @@ export default function OfferManager() {
             </h3>
             <p className="text-sm text-gray-600 mt-1">
               Ends at:{" "}
-              {new Date(activeOffer.endTime).toLocaleTimeString("en-IN", {
+              {new Date(activeOffer.expiresAt).toLocaleTimeString("en-IN", {
                 hour: "2-digit",
                 minute: "2-digit",
               })}
             </p>
+            <Button
+              onClick={handleDeleteOffer}
+              disabled={isLoading}
+              className="mt-2 bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete Offer
+            </Button>
           </div>
         ) : (
           <p className="text-center text-gray-500 py-4">No active offer.</p>

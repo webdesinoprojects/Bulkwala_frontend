@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import useCartStore from "@/store/cart.store";
+import { useOfferStore } from "@/store/offer.store";
 
 const Cart = () => {
   const {
@@ -24,7 +25,10 @@ const Cart = () => {
     discount, // From store for the discount value
     couponApplied, // From store to check if coupon is applied
     appliedCouponCode, // From store to show applied coupon code
+    flashDiscount,
   } = useCartStore();
+  const { fetchActiveOffer, timeLeft } = useOfferStore();
+
   console.log("total price in cart page:", totalPrice);
   const navigate = useNavigate();
   const [isFetched, setIsFetched] = useState(false);
@@ -39,6 +43,9 @@ const Cart = () => {
     loadCart();
   }, [fetchCart]);
 
+  useEffect(() => {
+    fetchActiveOffer();
+  }, []);
   // ✅ Loading state
   if (isLoading || !isFetched) {
     return (
@@ -96,6 +103,13 @@ const Cart = () => {
         return;
       }
 
+      if (flashDiscount > 0) {
+        toast.error(
+          "Flash Offer is active — you can’t apply a coupon right now."
+        );
+        return;
+      }
+
       const result = await applyCoupon(couponCode); // 👈 now returns success/message
 
       if (!result.success) {
@@ -125,6 +139,12 @@ const Cart = () => {
   // so we should display totalPrice directly and avoid subtracting discount again here.
   const displayedTotal =
     totalPrice != null ? Number(totalPrice).toFixed(2) : "0.00";
+
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  };
 
   // ✅ Layout
   return (
@@ -189,6 +209,18 @@ const Cart = () => {
             </div>
           ))}
         </div>
+        {/* Flash Offer Banner */}
+        {cart.flashDiscount > 0 && timeLeft > 0 && (
+          <div className="p-4 mb-4 bg-gradient-to-r from-[#02066F] to-[#0A1280] text-white rounded-md text-center animate-pulse transition-all duration-500 ease-in-out">
+            <p className="font-semibold">
+              ⚡ Flash Offer {cart.flashDiscountPercent}% OFF applied
+              automatically!
+            </p>
+            <p className="text-sm text-yellow-300 mt-1">
+              Ends in {formatTime(timeLeft)}
+            </p>
+          </div>
+        )}
         {/* Summary Section */}
         <div className="mt-8 border-t pt-6 space-y-3 text-sm sm:text-base md:text-lg">
           <div className="flex justify-between">
@@ -211,6 +243,14 @@ const Cart = () => {
             <div className="flex justify-between text-green-600 font-medium">
               <span>Discount</span>
               <span>-₹{Number(discount).toFixed(2)}</span>
+            </div>
+          )}
+
+          {/* Flash Offer discount (if applicable) */}
+          {cart.flashDiscount > 0 && (
+            <div className="flex justify-between text-blue-600 font-medium">
+              <span>Flash Offer ({cart.flashDiscountPercent}% OFF)</span>
+              <span>-₹{cart.flashDiscount.toFixed(2)}</span>
             </div>
           )}
 

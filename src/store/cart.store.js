@@ -36,9 +36,11 @@ const useCartStore = create((set, get) => ({
         discount: cartData.discount || 0,
         couponApplied: !!cartData.coupon,
         appliedCouponCode: cartData.couponCode || "",
+        flashDiscount: cartData.flashDiscount || 0,
+        flashDiscountPercent: cartData.flashDiscountPercent || 0,
         isLoading: false,
       });
-      get().calculateTotals();
+      // get().calculateTotals();
     } catch (error) {
       console.error("Error fetching cart:", error);
       set({ isLoading: false });

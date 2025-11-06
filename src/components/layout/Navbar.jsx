@@ -4,6 +4,8 @@ import useAuthStore from "@/store/auth.store";
 import useCartStore from "@/store/cart.store";
 import { useWishlistStore } from "@/store/wishlist.store";
 import { useProductStore } from "@/store/product.store";
+import { useOfferStore } from "@/store/offer.store";
+
 import { toast } from "sonner";
 
 export default function Navbar() {
@@ -11,6 +13,7 @@ export default function Navbar() {
   const { totalItems, fetchCart } = useCartStore();
   const { wishlist, fetchWishlist } = useWishlistStore();
   const { products, fetchProducts } = useProductStore();
+  const { activeOffer, fetchActiveOffer, timeLeft } = useOfferStore();
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -33,6 +36,7 @@ export default function Navbar() {
     fetchCart();
     fetchWishlist();
     fetchProducts();
+    fetchActiveOffer();
   }, []);
 
   // ✅ Close dropdown when clicking outside
@@ -170,250 +174,272 @@ export default function Navbar() {
     setDropdownOpen(false);
   };
 
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  };
+
   return (
-    <header className="w-full border-b border-gray-300 bg-white relative z-50">
-      <div className="max-w-7xl mx-auto w-full flex items-center justify-between p-4">
-        {/* 🧩 Logo - Left */}
-        <img
-          src="https://ik.imagekit.io/bulkwala/demo/bulkwalalogo.jpg?updatedAt=1762145179195"
-          alt="Bulkwala Logo"
-          className="w-20 h-20 cursor-pointer"
-          onClick={() => navigate("/")}
-        />
-
-        {/* 🔍 Search Bar (Hidden on Mobile) */}
-        <div className="hidden md:block w-[450px]">
-          <form
-            onSubmit={handleSearchSubmit}
-            className="flex items-center bg-gray-100 rounded-md px-4 py-2"
-          >
-            <ion-icon
-              name="search-outline"
-              class="text-xl text-gray-500 mr-2"
-            ></ion-icon>
-            <input
-              ref={searchRef}
-              type="text"
-              placeholder="Search Your Products Here"
-              className="bg-transparent flex-1 outline-none text-sm md:text-base"
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                if (e.target.value.trim()) setSuggestions(recentSearches);
-              }}
-              onFocus={() => {
-                if (searchQuery.trim()) setSuggestions(recentSearches);
-              }}
-              onBlur={() => setTimeout(() => setSuggestions([]), 150)}
-            />
-            <ion-icon
-              name={listening ? "mic" : "mic-outline"}
-              class={`text-xl ml-2 cursor-pointer transition-all ${
-                listening ? "text-red-500 animate-pulse" : "text-gray-500"
-              }`}
-              onClick={handleVoiceSearch}
-            ></ion-icon>
-          </form>
-
-          {/* 🔽 Suggestion Dropdown */}
-          {suggestions.length > 0 && (
-            <div
-              ref={suggestionRef}
-              className="absolute bg-white shadow-md rounded-md mt-1 w-[450px] border border-gray-200 z-50"
-            >
-              {suggestions.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm text-gray-700"
-                  onClick={() => {
-                    setSearchQuery(item);
-                    performSearch(item);
-                    setSuggestions([]);
-                  }}
-                >
-                  {item}
-                </div>
-              ))}
-            </div>
-          )}
+    <>
+      {/* 🔥 Flash Offer Banner */}
+      {activeOffer?.isActive && timeLeft > 0 && (
+        <div className="bg-gradient-to-r from-[#02066F] to-[#04127A] text-white text-center py-2 animate-pulse">
+          <span className="font-semibold">
+            ⚡ {activeOffer.discountPercent}% OFF Flash Sale!
+          </span>{" "}
+          <span className="ml-2 text-yellow-300 font-bold">
+            Ends in {formatTime(timeLeft)}
+          </span>
         </div>
+      )}
 
-        {/* ❤️ 🛒 👤 + Hamburger */}
-        <div className="flex items-center space-x-4">
-          {/* Hamburger only on mobile */}
-          <button
-            className="md:hidden flex items-center justify-center w-10 h-10 rounded-md border border-gray-300"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            <ion-icon
-              name={mobileMenuOpen ? "close" : "menu"}
-              class="text-2xl text-gray-800"
-            ></ion-icon>
-          </button>
+      <header className="w-full border-b border-gray-300 bg-white relative z-50">
+        <div className="max-w-7xl mx-auto w-full flex items-center justify-between p-4">
+          {/* 🧩 Logo - Left */}
+          <img
+            src="https://ik.imagekit.io/bulkwala/demo/bulkwalalogo.jpg?updatedAt=1762145179195"
+            alt="Bulkwala Logo"
+            className="w-20 h-20 cursor-pointer"
+            onClick={() => navigate("/")}
+          />
 
-          {/* Desktop Icons */}
-          <div className="hidden md:flex items-center space-x-6 relative">
-            <Link
-              to="/wishlist"
-              className="relative flex items-center space-x-1"
+          {/* 🔍 Search Bar (Hidden on Mobile) */}
+          <div className="hidden md:block w-[450px]">
+            <form
+              onSubmit={handleSearchSubmit}
+              className="flex items-center bg-gray-100 rounded-md px-4 py-2"
             >
               <ion-icon
-                name="heart-outline"
-                className="text-xl text-[#02066F]"
+                name="search-outline"
+                class="text-xl text-gray-500 mr-2"
               ></ion-icon>
-              <span className="text-base text-[#02066F] font-medium">
-                Wishlist
-              </span>
-              {wishlist.length > 0 && (
-                <span className="absolute -top-2 -right-3 bg-red-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
-                  {wishlist.length}
-                </span>
-              )}
-            </Link>
-
-            <Link to="/cart" className="relative flex items-center space-x-1">
+              <input
+                ref={searchRef}
+                type="text"
+                placeholder="Search Your Products Here"
+                className="bg-transparent flex-1 outline-none text-sm md:text-base"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  if (e.target.value.trim()) setSuggestions(recentSearches);
+                }}
+                onFocus={() => {
+                  if (searchQuery.trim()) setSuggestions(recentSearches);
+                }}
+                onBlur={() => setTimeout(() => setSuggestions([]), 150)}
+              />
               <ion-icon
-                name="cart-outline"
-                className="text-xl text-[#02066F]"
+                name={listening ? "mic" : "mic-outline"}
+                class={`text-xl ml-2 cursor-pointer transition-all ${
+                  listening ? "text-red-500 animate-pulse" : "text-gray-500"
+                }`}
+                onClick={handleVoiceSearch}
               ></ion-icon>
-              <span className="text-base text-[#02066F] font-medium">Cart</span>
-              {totalItems > 0 && (
-                <span className="absolute -top-2 -right-3 bg-red-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
-                  {totalItems}
-                </span>
-              )}
-            </Link>
+            </form>
 
-            {user ? (
-              <div ref={dropdownRef} className="relative">
-                <button
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center space-x-2 px-3 py-1 bg-gray-100 rounded-md hover:bg-gray-200 transition"
-                >
-                  <ion-icon
-                    name="person-circle-outline"
-                    class="text-xl text-[#02066F]"
-                  ></ion-icon>
-                  <span className="text-base text-[#02066F] font-medium">
-                    {user.name}
-                  </span>
-                </button>
-
-                {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-lg rounded-md z-50">
-                    {user.role === "admin" && (
-                      <Link
-                        to="/admin"
-                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                        onClick={() => setDropdownOpen(false)}
-                      >
-                        Manage Dashboard
-                      </Link>
-                    )}
-                    {user.role === "seller" && (
-                      <Link
-                        to="/seller"
-                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                        onClick={() => setDropdownOpen(false)}
-                      >
-                        Manage Dashboard
-                      </Link>
-                    )}
-                    <Link
-                      to="/profile"
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                      onClick={() => setDropdownOpen(false)}
-                    >
-                      My Profile
-                    </Link>
-                    {user.role === "customer" && (
-                      <Link
-                        to="/my-orders"
-                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                        onClick={() => setDropdownOpen(false)}
-                      >
-                        My Orders
-                      </Link>
-                    )}
-                    <button
-                      onClick={handleLogout}
-                      className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    >
-                      Logout
-                    </button>
+            {/* 🔽 Suggestion Dropdown */}
+            {suggestions.length > 0 && (
+              <div
+                ref={suggestionRef}
+                className="absolute bg-white shadow-md rounded-md mt-1 w-[450px] border border-gray-200 z-50"
+              >
+                {suggestions.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm text-gray-700"
+                    onClick={() => {
+                      setSearchQuery(item);
+                      performSearch(item);
+                      setSuggestions([]);
+                    }}
+                  >
+                    {item}
                   </div>
-                )}
-              </div>
-            ) : (
-              <div className="flex items-center space-x-1">
-                <Link
-                  to="/login"
-                  className="text-base font-medium hover:underline"
-                >
-                  Login
-                </Link>
-                <span>/</span>
-                <Link
-                  to="/signup"
-                  className="text-base font-medium hover:underline"
-                >
-                  Signup
-                </Link>
+                ))}
               </div>
             )}
           </div>
-        </div>
-      </div>
 
-      {/* 🧭 NAV LINKS (desktop + mobile responsive) */}
-      <nav className="w-full bg-[#AFC2D5] shadow-sm">
-        <div
-          className={`max-w-7xl mx-auto flex-col md:flex-row md:flex gap-8 px-6 py-4 md:py-5 transition-all duration-300 ${
-            mobileMenuOpen ? "flex" : "hidden md:flex"
-          }`}
-        >
-          <NavLink
-            to="/"
-            className={({ isActive }) =>
-              `text-base font-medium ${
-                isActive ? "underline" : "text-[#02066F] hover:underline"
-              }`
-            }
-          >
-            Home
-          </NavLink>
-          <NavLink
-            to="/products"
-            className={({ isActive }) =>
-              `text-base font-medium ${
-                isActive ? "underline" : "text-[#02066F] hover:underline"
-              }`
-            }
-          >
-            Products
-          </NavLink>
-          <NavLink
-            to="/contact"
-            className={({ isActive }) =>
-              `text-base font-medium ${
-                isActive ? "underline" : "text-[#02066F] hover:underline"
-              }`
-            }
-          >
-            Contact Us
-          </NavLink>
-          <NavLink
-            to="/about"
-            className={({ isActive }) =>
-              `text-base font-medium ${
-                isActive ? "underline" : "text-[#02066F] hover:underline"
-              }`
-            }
-          >
-            About Us
-          </NavLink>
+          {/* ❤️ 🛒 👤 + Hamburger */}
+          <div className="flex items-center space-x-4">
+            {/* Hamburger only on mobile */}
+            <button
+              className="md:hidden flex items-center justify-center w-10 h-10 rounded-md border border-gray-300"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              <ion-icon
+                name={mobileMenuOpen ? "close" : "menu"}
+                class="text-2xl text-gray-800"
+              ></ion-icon>
+            </button>
+
+            {/* Desktop Icons */}
+            <div className="hidden md:flex items-center space-x-6 relative">
+              <Link
+                to="/wishlist"
+                className="relative flex items-center space-x-1"
+              >
+                <ion-icon
+                  name="heart-outline"
+                  className="text-xl text-[#02066F]"
+                ></ion-icon>
+                <span className="text-base text-[#02066F] font-medium">
+                  Wishlist
+                </span>
+                {wishlist.length > 0 && (
+                  <span className="absolute -top-2 -right-3 bg-red-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                    {wishlist.length}
+                  </span>
+                )}
+              </Link>
+
+              <Link to="/cart" className="relative flex items-center space-x-1">
+                <ion-icon
+                  name="cart-outline"
+                  className="text-xl text-[#02066F]"
+                ></ion-icon>
+                <span className="text-base text-[#02066F] font-medium">
+                  Cart
+                </span>
+                {totalItems > 0 && (
+                  <span className="absolute -top-2 -right-3 bg-red-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                    {totalItems}
+                  </span>
+                )}
+              </Link>
+
+              {user ? (
+                <div ref={dropdownRef} className="relative">
+                  <button
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    className="flex items-center space-x-2 px-3 py-1 bg-gray-100 rounded-md hover:bg-gray-200 transition"
+                  >
+                    <ion-icon
+                      name="person-circle-outline"
+                      class="text-xl text-[#02066F]"
+                    ></ion-icon>
+                    <span className="text-base text-[#02066F] font-medium">
+                      {user.name}
+                    </span>
+                  </button>
+
+                  {dropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-lg rounded-md z-50">
+                      {user.role === "admin" && (
+                        <Link
+                          to="/admin"
+                          className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                          onClick={() => setDropdownOpen(false)}
+                        >
+                          Manage Dashboard
+                        </Link>
+                      )}
+                      {user.role === "seller" && (
+                        <Link
+                          to="/seller"
+                          className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                          onClick={() => setDropdownOpen(false)}
+                        >
+                          Manage Dashboard
+                        </Link>
+                      )}
+                      <Link
+                        to="/profile"
+                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                        onClick={() => setDropdownOpen(false)}
+                      >
+                        My Profile
+                      </Link>
+                      {user.role === "customer" && (
+                        <Link
+                          to="/my-orders"
+                          className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                          onClick={() => setDropdownOpen(false)}
+                        >
+                          My Orders
+                        </Link>
+                      )}
+                      <button
+                        onClick={handleLogout}
+                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center space-x-1">
+                  <Link
+                    to="/login"
+                    className="text-base font-medium hover:underline"
+                  >
+                    Login
+                  </Link>
+                  <span>/</span>
+                  <Link
+                    to="/signup"
+                    className="text-base font-medium hover:underline"
+                  >
+                    Signup
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-      </nav>
-    </header>
+
+        {/* 🧭 NAV LINKS (desktop + mobile responsive) */}
+        <nav className="w-full bg-[#AFC2D5] shadow-sm">
+          <div
+            className={`max-w-7xl mx-auto flex-col md:flex-row md:flex gap-8 px-6 py-4 md:py-5 transition-all duration-300 ${
+              mobileMenuOpen ? "flex" : "hidden md:flex"
+            }`}
+          >
+            <NavLink
+              to="/"
+              className={({ isActive }) =>
+                `text-base font-medium ${
+                  isActive ? "underline" : "text-[#02066F] hover:underline"
+                }`
+              }
+            >
+              Home
+            </NavLink>
+            <NavLink
+              to="/products"
+              className={({ isActive }) =>
+                `text-base font-medium ${
+                  isActive ? "underline" : "text-[#02066F] hover:underline"
+                }`
+              }
+            >
+              Products
+            </NavLink>
+            <NavLink
+              to="/contact"
+              className={({ isActive }) =>
+                `text-base font-medium ${
+                  isActive ? "underline" : "text-[#02066F] hover:underline"
+                }`
+              }
+            >
+              Contact Us
+            </NavLink>
+            <NavLink
+              to="/about"
+              className={({ isActive }) =>
+                `text-base font-medium ${
+                  isActive ? "underline" : "text-[#02066F] hover:underline"
+                }`
+              }
+            >
+              About Us
+            </NavLink>
+          </div>
+        </nav>
+      </header>
+    </>
   );
 }
