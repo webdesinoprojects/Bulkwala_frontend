@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import {
+  cancelOrderService,
   createOrderService,
   getMyOrdersService,
   getSingleOrderService,
@@ -167,6 +168,22 @@ const useOrderStore = create((set, get) => ({
           "Failed to fetch tracking information",
         isLoading: false,
       });
+    }
+  },
+
+  cancelOrder: async (orderId) => {
+    set({ isLoading: true });
+    try {
+      const res = await cancelOrderService(orderId);
+      set({ singleOrder: res, isLoading: false });
+      return { success: true, order: res };
+    } catch (error) {
+      set({ isLoading: false });
+      console.error("Cancel order failed:", error);
+      return {
+        success: false,
+        message: error.response?.data?.message || "Failed to cancel order",
+      };
     }
   },
 }));

@@ -12,6 +12,7 @@ const OrderDetail = () => {
     isLoading,
     fetchSingleOrder,
     error,
+    cancelOrder,
   } = useOrderStore();
   const navigate = useNavigate();
 
@@ -22,6 +23,41 @@ const OrderDetail = () => {
   useEffect(() => {
     if (error) toast.error(error);
   }, [error]);
+
+  const handleCancelOrder = async () => {
+    const confirmCancel = window.confirm(
+      "Are you sure you want to cancel this order?"
+    );
+    if (!confirmCancel) return;
+
+    const result = await cancelOrder(orderId);
+    if (result.success) {
+      toast.success("Order cancelled successfully!");
+      fetchSingleOrder(orderId); // refresh order details
+    } else {
+      toast.error(result.message);
+    }
+  };
+
+  const canCancelOrder = (order) => {
+    if (!order) return false;
+
+    // ❌ Not allowed if any of these
+    if (
+      order.status === "Shipped" ||
+      order.status === "Delivered" ||
+      order.status === "Cancelled"
+    ) {
+      return false;
+    }
+
+    // ✅ Allowed only when Processing
+    if (order.status === "Processing") {
+      return true;
+    }
+
+    return false;
+  };
 
   if (isLoading)
     return (
@@ -61,6 +97,8 @@ const OrderDetail = () => {
                 ? "bg-green-100 text-green-700"
                 : order.status === "Cancelled"
                 ? "bg-red-100 text-red-700"
+                : order.status === "Shipped"
+                ? "bg-blue-100 text-blue-700"
                 : "bg-yellow-100 text-yellow-700"
             }`}
           >
@@ -195,8 +233,31 @@ const OrderDetail = () => {
         </CardContent>
       </Card>
 
-      {/* 🔙 BACK BUTTON */}
+      {/* 🔙 ACTION BUTTONS */}
       <div className="mt-8 flex flex-col sm:flex-row justify-end gap-3">
+        {canCancelOrder(order) ? (
+          <Button
+            onClick={handleCancelOrder}
+            className="bg-red-600 hover:bg-red-700 text-white w-full sm:w-auto"
+            disabled={isLoading}
+          >
+            {isLoading ? "Cancelling..." : "Cancel Order"}
+          </Button>
+        ) : (
+          <Button
+            disabled
+            className="bg-gray-300 text-gray-600 w-full sm:w-auto cursor-not-allowed"
+          >
+            {order.status === "Cancelled"
+              ? "Order Cancelled"
+              : order.status === "Shipped"
+              ? "Already Shipped"
+              : order.status === "Delivered"
+              ? "Delivered"
+              : "Cannot Cancel"}
+          </Button>
+        )}
+
         <Button
           className="bg-[#02066F] hover:bg-[#03136e] w-full sm:w-auto"
           onClick={() => navigate("/my-orders")}

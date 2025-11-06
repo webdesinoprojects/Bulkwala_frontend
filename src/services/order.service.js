@@ -30,6 +30,17 @@ export const getMyOrdersService = async () => {
   return res.data.data;
 };
 
+export const cancelOrderService = async (orderId) => {
+  const res = await axiosInstance.post(
+    `/api/order/${orderId}/cancel`,
+    {},
+    {
+      withCredentials: true,
+    }
+  );
+  return res.data.data;
+};
+
 // 🔹 Track Order (Delhivery Tracking)
 export const trackOrderService = async (orderId) => {
   const res = await axiosInstance.get(`/api/order/track/${orderId}`, {
