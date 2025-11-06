@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { AlertTriangle } from "lucide-react";
 import useOrderStore from "@/store/order.store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,12 +11,10 @@ const OrderDetail = () => {
     singleOrder: order,
     isLoading,
     fetchSingleOrder,
-    cancelOrder,
     error,
     cancelOrder,
   } = useOrderStore();
   const navigate = useNavigate();
-  const [isCancelling, setIsCancelling] = useState(false);
 
   useEffect(() => {
     fetchSingleOrder(orderId);
@@ -33,15 +30,33 @@ const OrderDetail = () => {
     );
     if (!confirmCancel) return;
 
-    try {
-      setIsCancelling(true);
-      await cancelOrder(order._id);
-      toast.success("Order cancelled successfully");
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to cancel order");
-    } finally {
-      setIsCancelling(false);
+    const result = await cancelOrder(orderId);
+    if (result.success) {
+      toast.success("Order cancelled successfully!");
+      fetchSingleOrder(orderId); // refresh order details
+    } else {
+      toast.error(result.message);
     }
+  };
+
+  const canCancelOrder = (order) => {
+    if (!order) return false;
+
+    // ❌ Not allowed if any of these
+    if (
+      order.status === "Shipped" ||
+      order.status === "Delivered" ||
+      order.status === "Cancelled"
+    ) {
+      return false;
+    }
+
+    // ✅ Allowed only when Processing
+    if (order.status === "Processing") {
+      return true;
+    }
+
+    return false;
   };
 
   if (isLoading)
@@ -177,7 +192,7 @@ const OrderDetail = () => {
         </CardContent>
       </Card>
 
-      {/* 🛍️ PRODUCT DETAILS */}
+      {/* 🛍 PRODUCT DETAILS */}
       <Card className="border-gray-200 shadow-sm">
         <CardHeader>
           <CardTitle className="text-base sm:text-lg font-semibold">
@@ -218,17 +233,28 @@ const OrderDetail = () => {
         </CardContent>
       </Card>
 
-      {/* 🔙 BACK + CANCEL BUTTON */}
+      {/* 🔙 ACTION BUTTONS */}
       <div className="mt-8 flex flex-col sm:flex-row justify-end gap-3">
-        {(order.status === "Pending" || order.status === "Processing") && (
+        {canCancelOrder(order) ? (
           <Button
-            variant="destructive"
-            disabled={isCancelling}
             onClick={handleCancelOrder}
-            className="bg-red-600 hover:bg-red-700 text-white w-full sm:w-auto flex items-center gap-2"
+            className="bg-red-600 hover:bg-red-700 text-white w-full sm:w-auto"
+            disabled={isLoading}
           >
-            <AlertTriangle className="w-4 h-4" />
-            {isCancelling ? "Cancelling..." : "Cancel Order"}
+            {isLoading ? "Cancelling..." : "Cancel Order"}
+          </Button>
+        ) : (
+          <Button
+            disabled
+            className="bg-gray-300 text-gray-600 w-full sm:w-auto cursor-not-allowed"
+          >
+            {order.status === "Cancelled"
+              ? "Order Cancelled"
+              : order.status === "Shipped"
+              ? "Already Shipped"
+              : order.status === "Delivered"
+              ? "Delivered"
+              : "Cannot Cancel"}
           </Button>
         )}
 

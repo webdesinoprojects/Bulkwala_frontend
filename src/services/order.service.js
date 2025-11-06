@@ -48,10 +48,3 @@ export const trackOrderService = async (orderId) => {
   });
   return res.data.data;
 };
-// ❌ Cancel an order
-export const cancelOrderService = async (orderId) => {
-  const res = await axiosInstance.post(`/api/order/${orderId}/cancel`, null, {
-    withCredentials: true,
-  });
-  return res.data.data;
-};
