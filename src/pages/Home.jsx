@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CategoryNav from "../components/CategoryNav.jsx";
+import { useBannerStore } from "@/store/banner.store";
 import CategorySlider from "../components/CategorySlider.jsx";
 import SubcategoryList from "../components/SubcategoryList.jsx";
 import PromoSection from "@/components/PromoSection.jsx";
@@ -8,9 +9,15 @@ import TopProductsCarousel from "@/components/TopProductsCarousel.jsx";
 
 export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const { banners, fetchactiveBanners } = useBannerStore();
+
+  useEffect(() => {
+    fetchactiveBanners();
+  }, []);
 
   return (
-    <div className="w-full min-h-screen bg-[#F8FAFC]">
+    <div>
+      {/* 🔹 Category Navigation */}
       <section className="max-w-7xl mx-auto px-4 py-8">
         <CategoryNav
           selectedCategory={selectedCategory}
@@ -18,26 +25,27 @@ export default function HomePage() {
         />
       </section>
 
-      {/* 🔹 SLIDER */}
+      {/* 🔹 Category Slider */}
       <section className="max-w-7xl mx-auto px-4">
-        <CategorySlider category={selectedCategory} />
+        <CategorySlider category={selectedCategory} defaultBanners={banners} />
       </section>
 
-      {/* 🔹 SUBCATEGORIES (Animated + Conditional) */}
+      {/* 🔹 Subcategories */}
       <section className="max-w-7xl mx-auto px-4 py-5">
         <SubcategoryList category={selectedCategory} />
       </section>
-      {/* 🔹 Product Carousel */}
+
+      {/* 🔹 Recent Products */}
       <section className="max-w-7xl mx-auto px-4 py-5">
         <RecentProductsCarousel />
       </section>
 
-      {/* 🔹 PROMO SECTION */}
-      <section className="max-w-7xl mx-auto ">
+      {/* 🔹 Promo Section */}
+      <section className="max-w-7xl mx-auto">
         <PromoSection />
       </section>
 
-      {/* 🔹 TOP PRODUCTS SECTION */}
+      {/* 🔹 Top Products */}
       <section className="max-w-7xl mx-auto px-4 py-5">
         <TopProductsCarousel />
       </section>

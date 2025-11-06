@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import {
+  cancelOrderService,
   createOrderService,
   getMyOrdersService,
   getSingleOrderService,

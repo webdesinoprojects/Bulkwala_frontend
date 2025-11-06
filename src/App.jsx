@@ -21,7 +21,7 @@ import ChangePassword from "./pages/ChangePassword";
 import ResetPassword from "./pages/ResetPassword";
 import Cart from "./pages/Cart";
 import ForgotPassword from "./pages/ForgotPassword";
-import PaymentPage from "./pages/PaymentPage";
+import PaymentPage from "./pages/paymentPage";
 import OrderSuccess from "./pages/OrderSuccess";
 import OrderDetail from "./pages/OrderDetail";
 import MyOrders from "./pages/Myorders";

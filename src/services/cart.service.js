@@ -25,3 +25,17 @@ export const clearCartService = async () => {
   const res = await axiosInstance.delete("/api/cart/clear-cart");
   return res.data.data;
 };
+
+// ✅ Apply coupon
+export const applyCouponService = async (couponCode) => {
+  const res = await axiosInstance.post("/api/cart/apply-coupon", {
+    couponCode,
+  });
+  return res.data.data;
+};
+
+// ✅ Remove coupon
+export const removeCouponService = async () => {
+  const res = await axiosInstance.post("/api/cart/remove-coupon");
+  return res.data.data;
+};

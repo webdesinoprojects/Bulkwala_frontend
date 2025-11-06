@@ -1,9 +1,9 @@
 import { create } from "zustand";
 import {
   createCouponService,
+  deleteCouponService,
   fetchCouponsService,
-  validateCouponService,
-} from "@/services/coupan.service";
+} from "@/services/coupon.service";
 
 export const useCouponStore = create((set, get) => ({
   coupons: [],
@@ -36,15 +36,18 @@ export const useCouponStore = create((set, get) => ({
     }
   },
 
-  validateCoupon: async (data) => {
-    set({ isValidating: true });
+  deleteCoupon: async (couponId) => {
+    set({ isLoading: true });
     try {
-      const result = await validateCouponService(data);
-      return { success: true, data: result };
+      await deleteCouponService(couponId);
+      set((state) => ({
+        coupons: state.coupons.filter((coupon) => coupon.id !== couponId),
+      }));
+      return { success: true };
     } catch (err) {
       return { success: false, message: err.message };
     } finally {
-      set({ isValidating: false });
+      set({ isLoading: false });
     }
   },
 }));

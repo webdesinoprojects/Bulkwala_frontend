@@ -10,7 +10,7 @@ export const fetchCouponsService = async () => {
   return res.data.data;
 };
 
-export const validateCouponService = async (data) => {
-  const res = await axiosInstance.post("/api/coupons/validate", data);
+export const deleteCouponService = async (couponId) => {
+  const res = await axiosInstance.delete(`/api/coupons/${couponId}`);
   return res.data.data;
 };
