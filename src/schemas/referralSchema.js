@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const referralSchema = z.object({
-  influencerId: z.string().min(1, "Influencer ID is required"),
+  influencerEmail: z.string().email("Invalid email address"),
   code: z.string().min(2, "Referral code must be at least 2 characters"),
   discountPercent: z
     .union([z.string(), z.number()])

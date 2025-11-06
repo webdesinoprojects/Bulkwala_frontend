@@ -26,6 +26,10 @@ const Cart = () => {
     couponApplied, // From store to check if coupon is applied
     appliedCouponCode, // From store to show applied coupon code
     flashDiscount,
+    applyReferral,
+    removeReferral,
+    referralDiscount,
+    referralApplied,
   } = useCartStore();
   const { fetchActiveOffer, timeLeft } = useOfferStore();
 
@@ -33,6 +37,7 @@ const Cart = () => {
   const navigate = useNavigate();
   const [isFetched, setIsFetched] = useState(false);
   const [couponCode, setCouponCode] = useState(""); // State to store coupon code
+  const [referralCode, setReferralCode] = useState("");
 
   // ✅ Fetch cart data on mount
   useEffect(() => {
@@ -103,6 +108,11 @@ const Cart = () => {
         return;
       }
 
+      if (cart.referralCode) {
+        toast.error("You can't use a coupon when a referral is applied.");
+        return;
+      }
+
       if (flashDiscount > 0) {
         toast.error(
           "Flash Offer is active — you can’t apply a coupon right now."
@@ -110,7 +120,7 @@ const Cart = () => {
         return;
       }
 
-      const result = await applyCoupon(couponCode); // 👈 now returns success/message
+      const result = await applyCoupon(couponCode);
 
       if (!result.success) {
         toast.error(result.message || "Invalid coupon code");
@@ -119,7 +129,7 @@ const Cart = () => {
 
       toast.success(result.message || "Coupon applied successfully!");
       setCouponCode("");
-    } catch (error) {
+    } catch {
       toast.error("Something went wrong while applying coupon");
     }
   };
@@ -133,6 +143,37 @@ const Cart = () => {
     } catch (error) {
       toast.error("Failed to remove coupon");
     }
+  };
+
+  const handleApplyReferral = async () => {
+    try {
+      if (cart.coupon) {
+        toast.error("You can't use referral when a coupon is applied.");
+        return;
+      }
+
+      if (flashDiscount > 0) {
+        toast.error("You can't apply referral during an active flash offer.");
+        return;
+      }
+
+      const result = await applyReferral(referralCode);
+      if (!result.success) {
+        toast.error(result.message || "Invalid referral code");
+        return;
+      }
+
+      toast.success(result.message || "Referral applied successfully!");
+      setReferralCode("");
+    } catch (error) {
+      toast.error("Something went wrong while applying referral");
+    }
+  };
+
+  const handleRemoveReferral = async () => {
+    const res = await removeReferral();
+    if (res.success) toast.success("Referral removed");
+    else toast.error(res.message || "Failed to remove referral");
   };
 
   // NOTE: totalPrice coming from store already contains discount (store/calculation),
@@ -238,21 +279,23 @@ const Cart = () => {
             <span className="font-medium">₹{(taxPrice || 0).toFixed(2)}</span>
           </div>
 
-          {/* Discount row (show only if discount > 0) */}
-          {discount > 0 && (
+          {/* Show only one discount — priority: Coupon > Referral > Flash */}
+          {discount > 0 ? (
             <div className="flex justify-between text-green-600 font-medium">
-              <span>Discount</span>
+              <span>Coupon Discount</span>
               <span>-₹{Number(discount).toFixed(2)}</span>
             </div>
-          )}
-
-          {/* Flash Offer discount (if applicable) */}
-          {cart.flashDiscount > 0 && (
+          ) : cart.referralDiscount > 0 ? (
+            <div className="flex justify-between text-purple-600 font-medium">
+              <span>Referral Discount</span>
+              <span>-₹{cart.referralDiscount.toFixed(2)}</span>
+            </div>
+          ) : cart.flashDiscount > 0 ? (
             <div className="flex justify-between text-blue-600 font-medium">
               <span>Flash Offer ({cart.flashDiscountPercent}% OFF)</span>
               <span>-₹{cart.flashDiscount.toFixed(2)}</span>
             </div>
-          )}
+          ) : null}
 
           <div className="flex justify-between border-t pt-4 text-base sm:text-lg md:text-xl font-semibold">
             <span>Total Price</span>
@@ -306,6 +349,45 @@ const Cart = () => {
 
           {couponError && (
             <p className="text-red-500 text-sm mt-2">{couponError}</p>
+          )}
+        </div>
+        {/* Referral Code Section */}
+        <div className="mt-8">
+          {!referralApplied ? (
+            <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4">
+              <Input
+                type="text"
+                placeholder="Enter referral code"
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value)}
+                className="w-full sm:w-auto text-sm sm:text-base"
+              />
+              <Button
+                onClick={handleApplyReferral}
+                disabled={!referralCode}
+                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white text-sm sm:text-base"
+              >
+                Apply Referral
+              </Button>
+            </div>
+          ) : (
+            <div className="mt-4 flex items-center justify-between bg-green-50 border border-green-200 p-3 rounded-md">
+              <div>
+                <p className="text-green-800 font-medium">
+                  ✅ Referral applied — {cart.referralCode}
+                </p>
+                <p className="text-sm text-gray-600 mt-1">
+                  You saved ₹{referralDiscount.toFixed(2)}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={handleRemoveReferral}
+                className="text-sm sm:text-base"
+              >
+                Remove Referral
+              </Button>
+            </div>
           )}
         </div>
         {/* Action Buttons */}
