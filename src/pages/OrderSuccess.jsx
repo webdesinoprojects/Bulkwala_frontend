@@ -95,14 +95,45 @@ const OrderSuccess = () => {
     const itemsPrice = orderData?.itemsPrice || totalAmount / 1.18;
     const taxPrice = orderData?.taxPrice || totalAmount - itemsPrice;
     const shippingPrice = orderData?.shippingPrice || 0;
+    const discount = orderData?.discount || 0;
+    const referralDiscount = orderData?.referralDiscount || 0;
+    const flashDiscount = orderData?.flashDiscount || 0;
+    const flashPercent = orderData?.flashDiscountPercent || 0;
+
+    // Decide which discount label to show
+    let discountLabel = "";
+    let discountValue = 0;
+    if (discount > 0) {
+      discountLabel = "Coupon Discount";
+      discountValue = discount;
+    } else if (referralDiscount > 0) {
+      discountLabel = "Referral Discount";
+      discountValue = referralDiscount;
+    } else if (flashDiscount > 0) {
+      discountLabel = `Flash Offer (${flashPercent}% OFF)`;
+      discountValue = flashDiscount;
+    }
 
     doc.setFontSize(11);
     doc.text("Price Summary:", 14, summaryY);
-    doc.text(`Items Total: ₹${itemsPrice.toFixed(2)}`, 150, summaryY);
-    doc.text(`Tax (18%): ₹${taxPrice.toFixed(2)}`, 150, summaryY + 6);
-    doc.text(`Shipping: ₹${shippingPrice.toFixed(2)}`, 150, summaryY + 12);
+
+    let lineY = summaryY;
+    doc.text(`Items Total: ₹${itemsPrice.toFixed(2)}`, 150, (lineY += 0));
+    doc.text(`Tax (18%): ₹${taxPrice.toFixed(2)}`, 150, (lineY += 6));
+    doc.text(`Shipping: ₹${shippingPrice.toFixed(2)}`, 150, (lineY += 6));
+
+    if (discountValue > 0) {
+      doc.setTextColor(255, 0, 0);
+      doc.text(
+        `${discountLabel}: -₹${discountValue.toFixed(2)}`,
+        150,
+        (lineY += 6)
+      );
+      doc.setTextColor(0, 0, 0);
+    }
+
     doc.setFont(undefined, "bold");
-    doc.text(`Grand Total: ₹${totalAmount.toFixed(2)}`, 150, summaryY + 18);
+    doc.text(`Grand Total: ₹${totalAmount.toFixed(2)}`, 150, (lineY += 8));
     doc.setFont(undefined, "normal");
 
     doc.line(14, summaryY + 30, 195, summaryY + 30);
@@ -143,19 +174,52 @@ const OrderSuccess = () => {
             <strong>Customer:</strong> {customerName}
           </p>
           <p>
-            <strong>Total Amount:</strong> ₹{totalAmount.toFixed(2)}
-          </p>
-          <p>
             <strong>Items:</strong> {itemCount}
-          </p>
-          <p>
-            <strong>Payment Status:</strong> {paymentStatus.toUpperCase()}
           </p>
           <p>
             <strong>Payment Mode:</strong> {paymentMode}
           </p>
           <p>
+            <strong>Payment Status:</strong> {paymentStatus.toUpperCase()}
+          </p>
+          <p>
             <strong>Shipping City:</strong> {city}
+          </p>
+
+          <hr className="my-2 border-gray-300" />
+
+          <p>
+            <strong>Items Total:</strong> ₹
+            {orderData?.itemsPrice?.toFixed(2) || 0}
+          </p>
+          <p>
+            <strong>Shipping:</strong> ₹
+            {orderData?.shippingPrice?.toFixed(2) || 0}
+          </p>
+          <p>
+            <strong>Tax (18%):</strong> ₹{orderData?.taxPrice?.toFixed(2) || 0}
+          </p>
+
+          {/* ✅ Show one applied discount type */}
+          {orderData?.discount > 0 ? (
+            <p className="text-green-700">
+              <strong>Coupon Discount:</strong> -₹
+              {orderData.discount.toFixed(2)}
+            </p>
+          ) : orderData?.referralDiscount > 0 ? (
+            <p className="text-purple-700">
+              <strong>Referral Discount:</strong> -₹
+              {orderData.referralDiscount.toFixed(2)}
+            </p>
+          ) : orderData?.flashDiscount > 0 ? (
+            <p className="text-blue-700">
+              <strong>Flash Offer ({orderData.flashDiscountPercent}%):</strong>{" "}
+              -₹{orderData.flashDiscount.toFixed(2)}
+            </p>
+          ) : null}
+
+          <p className="text-lg font-semibold text-gray-900 mt-2">
+            Total Amount: ₹{totalAmount.toFixed(2)}
           </p>
         </div>
 
