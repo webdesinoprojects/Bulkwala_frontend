@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
@@ -19,109 +19,175 @@ import { LoginSchema } from "@/schemas/userSchema.js";
 
 const Login = () => {
   const navigate = useNavigate();
-  const login = useAuthStore((state) => state.login);
+  const login = useAuthStore((s) => s.login);
+  const sendOtp = useAuthStore((s) => s.otpLoginSend);
+  const verifyOtp = useAuthStore((s) => s.otpLoginVerify);
+  const [loginMode, setLoginMode] = useState("email");
+  const [otpSent, setOtpSent] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
 
+  // Email Login form
   const form = useForm({
     resolver: zodResolver(LoginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
+    defaultValues: { email: "", password: "" },
   });
 
+  // Submit for Email Login
   const onSubmit = async (values) => {
     const res = await login(values);
-    if (res.success && res.user?._id) {
+    if (res.success) {
       toast.success("Login successful!");
       navigate("/");
-    } else {
-      toast.error(res.error || "Invalid email or password");
-    }
+    } else toast.error(res.error);
+  };
+
+  // Send OTP
+  const handleSendOtp = async () => {
+    if (!phone) return toast.error("Enter phone number");
+    const res = await sendOtp(phone);
+    if (res.success) {
+      setOtpSent(true);
+      toast.success("OTP sent successfully!");
+    } else toast.error(res.error);
+  };
+
+  // Verify OTP
+  const handleVerifyOtp = async () => {
+    const res = await verifyOtp({ phone, otp });
+    if (res.success) {
+      toast.success("Logged in successfully!");
+      navigate("/");
+    } else toast.error(res.error);
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-50 px-4 sm:px-6 lg:px-8">
+    <div className="flex justify-center items-center min-h-screen bg-gray-50 px-4">
       <Card className="w-full max-w-md shadow-lg border border-gray-200 rounded-2xl bg-white">
         <CardContent className="p-6 sm:p-8">
-          <h2 className="text-center text-2xl sm:text-3xl font-semibold text-[#02066F] mb-6">
-            Welcome Back 👋
+          <h2 className="text-center text-2xl font-semibold text-[#02066F] mb-6">
+            {loginMode === "email"
+              ? "Login with Email"
+              : "Login with Phone Number"}
           </h2>
 
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-              {/* Email */}
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700">
-                      Email Address
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="Enter your email"
-                        {...field}
-                        className="rounded-lg border-gray-300 focus:ring-2 focus:ring-[#02066F]"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Password */}
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700">Password</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Enter your password"
-                        {...field}
-                        className="rounded-lg border-gray-300 focus:ring-2 focus:ring-[#02066F]"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Login Button */}
-              <Button
-                type="submit"
-                className="w-full mt-4 bg-[#02066F] hover:bg-[#04127A] text-white font-semibold rounded-lg py-2.5 transition-all"
-                disabled={form.formState.isSubmitting}
-              >
-                {form.formState.isSubmitting ? "Logging in..." : "Login"}
-              </Button>
-            </form>
-          </Form>
-
-          {/* Forgot password + Signup link */}
-          <div className="mt-5 flex flex-col sm:flex-row items-center justify-between text-sm text-gray-600">
+          {/* Toggle */}
+          <div className="flex justify-center mb-6">
             <button
-              type="button"
-              onClick={() => navigate("/forgot-password")}
-              className="text-[#02066F] font-medium hover:underline"
+              className={`px-3 py-1 rounded-l-lg border ${
+                loginMode === "email"
+                  ? "bg-[#02066F] text-white"
+                  : "bg-gray-100 text-gray-600"
+              }`}
+              onClick={() => setLoginMode("email")}
             >
-              Forgot Password?
+              Email Login
             </button>
-
-            <p className="mt-3 sm:mt-0">
-              Don’t have an account?{" "}
-              <span
-                className="text-[#02066F] font-medium cursor-pointer hover:underline"
-                onClick={() => navigate("/signup")}
-              >
-                Sign up
-              </span>
-            </p>
+            <button
+              className={`px-3 py-1 rounded-r-lg border ${
+                loginMode === "otp"
+                  ? "bg-[#02066F] text-white"
+                  : "bg-gray-100 text-gray-600"
+              }`}
+              onClick={() => setLoginMode("otp")}
+            >
+              OTP Login
+            </button>
           </div>
+
+          {loginMode === "email" ? (
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-5"
+              >
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email Address</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="Enter your email"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="Enter your password"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <Button
+                  type="submit"
+                  className="w-full bg-[#02066F] text-white"
+                >
+                  Login
+                </Button>
+              </form>
+            </Form>
+          ) : (
+            <div className="space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number
+                </label>
+                <Input
+                  placeholder="Enter phone number"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+              </div>
+
+              {otpSent && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Enter OTP
+                  </label>
+                  <Input
+                    placeholder="Enter OTP"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                  />
+                </div>
+              )}
+
+              {!otpSent ? (
+                <Button
+                  onClick={handleSendOtp}
+                  className="w-full bg-[#02066F] text-white"
+                >
+                  Send OTP
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleVerifyOtp}
+                  className="w-full bg-[#02066F] text-white"
+                >
+                  Verify & Login
+                </Button>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

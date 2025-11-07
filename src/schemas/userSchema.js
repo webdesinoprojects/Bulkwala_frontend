@@ -10,14 +10,22 @@ const SignupSchema = z.object({
     .regex(/[a-z]/, "Password must contain at least one lowercase letter")
     .regex(/[0-9]/, "Password must contain at least one number")
     .regex(/[\W_]/, "Password must contain at least one special character"),
+  phone: z.string().regex(/^[0-9]{10}$/, "Phone number must be 10 digits"),
 });
 
-const LoginSchema = z.object({
-  email: z.string().min(1, "Email is required").email("Invalid email address"),
-  password: z
-    .string()
-    .min(6, { message: "Password must be at least 6 characters long" }),
-});
+const LoginSchema = z
+  .object({
+    email: z.string().optional(),
+    password: z.string().optional(),
+    phone: z
+      .string()
+      .regex(/^[0-9]{10}$/, "Phone number must be 10 digits")
+      .optional(),
+    otp: z.string().optional(),
+  })
+  .refine((data) => (data.email && data.password) || (data.phone && data.otp), {
+    message: "Provide either Email & Password or Phone & OTP",
+  });
 
 const ResetPasswordSchema = z
   .object({

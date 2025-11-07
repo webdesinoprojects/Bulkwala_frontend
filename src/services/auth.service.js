@@ -18,6 +18,18 @@ export const loginService = async (credentials) => {
   return res.data.data;
 };
 
+// Send OTP
+export const sendOtpService = async (phone) => {
+  const res = await axiosInstance.post("/api/users/send-otp", { phone });
+  return res.data;
+};
+
+// Verify OTP
+export const verifyOtpService = async (data) => {
+  const res = await axiosInstance.post("/api/users/verify-otp", data);
+  return res.data.data; // returns user
+};
+
 export const updateShippingAddressService = async (addressData) => {
   const res = await axiosInstance.put("/api/users/address", addressData);
   return res.data.data;

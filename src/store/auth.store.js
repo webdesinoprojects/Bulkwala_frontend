@@ -15,6 +15,8 @@ import {
   updateShippingAddressService,
   updateProfileService,
   registerSellerService,
+  verifyOtpService,
+  sendOtpService,
 } from "@/services/auth.service";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -94,6 +96,34 @@ export const useAuthStore = create(
         });
 
         return { success: false, error: errorMessage };
+      }
+    },
+
+    otpLoginSend: async (phone) => {
+      set({ isLoading: true, error: null });
+      try {
+        await sendOtpService(phone);
+        set({ isLoading: false });
+        return { success: true };
+      } catch (error) {
+        const message = error.response?.data?.message || "Failed to send OTP";
+        set({ isLoading: false, error: message });
+        return { success: false, error: message };
+      }
+    },
+
+    otpLoginVerify: async (data) => {
+      set({ isLoading: true, error: null });
+      try {
+        const user = await verifyOtpService(data);
+        set({ user, isLoggedIn: true, isLoading: false });
+        localStorage.setItem("user", JSON.stringify(user));
+        return { success: true, user };
+      } catch (error) {
+        const message =
+          error.response?.data?.message || "Invalid or expired OTP";
+        set({ isLoading: false, error: message });
+        return { success: false, error: message };
       }
     },
 

@@ -24,6 +24,7 @@ const Signup = () => {
       name: "",
       email: "",
       password: "",
+      phone: "",
     },
   });
 
@@ -81,6 +82,26 @@ const Signup = () => {
                       <Input
                         type="email"
                         placeholder="Enter your email"
+                        {...field}
+                        className="rounded-lg focus:ring-2 focus:ring-[#02066F]"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {/* Phone */}
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700">
+                      Phone Number
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Enter your phone number"
                         {...field}
                         className="rounded-lg focus:ring-2 focus:ring-[#02066F]"
                       />
