@@ -5,6 +5,14 @@ export const registerService = async (userData) => {
   return res.data.data;
 };
 
+export const registerSellerService = async (sellerData) => {
+  const res = await axiosInstance.post(
+    "/api/users/register-seller",
+    sellerData
+  );
+  return res.data.data;
+};
+
 export const loginService = async (credentials) => {
   const res = await axiosInstance.post("/api/users/login", credentials);
   return res.data.data;

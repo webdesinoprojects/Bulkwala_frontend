@@ -103,6 +103,7 @@ const Profile = () => {
             </CardHeader>
             <CardContent>
               {user.role === "seller" ? (
+                // ✅ Case 1: Active Seller
                 <div className="p-4 bg-green-50 border border-green-200 rounded-md">
                   <p className="text-green-700 font-medium text-lg">
                     Seller Account Active
@@ -114,7 +115,19 @@ const Profile = () => {
                       : "Pending Review ⏳"}
                   </p>
                 </div>
+              ) : user?.sellerDetails?.businessName &&
+                !user?.sellerDetails?.approved ? (
+                // ✅ Case 2: Application Sent but Pending
+                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+                  <p className="text-yellow-700 font-medium text-lg">
+                    Seller Application Sent 🚀
+                  </p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Status: Pending Admin Approval ⏳
+                  </p>
+                </div>
               ) : (
+                // ✅ Case 3: Regular Customer (Show Button)
                 <SellerFormDialog />
               )}
             </CardContent>

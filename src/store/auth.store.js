@@ -14,6 +14,7 @@ import {
   changePasswordService,
   updateShippingAddressService,
   updateProfileService,
+  registerSellerService,
 } from "@/services/auth.service";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -46,6 +47,25 @@ export const useAuthStore = create(
       }
     },
 
+    sellerSignup: async (sellerData) => {
+      set({ isLoading: true, error: null });
+      try {
+        const newSeller = await registerSellerService(sellerData);
+        set({
+          pendingVerificationUser: newSeller,
+          isLoading: false,
+        });
+        return { success: true, user: newSeller };
+      } catch (error) {
+        let message =
+          error.response?.data?.message ||
+          error.message ||
+          "Seller signup failed";
+        set({ error: message, isLoading: false });
+        return { success: false, error: message };
+      }
+    },
+
     login: async (credentials) => {
       set({ isLoading: true, error: null });
       try {
@@ -61,13 +81,18 @@ export const useAuthStore = create(
         return { success: true, user: userData };
       } catch (apiError) {
         const errorMessage =
-          apiError.message || "Failed to login. Please try again.";
+          apiError.response?.data?.message ||
+          apiError.response?.data?.error ||
+          apiError.message ||
+          "Failed to login. Please try again.";
+
         set({
           user: null,
           isLoggedIn: false,
           isLoading: false,
           error: errorMessage,
         });
+
         return { success: false, error: errorMessage };
       }
     },

@@ -9,7 +9,7 @@ import { useAuthStore } from "@/store/auth.store";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { SignupSchema } from "@/schemas/usersSchema";
+import { SignupSchema } from "@/schemas/userSchema";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {

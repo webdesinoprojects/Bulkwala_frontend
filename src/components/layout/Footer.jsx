@@ -48,7 +48,12 @@ export default function Footer() {
               Mobile Accessories
             </li>
             <li className="hover:underline cursor-pointer">Wholesale</li>
-            <li className="hover:underline cursor-pointer">Become A Seller</li>
+            <Link
+              to="/become-seller"
+              className="text-[#02066F] hover:underline hover:text-[#04127A]"
+            >
+              Become a Seller
+            </Link>
           </ul>
         </div>
 

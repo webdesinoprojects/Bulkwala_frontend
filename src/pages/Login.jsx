@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import useAuthStore from "@/store/auth.store.js";
-import { LoginSchema } from "@/schemas/usersSchema.js";
+import { LoginSchema } from "@/schemas/userSchema.js";
 
 const Login = () => {
   const navigate = useNavigate();
