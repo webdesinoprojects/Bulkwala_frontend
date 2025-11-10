@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -6,7 +6,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useAuthStore } from "@/store/auth.store";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SignupSchema } from "@/schemas/userSchema";
@@ -26,6 +26,9 @@ export default function SignupPopup() {
   const [open, setOpen] = useState(false);
   const { user, signup } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
+  const firstTimerRef = useRef(null);
+  const repeatTimerRef = useRef(null);
 
   const form = useForm({
     resolver: zodResolver(SignupSchema),
@@ -33,12 +36,47 @@ export default function SignupPopup() {
   });
 
   useEffect(() => {
-    if (user?._id) return;
-    const timer = setInterval(() => {
-      if (!user?._id) setOpen(true);
+    if (firstTimerRef.current) clearTimeout(firstTimerRef.current);
+    if (repeatTimerRef.current) clearInterval(repeatTimerRef.current);
+
+    const isAuthPage =
+      location.pathname.includes("/login") ||
+      location.pathname.includes("/signup");
+
+    if (user?._id || isAuthPage) {
+      setOpen(false);
+      console.log("🚫 Popup disabled (user logged in or on auth page)");
+      return;
+    }
+
+    console.log("⏳ Popup scheduled to open in 15 seconds...");
+    firstTimerRef.current = setTimeout(() => {
+      console.log("🎉 Popup opened (15s delay)");
+      setOpen(true);
+
+      console.log("🔁 Setting repeat popup every 2 minutes...");
+      repeatTimerRef.current = setInterval(() => {
+        const stillValid =
+          !user?._id &&
+          !(
+            location.pathname.includes("/login") ||
+            location.pathname.includes("/signup")
+          );
+        if (stillValid) {
+          console.log("🔔 Popup reopened (2-minute repeat)");
+          setOpen(true);
+        } else {
+          console.log("🚫 Skipping popup (user logged in or on auth page)");
+        }
+      }, 120000);
     }, 15000);
-    return () => clearInterval(timer);
-  }, [user]);
+
+    return () => {
+      if (firstTimerRef.current) clearTimeout(firstTimerRef.current);
+      if (repeatTimerRef.current) clearInterval(repeatTimerRef.current);
+      console.log("🧹 Popup timers cleared");
+    };
+  }, [location, user]);
 
   const onSubmit = async (values) => {
     const res = await signup(values);
@@ -59,32 +97,33 @@ export default function SignupPopup() {
         scrollbar-hide hover:scrollbar-show transition-all duration-300 ease-in-out"
       >
         {/* Header */}
-        <DialogHeader className="relative bg-[#02066F] text-white py-5 px-6 rounded-t-2xl flex items-center justify-center shadow-md">
+        <DialogHeader className="relative text-white px-6 rounded-t-2xl flex items-center justify-center shadow-md">
           <div className="flex items-center justify-between w-full max-w-sm">
-            {/* Left Logo */}
             <img
               src="https://ik.imagekit.io/bulkwala/demo/bulkwala%20logo.jpg?updatedAt=1762595477453"
               alt="Bulkwala Logo"
-              className="w-16 h-16 object-contain rounded-md shadow-md"
+              className="w-20 h-20 object-contain"
             />
 
-            {/* Center Title */}
-            <DialogTitle className="text-xl sm:text-2xl font-bold text-center text-white whitespace-nowrap">
-              Join Bulkwala
+            {/* Title */}
+            <DialogTitle className="text-lg sm:text-xl font-bold text-center text-white whitespace-nowrap drop-shadow-sm">
+              <span className="font-extrabold text-[#02066F]">
+                Join Bulkwala
+              </span>
             </DialogTitle>
 
-            {/* Right Logo */}
+            {/* Cyfty Logo (smaller & grey tint) */}
             <img
               src="https://ik.imagekit.io/bulkwala/demo/cyfty%20logo.png?updatedAt=1762595451720"
               alt="Cyfty Logo"
-              className="w-14 h-14 object-contain rounded-md shadow-md"
+              className="w-20 h-20 object-contain opacity-85 grayscale-[30%]"
+              style={{ filter: "brightness(0.85) contrast(1.1)" }}
             />
           </div>
         </DialogHeader>
 
         {/* Body */}
-        <div className="p-6 sm:p-8 bg-white max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-[#02066F]/40 scrollbar-track-transparent hover:scrollbar-thumb-[#02066F]/60">
-          {/* Description Section */}
+        <div className="p-6 sm:p-8 bg-white max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-[#AFC2D5]/40 scrollbar-track-transparent hover:scrollbar-thumb-[#AFC2D5]/60">
           <div className="text-center text-gray-700 space-y-1.5 mb-4">
             <p className="text-[17px] sm:text-[18px] font-semibold">
               Join the{" "}
@@ -100,7 +139,7 @@ export default function SignupPopup() {
           </div>
 
           {/* Offer Highlight */}
-          <div className="bg-[#f1f4ff] border border-[#dbe1ff] text-[#02066F] font-semibold rounded-full px-6 py-2 text-center mb-6 text-sm sm:text-[15px] shadow-sm">
+          <div className="bg-[#02066F] border border-[#D7E2ED] text-white font-semibold rounded-full px-6 py-2 text-center mb-6 text-sm sm:text-[15px] shadow-sm">
             🌟 Free Shipping on Prepaid Orders 🌟
           </div>
 
@@ -120,7 +159,7 @@ export default function SignupPopup() {
                         type="tel"
                         placeholder="Enter your phone number"
                         {...field}
-                        className="rounded-lg border-gray-300 focus:ring-2 focus:ring-[#02066F]"
+                        className="rounded-lg border-gray-300 focus:ring-2 focus:ring-[#AFC2D5]"
                       />
                     </FormControl>
                     <FormMessage />
@@ -141,7 +180,7 @@ export default function SignupPopup() {
                       <Input
                         placeholder="Enter your name"
                         {...field}
-                        className="rounded-lg border-gray-300 focus:ring-2 focus:ring-[#02066F] transition-all"
+                        className="rounded-lg border-gray-300 focus:ring-2 focus:ring-[#AFC2D5] transition-all"
                       />
                     </FormControl>
                     <FormMessage />
@@ -163,7 +202,7 @@ export default function SignupPopup() {
                         type="email"
                         placeholder="Enter your email"
                         {...field}
-                        className="rounded-lg border-gray-300 focus:ring-2 focus:ring-[#02066F]"
+                        className="rounded-lg border-gray-300 focus:ring-2 focus:ring-[#AFC2D5]"
                       />
                     </FormControl>
                     <FormMessage />
@@ -185,7 +224,7 @@ export default function SignupPopup() {
                         type="password"
                         placeholder="Enter your password"
                         {...field}
-                        className="rounded-lg border-gray-300 focus:ring-2 focus:ring-[#02066F]"
+                        className="rounded-lg border-gray-300 focus:ring-2 focus:ring-[#AFC2D5]"
                       />
                     </FormControl>
                     <FormMessage />
@@ -196,7 +235,7 @@ export default function SignupPopup() {
               {/* Submit Button */}
               <Button
                 type="submit"
-                className="w-full bg-[#02066F] hover:bg-[#04127A] text-white font-semibold rounded-lg py-2.5 mt-2 shadow-md"
+                className="w-full bg-[#02066F] text-white font-semibold rounded-lg py-2.5 mt-2 shadow-md transition-all"
                 disabled={form.formState.isSubmitting}
               >
                 {form.formState.isSubmitting ? "Signing up..." : "Sign Up"}

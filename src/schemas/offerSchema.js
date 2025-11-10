@@ -14,6 +14,6 @@ export const offerSchema = z.object({
     .transform((val) => Number(val))
     .refine(
       (val) => !isNaN(val) && val >= 1 && val <= 100000,
-      "Max discount must be between ₹1 and ₹100000"
+      "Max discount must be between ₹1 and ₹1000"
     ),
 });

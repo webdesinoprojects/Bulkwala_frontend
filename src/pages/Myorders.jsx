@@ -19,8 +19,13 @@ const MyOrders = () => {
     if (error) toast.error(error);
   }, [error]);
 
-  const totalPages = Math.ceil(orders.length / ITEMS_PER_PAGE);
-  const paginatedOrders = orders.slice(
+  // ✅ Sort latest orders first (by creation date)
+  const sortedOrders = [...orders].sort(
+    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+  );
+
+  const totalPages = Math.ceil(sortedOrders.length / ITEMS_PER_PAGE);
+  const paginatedOrders = sortedOrders.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
@@ -120,9 +125,13 @@ const MyOrders = () => {
                   >
                     Track
                   </Button>
+                ) : order.paymentMode === "pickup" ? (
+                  <p className="text-xs text-blue-600 text-center font-medium">
+                    Picked from store
+                  </p>
                 ) : (
                   <p className="text-xs text-gray-400 text-center">
-                    Awaiting ID
+                    Awaiting Tracking ID
                   </p>
                 )}
               </div>
@@ -221,6 +230,10 @@ const MyOrders = () => {
                     >
                       Track
                     </Button>
+                  ) : order.paymentMode === "pickup" ? (
+                    <p className="text-xs text-blue-600 font-medium">
+                      Picked from Store
+                    </p>
                   ) : (
                     <p className="text-xs text-gray-400">
                       Awaiting Tracking ID
