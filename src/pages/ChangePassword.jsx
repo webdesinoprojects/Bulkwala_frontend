@@ -1,13 +1,19 @@
 import React from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import useAuthStore from "@/store/auth.store";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChangePasswordSchema } from "@/schemas/usersSchema.js";
+import { ChangePasswordSchema } from "@/schemas/userSchema.js";
 
 const ChangePassword = () => {
   const { changePassword, isLoading } = useAuthStore();
@@ -45,7 +51,10 @@ const ChangePassword = () => {
         </CardHeader>
 
         <CardContent>
-          <form onSubmit={handleSubmit(handleSubmitPassword)} className="space-y-4">
+          <form
+            onSubmit={handleSubmit(handleSubmitPassword)}
+            className="space-y-4"
+          >
             <div>
               <label
                 htmlFor="email"
@@ -61,7 +70,9 @@ const ChangePassword = () => {
                 className="focus:ring-2 focus:ring-gray-700"
               />
               {errors.email && (
-                <span className="text-red-500 text-sm">{errors.email.message}</span>
+                <span className="text-red-500 text-sm">
+                  {errors.email.message}
+                </span>
               )}
             </div>
 

@@ -1,10 +1,12 @@
 import {
   addToCartService,
   applyCouponService,
+  applyReferralService,
   clearCartService,
   fetchCartService,
   removeCartItemService,
   removeCouponService,
+  removeReferralService,
   updateCartItemService,
 } from "@/services/cart.service";
 import { create } from "zustand";
@@ -19,6 +21,9 @@ const useCartStore = create((set, get) => ({
   discount: 0,
   couponApplied: false,
   appliedCouponCode: "",
+  referralApplied: false,
+  referralCode: null,
+  referralDiscount: 0,
   isLoading: false,
   isUpdating: false,
   couponError: "",
@@ -36,9 +41,14 @@ const useCartStore = create((set, get) => ({
         discount: cartData.discount || 0,
         couponApplied: !!cartData.coupon,
         appliedCouponCode: cartData.couponCode || "",
+        flashDiscount: cartData.flashDiscount || 0,
+        flashDiscountPercent: cartData.flashDiscountPercent || 0,
+        referralApplied: !!cartData.referralCode,
+        referralCode: cartData.referralCode,
+        referralDiscount: cartData.referralDiscount || 0,
         isLoading: false,
       });
-      get().calculateTotals();
+      // get().calculateTotals();
     } catch (error) {
       console.error("Error fetching cart:", error);
       set({ isLoading: false });
@@ -217,6 +227,36 @@ const useCartStore = create((set, get) => ({
       appliedCouponCode: "",
       totalItems: 0,
     });
+  },
+
+  // ✅ Apply Referral
+  applyReferral: async (referralCode) => {
+    set({ isUpdating: true });
+    try {
+      const res = await applyReferralService({ referralCode });
+      await get().fetchCart();
+      return { success: true, data: res };
+    } catch (err) {
+      // ✅ show backend message properly
+      const message = err.response?.data?.message || "Invalid referral code";
+      return { success: false, message };
+    } finally {
+      set({ isUpdating: false });
+    }
+  },
+
+  // ✅ Remove Referral
+  removeReferral: async () => {
+    set({ isUpdating: true });
+    try {
+      await removeReferralService();
+      await get().fetchCart();
+      return { success: true };
+    } catch (err) {
+      return { success: false, message: err.message };
+    } finally {
+      set({ isUpdating: false });
+    }
   },
 }));
 

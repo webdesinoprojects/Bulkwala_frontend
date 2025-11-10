@@ -46,9 +46,10 @@ export default function ReferralManager() {
           className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"
         >
           <Input
-            placeholder="Influencer ID"
-            {...form.register("influencerId")}
+            placeholder="Influencer Email"
+            {...form.register("influencerEmail")}
           />
+
           <Input placeholder="Referral Code" {...form.register("code")} />
           <Input
             type="number"
@@ -80,7 +81,7 @@ export default function ReferralManager() {
                     key={r._id}
                     className="border-b hover:bg-gray-50 transition"
                   >
-                    <td className="p-3">{r.influencerId}</td>
+                    <td className="p-3">{r.influencerEmail}</td>
                     <td className="p-3 font-semibold">{r.code}</td>
                     <td className="p-3">{r.discountPercent}%</td>
                   </tr>

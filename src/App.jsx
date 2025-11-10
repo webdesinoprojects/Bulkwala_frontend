@@ -27,6 +27,7 @@ import OrderDetail from "./pages/OrderDetail";
 import MyOrders from "./pages/Myorders";
 import Wishlist from "./pages/Wishlist";
 import OrderTrack from "./pages/OrderTrack";
+import SellerSignup from "./Seller/pages/SellerSignup";
 
 const ROLES = {
   ADMIN: "admin",
@@ -50,6 +51,10 @@ const App = createBrowserRouter([
       {
         path: "signup",
         element: <Signup />,
+      },
+      {
+        path: "become-seller",
+        element: <SellerSignup />,
       },
       {
         path: "verify/:userid",

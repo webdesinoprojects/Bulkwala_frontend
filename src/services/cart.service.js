@@ -39,3 +39,13 @@ export const removeCouponService = async () => {
   const res = await axiosInstance.post("/api/cart/remove-coupon");
   return res.data.data;
 };
+
+export const applyReferralService = async (data) => {
+  const res = await axiosInstance.post("/api/cart/apply-referral", data);
+  return res.data.data;
+};
+
+export const removeReferralService = async () => {
+  const res = await axiosInstance.post("/api/cart/remove-referral");
+  return res.data.data;
+};

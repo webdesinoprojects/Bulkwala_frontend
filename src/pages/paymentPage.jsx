@@ -195,6 +195,25 @@ const PaymentPage = () => {
               <span>Tax</span>
               <span>₹{taxPrice.toFixed(2)}</span>
             </div>
+
+            {/* ✅ Show only one discount type — priority: Coupon > Referral > Flash */}
+            {cart?.discount > 0 ? (
+              <div className="flex justify-between text-green-600 font-medium">
+                <span>Coupon Discount</span>
+                <span>-₹{cart.discount.toFixed(2)}</span>
+              </div>
+            ) : cart?.referralDiscount > 0 ? (
+              <div className="flex justify-between text-purple-600 font-medium">
+                <span>Referral Discount</span>
+                <span>-₹{cart.referralDiscount.toFixed(2)}</span>
+              </div>
+            ) : cart?.flashDiscount > 0 ? (
+              <div className="flex justify-between text-blue-600 font-medium">
+                <span>Flash Offer ({cart.flashDiscountPercent}% OFF)</span>
+                <span>-₹{cart.flashDiscount.toFixed(2)}</span>
+              </div>
+            ) : null}
+
             <div className="flex justify-between border-t pt-2 font-semibold text-base sm:text-lg">
               <span>Total</span>
               <span>₹{totalPrice.toFixed(2)}</span>

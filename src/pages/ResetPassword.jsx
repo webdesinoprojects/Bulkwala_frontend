@@ -10,7 +10,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { useNavigate, useParams } from "react-router-dom";
-import { ResetPasswordSchema } from "@/schemas/usersSchema.js";
+import { ResetPasswordSchema } from "@/schemas/userSchema.js";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import useAuthStore from "@/store/auth.store";

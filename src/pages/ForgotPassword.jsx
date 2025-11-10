@@ -11,7 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ForgotPasswordSchema } from "@/schemas/usersSchema";
+import { ForgotPasswordSchema } from "@/schemas/userSchema";
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "@/store/auth.store";
 
