@@ -82,11 +82,23 @@ export const useAuthStore = create(
 
         return { success: true, user: userData };
       } catch (apiError) {
+        const status = apiError.response?.status;
+        const backendData = apiError.response?.data?.data; // ✅ consistent 'data' format
+
         const errorMessage =
           apiError.response?.data?.message ||
           apiError.response?.data?.error ||
           apiError.message ||
           "Failed to login. Please try again.";
+
+        // ✅ detect 403 email not verified (without breaking structure)
+        if (status === 403 && backendData?._id) {
+          return {
+            success: false,
+            error: errorMessage,
+            unverifiedUser: backendData, // always { _id, email }
+          };
+        }
 
         set({
           user: null,
@@ -217,8 +229,8 @@ export const useAuthStore = create(
     },
 
     verifyEmail: async (credentials) => {
+      set({ isLoading: true, error: null });
       try {
-        set({ isLoading: true, error: null });
         await verifyEmailService(credentials);
         set({ isLoading: false });
         return { success: true };
@@ -229,15 +241,13 @@ export const useAuthStore = create(
           "Verification failed";
         set({ error: message, isLoading: false });
         return { success: false, error: message };
-      } finally {
-        set({ isLoading: false });
       }
     },
 
-    resendVerification: async (data) => {
+    resendVerification: async (userid) => {
+      set({ isLoading: true, error: null });
       try {
-        set({ isLoading: true, error: null });
-        await resendVerificationService(data);
+        await resendVerificationService(userid);
         set({ isLoading: false });
         return { success: true };
       } catch (error) {
@@ -245,14 +255,12 @@ export const useAuthStore = create(
           error.response?.data?.message || error.message || "Resend failed";
         set({ error: message, isLoading: false });
         return { success: false, error: message };
-      } finally {
-        set({ isLoading: false });
       }
     },
 
     forgetPassword: async (email) => {
+      set({ isLoading: true, error: null });
       try {
-        set({ isLoading: true, error: null });
         await forgotPasswordService(email);
         set({ isLoading: false });
         return { success: true };
@@ -263,14 +271,12 @@ export const useAuthStore = create(
           "Failed to send reset link";
         set({ error: message, isLoading: false });
         return { success: false, error: message };
-      } finally {
-        set({ isLoading: false });
       }
     },
 
     changePassword: async (email) => {
+      set({ isLoading: true, error: null });
       try {
-        set({ isLoading: true, error: null });
         await changePasswordService(email);
         set({ isLoading: false });
         return { success: true };
@@ -281,14 +287,12 @@ export const useAuthStore = create(
           "Failed to send reset link";
         set({ error: message, isLoading: false });
         return { success: false, error: message };
-      } finally {
-        set({ isLoading: false });
       }
     },
 
     resetPassword: async (credentials) => {
+      set({ isLoading: true, error: null });
       try {
-        set({ isLoading: true, error: null });
         await resetPasswordService(credentials);
         set({ isLoading: false });
         return { success: true };
@@ -299,8 +303,6 @@ export const useAuthStore = create(
           "Password reset failed";
         set({ error: message, isLoading: false });
         return { success: false, error: message };
-      } finally {
-        set({ isLoading: false });
       }
     },
 

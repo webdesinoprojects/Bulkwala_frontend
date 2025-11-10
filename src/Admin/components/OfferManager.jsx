@@ -51,8 +51,14 @@ export default function OfferManager() {
         >
           <Input
             type="number"
-            placeholder="Discount %"
+            placeholder="Discount % (e.g. 90)"
             {...form.register("discountPercent")}
+            className="w-full md:w-1/3"
+          />
+          <Input
+            type="number"
+            placeholder="Max Discount ₹ (e.g. 50)"
+            {...form.register("maxDiscountAmount")}
             className="w-full md:w-1/3"
           />
           <Button
@@ -64,28 +70,41 @@ export default function OfferManager() {
           </Button>
         </form>
 
-        {activeOffer ? (
-          <div className="p-4 bg-green-50 border rounded-xl text-center">
+        {activeOffer && activeOffer.isActive ? (
+          <div className="p-4 bg-green-50 border rounded-xl text-center transition-all duration-300">
             <h3 className="text-lg font-semibold text-green-700">
-              Active Offer: {activeOffer.discountPercent}% OFF
+              Active Offer: {activeOffer.discountPercent}% OFF up to ₹
+              {activeOffer.maxDiscountAmount}
             </h3>
+
             <p className="text-sm text-gray-600 mt-1">
               Ends at:{" "}
-              {new Date(activeOffer.expiresAt).toLocaleTimeString("en-IN", {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+              {activeOffer.expiresAt
+                ? new Date(activeOffer.expiresAt).toLocaleTimeString("en-IN", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "Invalid Date"}
             </p>
+
             <Button
               onClick={handleDeleteOffer}
               disabled={isLoading}
-              className="mt-2 bg-red-600 hover:bg-red-700 text-white"
+              className="mt-3 bg-red-600 hover:bg-red-700 text-white"
             >
               Delete Offer
             </Button>
           </div>
         ) : (
-          <p className="text-center text-gray-500 py-4">No active offer.</p>
+          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-xl text-center transition-all duration-300">
+            <h3 className="text-lg font-semibold text-yellow-700">
+              🚫 No Active Offer
+            </h3>
+            <p className="text-sm text-gray-600 mt-1">
+              Start a new 15-minute flash sale by setting a discount and max cap
+              above.
+            </p>
+          </div>
         )}
       </CardContent>
     </Card>

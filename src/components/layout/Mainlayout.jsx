@@ -21,7 +21,7 @@ const Mainlayout = () => {
       <Toaster position="top-right" richColors />
       <Footer />
 
-      <SignupPopup />
+      {/* <SignupPopup /> */}
     </>
   );
 };

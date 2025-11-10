@@ -36,10 +36,18 @@ const Login = () => {
   // Submit for Email Login
   const onSubmit = async (values) => {
     const res = await login(values);
+
     if (res.success) {
       toast.success("Login successful!");
       navigate("/");
-    } else toast.error(res.error);
+    } else {
+      toast.error(res.error);
+
+      // Handle unverified redirect
+      if (res.unverifiedUser?._id) {
+        navigate(`/verify/${res.unverifiedUser._id}`);
+      }
+    }
   };
 
   // Send OTP
@@ -143,6 +151,15 @@ const Login = () => {
                 >
                   Login
                 </Button>
+                {/* Forgot Password Link */}
+                <div className="text-center">
+                  <span
+                    className="text-sm text-[#02066F] cursor-pointer hover:underline"
+                    onClick={() => navigate("/forgot-password")}
+                  >
+                    Forgot Password?
+                  </span>
+                </div>
               </form>
             </Form>
           ) : (

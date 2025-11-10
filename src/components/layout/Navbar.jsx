@@ -186,7 +186,8 @@ export default function Navbar() {
       {activeOffer?.isActive && timeLeft > 0 && (
         <div className="bg-gradient-to-r from-[#02066F] to-[#04127A] text-white text-center py-2 animate-pulse">
           <span className="font-semibold">
-            ⚡ {activeOffer.discountPercent}% OFF Flash Sale!
+            ⚡ {activeOffer.discountPercent}% OFF upto ₹
+            {activeOffer.maxDiscountAmount} Flash Sale!
           </span>{" "}
           <span className="ml-2 text-yellow-300 font-bold">
             Ends in {formatTime(timeLeft)}

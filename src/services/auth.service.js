@@ -46,10 +46,10 @@ export const verifyEmailService = async ({ userid, token }) => {
   return res.data;
 };
 
-export const resendVerificationService = async (email) => {
-  const res = await axiosInstance.post("/api/users/resend-verification", {
-    email,
-  });
+export const resendVerificationService = async (userid) => {
+  const res = await axiosInstance.post(
+    `/api/users/resend-verification/${userid}`
+  );
   return res.data;
 };
 
