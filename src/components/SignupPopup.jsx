@@ -95,7 +95,7 @@ export default function SignupPopup() {
               🎁 Your savings journey starts here 🎁
             </p>
             <p className="text-[14px] sm:text-[15px] italic text-gray-600">
-              Don’t miss out on amazing offers and rewards ✨
+              Flat ₹100 off on your first order*
             </p>
           </div>
 
@@ -106,6 +106,28 @@ export default function SignupPopup() {
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+              {/* Phone Number */}
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 text-sm font-medium">
+                      Phone Number
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="tel"
+                        placeholder="Enter your phone number"
+                        {...field}
+                        className="rounded-lg border-gray-300 focus:ring-2 focus:ring-[#02066F]"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               {/* Full Name */}
               <FormField
                 control={form.control}
@@ -140,28 +162,6 @@ export default function SignupPopup() {
                       <Input
                         type="email"
                         placeholder="Enter your email"
-                        {...field}
-                        className="rounded-lg border-gray-300 focus:ring-2 focus:ring-[#02066F]"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Phone Number */}
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700 text-sm font-medium">
-                      Phone Number
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="tel"
-                        placeholder="Enter your phone number"
                         {...field}
                         className="rounded-lg border-gray-300 focus:ring-2 focus:ring-[#02066F]"
                       />
