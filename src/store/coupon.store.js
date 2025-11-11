@@ -41,7 +41,7 @@ export const useCouponStore = create((set, get) => ({
     try {
       await deleteCouponService(couponId);
       set((state) => ({
-        coupons: state.coupons.filter((coupon) => coupon.id !== couponId),
+        coupons: state.coupons.filter((coupon) => coupon._id !== couponId), // ✅ FIXED HERE
       }));
       return { success: true };
     } catch (err) {

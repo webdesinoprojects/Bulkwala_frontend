@@ -14,6 +14,7 @@ const PaymentPage = () => {
     isLoading,
     paymentStatus,
   } = useOrderStore();
+
   const {
     cart,
     itemsPrice,
@@ -25,6 +26,7 @@ const PaymentPage = () => {
     clearCart,
     isLoading: cartLoading,
   } = useCartStore();
+
   const { user, updateAddress } = useAuthStore();
   const navigate = useNavigate();
 
@@ -32,29 +34,34 @@ const PaymentPage = () => {
   const isPrepaid = ["card", "upi", "netbanking", "online"].includes(
     paymentMode
   );
-  // Flat ₹30 off for prepaid
+
+  // ✅ Base total from backend (already includes coupon/referral/flash discounts)
+  let finalDisplayTotal = totalPrice || 0;
+
+  // ✅ If pickup, remove shipping
+  if (paymentMode === "pickup") {
+    finalDisplayTotal -= shippingPrice || 0;
+  }
+
+  // ✅ Apply prepaid discount (₹30 off for online methods)
   const prepaidDiscount = isPrepaid ? 30 : 0;
+  if (isPrepaid) finalDisplayTotal -= prepaidDiscount;
 
-  // ✅ If pickup — remove shipping cost
-  const adjustedShipping = paymentMode === "pickup" ? 0 : shippingPrice;
-
-  // ✅ Recalculate displayed total dynamically
-  const finalDisplayTotal = Math.max(
-    itemsPrice + adjustedShipping + taxPrice - prepaidDiscount,
-    0
-  );
+  // ✅ Ensure total never goes below zero
+  finalDisplayTotal = Math.max(finalDisplayTotal, 0);
 
   const [shippingAddress, setShippingAddress] = useState(
     user?.address?.[0] || null
   );
 
+  // ✅ Fetch cart and Razorpay script once
   useEffect(() => {
     fetchCart();
     const script = document.createElement("script");
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
     script.async = true;
     document.body.appendChild(script);
-  }, []);
+  }, [fetchCart]);
 
   // ✅ Razorpay success listener
   useEffect(() => {
@@ -281,7 +288,6 @@ const PaymentPage = () => {
           <h3 className="text-lg sm:text-xl font-semibold text-center lg:text-left mt-8 mb-3">
             Select Payment Method
           </h3>
-          {/** 💸 Prepaid Offer Note */}
           <p className="text-green-700 text-sm mb-3">
             💸 Get flat ₹30 OFF on prepaid orders (UPI, Card, NetBanking)
           </p>

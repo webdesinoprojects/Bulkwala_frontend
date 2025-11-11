@@ -9,6 +9,8 @@ const OrderSuccess = () => {
   const navigate = useNavigate();
 
   const orderData = location.state?.orderData || {};
+  console.log("✅ Order Data from backend:", orderData);
+
   const paymentType = location.state?.paymentType || "Online Payment";
 
   const orderId = orderData?._id || "N/A";
@@ -63,7 +65,7 @@ const OrderSuccess = () => {
     doc.text(`Payment Mode: ${paymentMode}`, 150, 57);
     doc.text(`Payment Status: ${paymentStatus.toUpperCase()}`, 150, 62);
 
-    // Items
+    // Items Table
     const tableColumn = ["Product", "Qty", "Price (₹)", "Subtotal (₹)"];
     const tableRows = [];
 
@@ -73,10 +75,8 @@ const OrderSuccess = () => {
         item?.title ||
         item?.productName ||
         "Unknown Product";
-
-      const price = item?.product?.price || item?.priceAtPurchase || 0;
+      const price = item?.priceAtPurchase || item?.product?.price || 0;
       const subtotal = (price * (item?.quantity || 1)).toFixed(2);
-
       tableRows.push([
         title,
         item?.quantity?.toString() || "1",
@@ -95,56 +95,81 @@ const OrderSuccess = () => {
     });
 
     const summaryY = doc.lastAutoTable.finalY + 10;
-    const itemsPrice = orderData?.itemsPrice || totalAmount / 1.18;
-    const taxPrice = orderData?.taxPrice || totalAmount - itemsPrice;
+    const itemsPrice = orderData?.itemsPrice || 0;
+    const taxPrice = orderData?.taxPrice || 0;
     const shippingPrice = orderData?.shippingPrice || 0;
-    const discount = orderData?.discount || 0;
+
+    // ✅ All discount fields
+    const couponDiscount = orderData?.couponDiscount || 0;
     const referralDiscount = orderData?.referralDiscount || 0;
     const flashDiscount = orderData?.flashDiscount || 0;
     const flashPercent = orderData?.flashDiscountPercent || 0;
+    const prepaidDiscount = orderData?.prepaidDiscount || 0;
 
-    // Decide which discount label to show
-    let discountLabel = "";
-    let discountValue = 0;
-    if (discount > 0) {
-      discountLabel = "Coupon Discount";
-      discountValue = discount;
-    } else if (referralDiscount > 0) {
-      discountLabel = "Referral Discount";
-      discountValue = referralDiscount;
-    } else if (flashDiscount > 0) {
-      discountLabel = `Flash Offer (${flashPercent}% OFF)`;
-      discountValue = flashDiscount;
-    }
+    // 💡 Grey background box for summary
+    let boxStartY = summaryY - 4;
+    let boxHeight = 70;
+    doc.setFillColor(245, 245, 245);
+    doc.rect(120, boxStartY, 75, boxHeight, "F");
 
     doc.setFontSize(11);
     doc.text("Price Summary:", 14, summaryY);
 
     let lineY = summaryY;
-    doc.text(`Items Total: ₹${itemsPrice.toFixed(2)}`, 150, (lineY += 0));
-    doc.text(`Tax (18%): ₹${taxPrice.toFixed(2)}`, 150, (lineY += 6));
-    doc.text(`Shipping: ₹${shippingPrice.toFixed(2)}`, 150, (lineY += 6));
+    const xPos = 130; // shifted left to prevent cutoff
 
-    if (discountValue > 0) {
+    doc.text(`Items Total: ₹${itemsPrice.toFixed(2)}`, xPos, (lineY += 0));
+    doc.text(`Tax (18%): ₹${taxPrice.toFixed(2)}`, xPos, (lineY += 6));
+    doc.text(`Shipping: ₹${shippingPrice.toFixed(2)}`, xPos, (lineY += 6));
+
+    // ✅ Show each applied discount with color
+    if (couponDiscount > 0) {
       doc.setTextColor(255, 0, 0);
       doc.text(
-        `${discountLabel}: -₹${discountValue.toFixed(2)}`,
-        150,
+        `Coupon Discount: -₹${couponDiscount.toFixed(2)}`,
+        xPos,
+        (lineY += 6)
+      );
+      doc.setTextColor(0, 0, 0);
+    }
+    if (referralDiscount > 0) {
+      doc.setTextColor(128, 0, 128);
+      doc.text(
+        `Referral Discount: -₹${referralDiscount.toFixed(2)}`,
+        xPos,
+        (lineY += 6)
+      );
+      doc.setTextColor(0, 0, 0);
+    }
+    if (flashDiscount > 0) {
+      doc.setTextColor(0, 102, 204);
+      doc.text(
+        `Flash Offer (${flashPercent}%): -₹${flashDiscount.toFixed(2)}`,
+        xPos,
+        (lineY += 6)
+      );
+      doc.setTextColor(0, 0, 0);
+    }
+    if (prepaidDiscount > 0) {
+      doc.setTextColor(255, 140, 0);
+      doc.text(
+        `Prepaid Discount: -₹${prepaidDiscount.toFixed(2)}`,
+        xPos,
         (lineY += 6)
       );
       doc.setTextColor(0, 0, 0);
     }
 
     doc.setFont(undefined, "bold");
-    doc.text(`Grand Total: ₹${totalAmount.toFixed(2)}`, 150, (lineY += 8));
+    doc.text(`Grand Total: ₹${totalAmount.toFixed(2)}`, xPos, (lineY += 8));
     doc.setFont(undefined, "normal");
 
-    doc.line(14, summaryY + 30, 195, summaryY + 30);
+    doc.line(14, lineY + 4, 195, lineY + 4);
     doc.setFontSize(10);
     doc.text(
       "Thank you for shopping with Bulkwala! This is a computer-generated invoice.",
       14,
-      summaryY + 38
+      lineY + 12
     );
 
     doc.save(`Invoice_${orderId}.pdf`);
@@ -203,23 +228,32 @@ const OrderSuccess = () => {
             <strong>Tax (18%):</strong> ₹{orderData?.taxPrice?.toFixed(2) || 0}
           </p>
 
-          {/* ✅ Show one applied discount type */}
-          {orderData?.discount > 0 ? (
+          {/* ✅ Show all discount lines */}
+          {orderData?.couponDiscount > 0 && (
             <p className="text-green-700">
               <strong>Coupon Discount:</strong> -₹
-              {orderData.discount.toFixed(2)}
+              {orderData.couponDiscount.toFixed(2)}
             </p>
-          ) : orderData?.referralDiscount > 0 ? (
+          )}
+          {orderData?.referralDiscount > 0 && (
             <p className="text-purple-700">
               <strong>Referral Discount:</strong> -₹
               {orderData.referralDiscount.toFixed(2)}
             </p>
-          ) : orderData?.flashDiscount > 0 ? (
+          )}
+          {orderData?.flashDiscount > 0 && (
             <p className="text-blue-700">
               <strong>Flash Offer ({orderData.flashDiscountPercent}%):</strong>{" "}
-              -₹{orderData.flashDiscount.toFixed(2)}
+              -₹
+              {orderData.flashDiscount.toFixed(2)}
             </p>
-          ) : null}
+          )}
+          {orderData?.prepaidDiscount > 0 && (
+            <p className="text-orange-700">
+              <strong>Prepaid Discount:</strong> -₹
+              {orderData.prepaidDiscount.toFixed(2)}
+            </p>
+          )}
 
           <p className="text-lg font-semibold text-gray-900 mt-2">
             Total Amount: ₹{totalAmount.toFixed(2)}

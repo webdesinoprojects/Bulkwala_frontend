@@ -74,8 +74,8 @@ const useCartStore = create((set, get) => ({
     try {
       set({ isUpdating: true, couponError: null });
       const res = await applyCouponService(code);
-      console.log("applyCoupon response:", res);
 
+      // ✅ When backend sends ApiResponse
       if (res.success) {
         await get().fetchCart();
         set({
@@ -85,11 +85,14 @@ const useCartStore = create((set, get) => ({
         });
         return { success: true, message: res.message };
       } else {
-        set({ couponError: res.message || "Invalid coupon code" });
-        return { success: false, message: res.message };
+        const msg = res.message || "Invalid coupon code";
+        set({ couponError: msg });
+        return { success: false, message: msg };
       }
     } catch (err) {
-      const msg = err.response?.data?.message || "Invalid coupon code";
+      // ✅ Handle “already used” gracefully
+      const msg =
+        err.response?.data?.message || "Invalid or expired coupon code";
       set({ couponError: msg });
       return { success: false, message: msg };
     } finally {
@@ -237,8 +240,9 @@ const useCartStore = create((set, get) => ({
       await get().fetchCart();
       return { success: true, data: res };
     } catch (err) {
-      // ✅ show backend message properly
-      const message = err.response?.data?.message || "Invalid referral code";
+      // ✅ catch message from backend
+      const message =
+        err.response?.data?.message || "Invalid or expired referral code";
       return { success: false, message };
     } finally {
       set({ isUpdating: false });

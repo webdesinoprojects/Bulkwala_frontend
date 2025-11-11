@@ -23,14 +23,18 @@ export default function CouponManager() {
 
   useEffect(() => {
     fetchCoupons();
+    const interval = setInterval(() => {
+      fetchCoupons();
+    }, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const onSubmit = async (data) => {
-    console.log("Form Data on Submit:", data); // Check what is passed to submit
     const res = await createCoupon(data);
     if (res.success) {
       toast.success("Coupon created successfully!");
       form.reset();
+      fetchCoupons();
     } else toast.error(res.message || "Failed to create coupon");
   };
 
@@ -41,7 +45,7 @@ export default function CouponManager() {
 
     if (res.success) {
       toast.success("Coupon deleted successfully!");
-      fetchCoupons(); // ✅ refresh coupons automatically (no page reload)
+      fetchCoupons();
     } else {
       toast.error(res.message || "Failed to delete coupon");
     }
@@ -50,84 +54,50 @@ export default function CouponManager() {
   return (
     <Card className="bg-white border border-gray-200 rounded-xl shadow-sm">
       <CardHeader>
-        <CardTitle className="text-[#02066F]">Coupon Management</CardTitle>
+        <CardTitle className="text-[#02066F] font-semibold">
+          Coupon Management
+        </CardTitle>
         <CardDescription>
           Create and manage discount coupons for users.
         </CardDescription>
       </CardHeader>
 
       <CardContent>
+        {/* ✅ Create Coupon Form */}
         <form
           onSubmit={form.handleSubmit(onSubmit)}
           className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"
         >
-          <div>
-            <Input placeholder="Coupon Code" {...form.register("code")} />
-            {form.formState.errors.code && (
-              <p className="text-red-500 text-sm mt-1">
-                {form.formState.errors.code.message}
-              </p>
-            )}
-          </div>
-          <div>
-            <select
-              {...form.register("discountType")}
-              className="border rounded-md px-3 py-2"
-              defaultValue="percentage"
-            >
-              <option value="percentage">Percentage</option>
-              <option value="flat">Flat</option>
-            </select>
-
-            {form.formState.errors.discountType && (
-              <p className="text-red-500 text-sm mt-1">
-                {form.formState.errors.discountType.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <Input
-              type="number"
-              placeholder="Discount Value"
-              {...form.register("discountValue")}
-            />
-            {form.formState.errors.discountValue && (
-              <p className="text-red-500 text-sm mt-1">
-                {form.formState.errors.discountValue.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <Input type="date" {...form.register("expiryDate")} />
-            {form.formState.errors.expiryDate && (
-              <p className="text-red-500 text-sm mt-1">
-                {form.formState.errors.expiryDate.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <Input
-              type="number"
-              placeholder="Min Order Value"
-              {...form.register("minOrderValue")}
-            />
-          </div>
-
-          <div>
-            <Input
-              type="number"
-              placeholder="Usage Limit"
-              {...form.register("usageLimit")}
-            />
-          </div>
+          <Input placeholder="Coupon Code" {...form.register("code")} />
+          <select
+            {...form.register("discountType")}
+            className="border rounded-md px-3 py-2"
+            defaultValue="percentage"
+          >
+            <option value="percentage">Percentage</option>
+            <option value="flat">Flat</option>
+          </select>
+          <Input
+            type="number"
+            placeholder="Discount Value"
+            {...form.register("discountValue")}
+          />
+          <Input type="date" {...form.register("expiryDate")} />
+          <Input
+            type="number"
+            placeholder="Min Order Value"
+            {...form.register("minOrderValue")}
+          />
+          <Input
+            type="number"
+            placeholder="Usage Limit"
+            {...form.register("usageLimit")}
+          />
 
           <div className="col-span-full flex justify-end">
             <Button
               type="submit"
-              className="col-span-full bg-[#02066F] hover:bg-[#0A1280] text-white"
+              className="bg-[#02066F] hover:bg-[#0A1280] text-white"
               disabled={isLoading}
             >
               {isLoading ? "Saving..." : "Create Coupon"}
@@ -135,14 +105,18 @@ export default function CouponManager() {
           </div>
         </form>
 
+        {/* ✅ Coupon List */}
         {coupons?.length ? (
           <div className="overflow-x-auto">
-            <table className="min-w-full border-collapse">
-              <thead className="bg-gray-100 text-gray-700 text-sm">
+            <table className="min-w-full border-collapse text-sm">
+              <thead className="bg-gray-100 text-gray-700">
                 <tr>
                   <th className="p-3 text-left">Code</th>
                   <th className="p-3 text-left">Type</th>
                   <th className="p-3 text-left">Value</th>
+                  <th className="p-3 text-left">Used By</th>
+                  <th className="p-3 text-left">Usage Count</th>
+                  <th className="p-3 text-left">Sales (₹)</th>
                   <th className="p-3 text-left">Expiry</th>
                   <th className="p-3 text-left">Action</th>
                 </tr>
@@ -154,11 +128,16 @@ export default function CouponManager() {
                     className="border-b hover:bg-gray-50 transition"
                   >
                     <td className="p-3 font-semibold">{c.code}</td>
-                    <td className="p-3">{c.discountType}</td>
+                    <td className="p-3 capitalize">{c.discountType}</td>
                     <td className="p-3">
                       {c.discountType === "percentage"
                         ? `${c.discountValue}%`
                         : `₹${c.discountValue}`}
+                    </td>
+                    <td className="p-3">{c.usedBy?.length || 0} users</td>
+                    <td className="p-3">{c.usedCount || 0}</td>
+                    <td className="p-3">
+                      ₹{(c.totalSales || 0).toLocaleString("en-IN")}
                     </td>
                     <td className="p-3">
                       {new Date(c.expiryDate).toLocaleDateString()}
@@ -178,7 +157,9 @@ export default function CouponManager() {
             </table>
           </div>
         ) : (
-          <p className="text-center text-gray-500 py-4">No coupons yet.</p>
+          <p className="text-center text-gray-500 py-4">
+            No coupons created yet.
+          </p>
         )}
       </CardContent>
     </Card>

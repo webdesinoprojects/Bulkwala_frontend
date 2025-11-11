@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import {
   createReferralService,
+  deleteReferralService,
   fetchReferralsService,
   validateReferralService,
 } from "@/services/referral.service";
@@ -45,6 +46,21 @@ export const useReferralStore = create((set, get) => ({
       return { success: false, message: err.message };
     } finally {
       set({ isValidating: false });
+    }
+  },
+
+  deleteReferral: async (referralId) => {
+    set({ isLoading: true });
+    try {
+      await deleteReferralService(referralId);
+      set((state) => ({
+        referrals: state.referrals.filter((r) => r._id !== referralId),
+      }));
+      return { success: true };
+    } catch (err) {
+      return { success: false, message: err.message };
+    } finally {
+      set({ isLoading: false });
     }
   },
 }));
