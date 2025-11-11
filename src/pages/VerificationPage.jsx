@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import useAuthStore from "@/store/auth.store.js";
 import { toast } from "sonner";
@@ -23,6 +23,13 @@ const VerificationPage = () => {
     pendingVerificationUser,
   } = useAuthStore();
 
+  useEffect(() => {
+    return () => {
+      // ✅ Clean up loading state if component unmounts
+      useAuthStore.setState({ isLoading: false });
+    };
+  }, []);
+
   const handleVerify = async (e) => {
     e.preventDefault();
     if (!userid) {
@@ -34,21 +41,22 @@ const VerificationPage = () => {
 
     if (res.success) {
       toast.success("Email verified successfully! You can now log in.");
+      useAuthStore.setState({ isLoading: false });
+
       navigate("/login");
     } else {
       toast.error(res.error || "Verification failed. Please try again.");
+      useAuthStore.setState({ isLoading: false });
     }
   };
 
   const handleResend = async () => {
-    if (!pendingVerificationUser) {
-      toast.error("No user found for resending.");
+    if (!userid) {
+      toast.error("User ID not found in URL.");
       return;
     }
 
-    const res = await resendVerification({
-      email: pendingVerificationUser.email,
-    });
+    const res = await resendVerification(userid);
 
     if (res.success) {
       toast.success("New verification code sent! Please check your email.");
