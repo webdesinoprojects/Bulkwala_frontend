@@ -11,7 +11,6 @@ const Cart = () => {
     cart,
     totalPrice,
     shippingPrice,
-    taxPrice,
     itemsPrice,
     isLoading,
     isUpdating,
@@ -274,10 +273,6 @@ const Cart = () => {
               ₹{(shippingPrice || 0).toFixed(2)}
             </span>
           </div>
-          <div className="flex justify-between">
-            <span className="font-semibold text-gray-700">Tax</span>
-            <span className="font-medium">₹{(taxPrice || 0).toFixed(2)}</span>
-          </div>
 
           {/* Show only one discount — priority: Coupon > Referral > Flash */}
           {discount > 0 ? (
@@ -301,6 +296,9 @@ const Cart = () => {
             <span>Total Price</span>
             <span>₹{displayedTotal}</span>
           </div>
+          <p className="text-xs text-gray-500 mt-1">
+            Price inclusive of all applicable taxes.
+          </p>
         </div>
         {/* Coupon Input / Applied Coupon */}
         <div className="mt-8">

@@ -19,7 +19,6 @@ const PaymentPage = () => {
     cart,
     itemsPrice,
     shippingPrice,
-    taxPrice,
     totalPrice,
     totalItems,
     fetchCart,
@@ -247,11 +246,6 @@ const PaymentPage = () => {
               </span>
             </div>
 
-            <div className="flex justify-between">
-              <span>Tax</span>
-              <span>₹{taxPrice.toFixed(2)}</span>
-            </div>
-
             {/* ✅ Show only one discount type — priority: Coupon > Referral > Flash */}
             {cart?.discount > 0 ? (
               <div className="flex justify-between text-green-600 font-medium">
@@ -282,6 +276,9 @@ const PaymentPage = () => {
               <span>Total</span>
               <span>₹{finalDisplayTotal.toFixed(2)}</span>
             </div>
+            <p className="text-xs text-gray-500 mt-1">
+              Price inclusive of all applicable taxes (GST included in MRP)
+            </p>
           </div>
 
           {/* Payment Options */}

@@ -119,8 +119,12 @@ export default function TopProductsCarousel() {
 
                 <div className="flex justify-between items-center mt-2 sm:mt-3">
                   <span className="text-sm sm:text-lg font-bold text-[#02066F]">
-                    ₹{product.price}
+                    ₹
+                    {product.discountPrice && product.discountPrice > 0
+                      ? product.discountPrice
+                      : product.price}
                   </span>
+
                   <button
                     onClick={() => navigate(`/product/${product.slug}`)}
                     className="

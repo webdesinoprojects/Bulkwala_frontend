@@ -15,7 +15,6 @@ const useCartStore = create((set, get) => ({
   cart: { items: [] },
   itemsPrice: 0,
   shippingPrice: 0,
-  taxPrice: 0,
   totalPrice: 0,
   totalItems: 0,
   discount: 0,
@@ -36,7 +35,6 @@ const useCartStore = create((set, get) => ({
         cart: cartData,
         itemsPrice: cartData.itemsPrice || 0,
         shippingPrice: cartData.shippingPrice || 0,
-        taxPrice: cartData.taxPrice || 0,
         totalPrice: cartData.totalPrice || 0,
         discount: cartData.discount || 0,
         couponApplied: !!cartData.coupon,
@@ -61,11 +59,10 @@ const useCartStore = create((set, get) => ({
     const items = cart?.items || [];
     const itemsPrice = cart.itemsPrice || 0;
     const shippingPrice = cart.shippingPrice || 0;
-    const taxPrice = cart.taxPrice || 0;
     const discount = state.discount || 0;
 
     const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
-    const totalPrice = itemsPrice + shippingPrice + taxPrice - discount;
+    const totalPrice = itemsPrice + shippingPrice - discount;
 
     set({ totalItems, totalPrice });
   },
@@ -204,7 +201,6 @@ const useCartStore = create((set, get) => ({
         cart: { items: [] },
         itemsPrice: 0,
         shippingPrice: 0,
-        taxPrice: 0,
         totalPrice: 0,
         discount: 0,
         couponApplied: false,
@@ -223,7 +219,6 @@ const useCartStore = create((set, get) => ({
       cart: { items: [] },
       itemsPrice: 0,
       shippingPrice: 0,
-      taxPrice: 0,
       totalPrice: 0,
       discount: 0,
       couponApplied: false,

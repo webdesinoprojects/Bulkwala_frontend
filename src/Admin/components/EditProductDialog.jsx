@@ -47,6 +47,8 @@ export default function EditProductDialog({ open, onClose, slug, onSuccess }) {
       setFormData({
         title: product.title || "",
         price: product.price || "",
+        discountPrice: product.discountPrice || "",
+        sku: product.sku || "",
         stock: product.stock || "",
         description: product.description || "",
         category: product.category?._id || "",
@@ -79,6 +81,9 @@ export default function EditProductDialog({ open, onClose, slug, onSuccess }) {
       const uploadData = new FormData();
       uploadData.append("title", formData.title);
       uploadData.append("price", formData.price);
+      uploadData.append("discountPrice", formData.discountPrice || 0);
+      uploadData.append("gstSlab", formData.gstSlab || 18);
+      uploadData.append("sku", formData.sku || "");
       uploadData.append("stock", formData.stock);
       uploadData.append("description", formData.description);
       uploadData.append("slug", slug);
@@ -165,6 +170,53 @@ export default function EditProductDialog({ open, onClose, slug, onSuccess }) {
                     value={formData.price}
                     onChange={handleChange}
                     required
+                    className="w-full border-gray-300 focus:border-[#02066F] focus:ring-[#02066F]"
+                  />
+                </div>
+
+                {/* Discount Price */}
+                <div>
+                  <Label className="text-sm text-gray-700 mb-1 block">
+                    Discount Price
+                  </Label>
+                  <Input
+                    type="number"
+                    name="discountPrice"
+                    value={formData.discountPrice}
+                    onChange={handleChange}
+                    className="w-full border-gray-300 focus:border-[#02066F] focus:ring-[#02066F]"
+                  />
+                </div>
+
+                {/* GST Slab */}
+                <div>
+                  <Label className="text-sm text-gray-700 mb-1 block">
+                    GST Slab (%)
+                  </Label>
+                  <select
+                    name="gstSlab"
+                    value={formData.gstSlab}
+                    onChange={handleChange}
+                    className="w-full border rounded-md px-3 py-2 border-gray-300 focus:border-[#02066F] focus:ring-[#02066F]"
+                  >
+                    <option value="0">0%</option>
+                    <option value="5">5%</option>
+                    <option value="12">12%</option>
+                    <option value="18">18%</option>
+                    <option value="28">28%</option>
+                  </select>
+                </div>
+
+                {/* SKU */}
+                <div>
+                  <Label className="text-sm text-gray-700 mb-1 block">
+                    SKU
+                  </Label>
+                  <Input
+                    type="text"
+                    name="sku"
+                    value={formData.sku}
+                    onChange={handleChange}
                     className="w-full border-gray-300 focus:border-[#02066F] focus:ring-[#02066F]"
                   />
                 </div>

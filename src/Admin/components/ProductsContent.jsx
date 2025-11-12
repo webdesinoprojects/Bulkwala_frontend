@@ -56,11 +56,15 @@ export default function ProductsContent() {
 
   return (
     <>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold text-[#02066F]">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-5">
+        <h2 className="text-2xl font-semibold text-[#02066F]">
           Manage Products
         </h2>
-        <Button onClick={() => setShowAddForm(!showAddForm)}>
+        <Button
+          onClick={() => setShowAddForm(!showAddForm)}
+          className="rounded-md text-sm font-medium shadow-sm"
+        >
           {showAddForm ? "Close Form" : "Add New Product"}
         </Button>
       </div>
@@ -74,47 +78,81 @@ export default function ProductsContent() {
         />
       )}
 
+      {/* Table */}
       <Card className="bg-white border border-gray-200 rounded-xl shadow-sm">
         <CardContent className="overflow-x-auto p-0">
-          <table className="min-w-full border-collapse">
-            <thead className="bg-gray-100 text-gray-700 text-sm">
+          <table className="min-w-full border-collapse text-sm">
+            <thead className="bg-[#f8fafc] text-gray-700 border-b">
               <tr>
-                <th className="p-3 text-left">Image</th>
-                <th className="p-3 text-left">Title</th>
-                <th className="p-3 text-left">Category</th>
-                <th className="p-3 text-left">Subcategory</th>
-                <th className="p-3 text-center">Price</th>
-                <th className="p-3 text-center">Stock</th>
-                <th className="p-3 text-center">Actions</th>
+                <th className="p-3 text-left font-medium">Image</th>
+                <th className="p-3 text-left font-medium w-[250px]">Title</th>
+                <th className="p-3 text-left font-medium">Category</th>
+                <th className="p-3 text-left font-medium">Subcategory</th>
+                <th className="p-3 text-center font-medium">Price</th>
+                <th className="p-3 text-center font-medium">SKU</th>
+                <th className="p-3 text-center font-medium">Stock</th>
+                <th className="p-3 text-center font-medium">Actions</th>
               </tr>
             </thead>
+
             <tbody>
               {productList.length > 0 ? (
-                productList.map((p) => (
+                productList.map((p, index) => (
                   <tr
                     key={p._id}
-                    className="border-b hover:bg-gray-50 transition"
+                    className={`${
+                      index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                    } hover:bg-[#f1f5f9] transition-colors border-b`}
                   >
+                    {/* Image */}
                     <td className="p-3">
-                      <img
-                        src={p.images?.[0]}
-                        alt={p.title}
-                        className="w-14 h-14 object-cover rounded-md border"
-                      />
+                      <div className="flex justify-center">
+                        <img
+                          src={
+                            p.images?.[0] ||
+                            "https://ik.imagekit.io/bulkwala/demo/default-product.png"
+                          }
+                          alt={p.title}
+                          className="w-14 h-14 object-cover rounded-md border border-gray-200 shadow-sm"
+                        />
+                      </div>
                     </td>
-                    <td className="p-3 text-sm font-medium text-gray-900 line-clamp-2 max-w-[250px]">
-                      {p.title}
+
+                    {/* Title */}
+                    <td className="p-3 font-medium text-gray-800 leading-tight">
+                      <div className="line-clamp-2">{p.title}</div>
                     </td>
-                    <td className="p-3 text-sm">{p.category?.name || "-"}</td>
-                    <td className="p-3 text-sm">
+
+                    {/* Category */}
+                    <td className="p-3 text-gray-700 text-center">
+                      {p.category?.name || "-"}
+                    </td>
+
+                    {/* Subcategory */}
+                    <td className="p-3 text-gray-700 text-center">
                       {p.subcategory?.name || "-"}
                     </td>
+
+                    {/* Price */}
                     <td className="p-3 text-center font-semibold">
-                      ₹{p.price}
+                      {p.discountPrice && p.discountPrice < p.price ? (
+                        <span className="text-green-600 font-bold">
+                          ₹{p.discountPrice}
+                        </span>
+                      ) : (
+                        <span>₹{p.price}</span>
+                      )}
                     </td>
+
+                    {/* SKU */}
+                    <td className="p-3 text-center text-gray-700">
+                      {p.sku || "-"}
+                    </td>
+
+                    {/* Stock */}
                     <td className="p-3 text-center">
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        className={`inline-flex items-center justify-center min-w-[80px] px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap shadow-sm ${
                           p.stock > 0
                             ? "bg-green-100 text-green-700"
                             : "bg-red-100 text-red-700"
@@ -123,23 +161,25 @@ export default function ProductsContent() {
                         {p.stock > 0 ? "In Stock" : "Out of Stock"}
                       </span>
                     </td>
+
+                    {/* Actions */}
                     <td className="p-3 text-center">
                       <div className="flex justify-center gap-2">
                         <Button
-                          size="sm"
+                          size="icon"
                           variant="outline"
-                          className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                          className="h-8 w-8 text-blue-600 border-blue-200 hover:bg-blue-50"
                           onClick={() => handleEdit(p.slug)}
                         >
-                          <Edit size={16} />
+                          <Edit size={15} />
                         </Button>
                         <Button
-                          size="sm"
+                          size="icon"
                           variant="outline"
-                          className="text-red-600 border-red-200 hover:bg-red-50"
+                          className="h-8 w-8 text-red-600 border-red-200 hover:bg-red-50"
                           onClick={() => handleDelete(p.slug)}
                         >
-                          <Trash2 size={16} />
+                          <Trash2 size={15} />
                         </Button>
                       </div>
                     </td>
@@ -148,7 +188,7 @@ export default function ProductsContent() {
               ) : (
                 <tr>
                   <td
-                    colSpan="7"
+                    colSpan="8"
                     className="text-center py-8 text-gray-500 text-sm"
                   >
                     No products found.
@@ -172,7 +212,7 @@ export default function ProductsContent() {
           >
             Prev
           </Button>
-          <span>
+          <span className="text-gray-700">
             Page {filters.page} of {totalPages}
           </span>
           <Button

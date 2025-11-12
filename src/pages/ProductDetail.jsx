@@ -220,9 +220,32 @@ const ProductDetail = () => {
             </p>
 
             <div className="flex items-center justify-between mt-4 flex-wrap gap-3">
-              <p className="text-3xl font-semibold text-[#02066F]">
-                ₹{product.price}
-              </p>
+              <div className="flex items-center gap-2 mt-2">
+                {product.discountPrice &&
+                product.discountPrice < product.price ? (
+                  <>
+                    <span className="text-3xl font-semibold text-green-700">
+                      ₹{product.discountPrice}
+                    </span>
+                    <span className="text-gray-400 line-through text-lg">
+                      ₹{product.price}
+                    </span>
+                    <span className="text-sm bg-green-100 text-green-700 px-2 py-1 rounded-md ml-2">
+                      {Math.round(
+                        ((product.price - product.discountPrice) /
+                          product.price) *
+                          100
+                      )}
+                      % OFF
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-3xl font-semibold text-[#02066F]">
+                    ₹{product.price}
+                  </span>
+                )}
+              </div>
+
               <div className="flex items-center gap-1">
                 {[...Array(5)].map((_, i) => (
                   <Star
@@ -500,9 +523,24 @@ const ProductDetail = () => {
                       {item.description}
                     </p>
                     <div className="flex justify-between items-center mt-2">
-                      <span className="text-[#02066F] font-semibold">
-                        ₹{item.price}
-                      </span>
+                      <div className="flex flex-col">
+                        {item.discountPrice &&
+                        item.discountPrice < item.price ? (
+                          <>
+                            <span className="text-[#02066F] font-semibold">
+                              ₹{item.discountPrice}
+                            </span>
+                            <span className="text-gray-400 line-through text-xs">
+                              ₹{item.price}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-[#02066F] font-semibold">
+                            ₹{item.price}
+                          </span>
+                        )}
+                      </div>
+
                       <Button
                         size="sm"
                         onClick={(e) => {

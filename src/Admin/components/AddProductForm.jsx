@@ -39,6 +39,8 @@ const AddProductForm = ({ onSuccess }) => {
       slug: "",
       description: "",
       price: "",
+      discountPrice: 0,
+      gstSlab: 18,
       stock: "",
       images: [],
       category: "",
@@ -94,7 +96,6 @@ const AddProductForm = ({ onSuccess }) => {
           {errors.title && (
             <p className="text-red-500">{errors.title.message}</p>
           )}
-
           {/* Slug */}
           <Input
             type="text"
@@ -102,7 +103,6 @@ const AddProductForm = ({ onSuccess }) => {
             {...register("slug")}
           />
           {errors.slug && <p className="text-red-500">{errors.slug.message}</p>}
-
           {/* Description */}
           <Input
             type="text"
@@ -112,23 +112,28 @@ const AddProductForm = ({ onSuccess }) => {
           {errors.description && (
             <p className="text-red-500">{errors.description.message}</p>
           )}
-
           {/* Price */}
           <Input type="number" placeholder="Price" {...register("price")} />
           {errors.price && (
             <p className="text-red-500">{errors.price.message}</p>
           )}
-
+          {/* ✅ Discount Price  */}
+          <Input
+            type="number"
+            placeholder="Discount Price"
+            {...register("discountPrice")}
+          />
+          {errors.discountPrice && (
+            <p className="text-red-500">{errors.discountPrice.message}</p>
+          )}
           {/* Stock */}
           <Input type="number" placeholder="Stock" {...register("stock")} />
           {errors.stock && (
             <p className="text-red-500">{errors.stock.message}</p>
           )}
-
           {/* SKU */}
           <Input type="text" placeholder="SKU" {...register("sku")} />
           {errors.sku && <p className="text-red-500">{errors.sku.message}</p>}
-
           {/* Color */}
           <Input
             type="text"
@@ -138,7 +143,6 @@ const AddProductForm = ({ onSuccess }) => {
           {errors.color && (
             <p className="text-red-500">{errors.color.message}</p>
           )}
-
           {/* Generic Name */}
           <Input
             type="text"
@@ -148,7 +152,6 @@ const AddProductForm = ({ onSuccess }) => {
           {errors.genericName && (
             <p className="text-red-500">{errors.genericName.message}</p>
           )}
-
           {/* Country of Origin */}
           <div>
             <label className="block mb-1 text-sm text-gray-600">
@@ -170,7 +173,6 @@ const AddProductForm = ({ onSuccess }) => {
           {errors.countryOfOrigin && (
             <p className="text-red-500">{errors.countryOfOrigin.message}</p>
           )}
-
           {/* Manufacturer Name */}
           <Input
             type="text"
@@ -180,7 +182,30 @@ const AddProductForm = ({ onSuccess }) => {
           {errors.manufacturerName && (
             <p className="text-red-500">{errors.manufacturerName.message}</p>
           )}
-
+          {/* ✅ GST Slab  */}
+          <div>
+            <label className="block mb-1 text-sm text-gray-600">
+              GST Slab (%)
+            </label>
+            <Select
+              onValueChange={(value) => setValue("gstSlab", Number(value))}
+              defaultValue="18"
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select GST Slab" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">0%</SelectItem>
+                <SelectItem value="5">5%</SelectItem>
+                <SelectItem value="12">12%</SelectItem>
+                <SelectItem value="18">18%</SelectItem>
+                <SelectItem value="28">28%</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {errors.gstSlab && (
+            <p className="text-red-500">{errors.gstSlab.message}</p>
+          )}
           {/* Video Upload */}
           <div>
             <label className="block mb-1 text-sm text-gray-600">
@@ -198,7 +223,6 @@ const AddProductForm = ({ onSuccess }) => {
               <p className="text-red-500">{errors.video.message}</p>
             )}
           </div>
-
           {/* Images Upload */}
           <div>
             <label className="block mb-1 text-sm text-gray-600">
@@ -229,7 +253,6 @@ const AddProductForm = ({ onSuccess }) => {
               ))}
             </div>
           </div>
-
           {/* Tags */}
           <Input
             type="text"
@@ -237,7 +260,6 @@ const AddProductForm = ({ onSuccess }) => {
             {...register("tags")}
           />
           {errors.tags && <p className="text-red-500">{errors.tags.message}</p>}
-
           {/* Category Dropdown */}
           <div>
             <label className="block mb-1 text-sm text-gray-600">Category</label>
@@ -260,7 +282,6 @@ const AddProductForm = ({ onSuccess }) => {
               <p className="text-red-500">{errors.category.message}</p>
             )}
           </div>
-
           {/* Subcategory Dropdown */}
           <div>
             <label className="block mb-1 text-sm text-gray-600">
@@ -286,7 +307,6 @@ const AddProductForm = ({ onSuccess }) => {
               <p className="text-red-500">{errors.subcategory.message}</p>
             )}
           </div>
-
           {/* Active / Featured checkboxes */}
           <div className="flex items-center gap-4">
             <label className="flex items-center gap-2">
@@ -298,7 +318,6 @@ const AddProductForm = ({ onSuccess }) => {
               Featured
             </label>
           </div>
-
           <Button type="submit" disabled={loading}>
             {loading ? "Adding..." : "Add Product"}
           </Button>

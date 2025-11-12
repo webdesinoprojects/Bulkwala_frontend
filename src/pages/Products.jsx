@@ -214,9 +214,12 @@ const Products = () => {
                       {product.title}
                     </h3>
 
-                    {/* 💰 Price */}
+                    {/* 💰 Final Selling Price */}
                     <p className="font-semibold mt-2 text-base sm:text-lg text-gray-900">
-                      ₹{product.price}
+                      ₹
+                      {product.discountPrice && product.discountPrice > 0
+                        ? product.discountPrice
+                        : product.price}
                     </p>
 
                     {/* 📝 Description */}
