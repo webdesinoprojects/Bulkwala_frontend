@@ -18,12 +18,16 @@ export default function EditProductDialog({ open, onClose, slug, onSuccess }) {
   const [formData, setFormData] = useState({
     title: "",
     price: "",
+    discountPrice: "",
+    gstSlab: "18", // ✅ default GST Slab
+    sku: "",
     stock: "",
     description: "",
     category: "",
     subcategory: "",
     newImages: [],
   });
+
   const [existingImages, setExistingImages] = useState([]);
   const [imagesToRemove, setImagesToRemove] = useState([]);
 
@@ -48,6 +52,7 @@ export default function EditProductDialog({ open, onClose, slug, onSuccess }) {
         title: product.title || "",
         price: product.price || "",
         discountPrice: product.discountPrice || "",
+        gstSlab: String(product.gstSlab ?? 18), // ✅ default to 18 if undefined
         sku: product.sku || "",
         stock: product.stock || "",
         description: product.description || "",

@@ -15,10 +15,9 @@ export const productSchema = z.object({
     ),
 
   video: z
-  .any()
-  .refine((file) => !file || file instanceof File, "Invalid video file")
-  .optional(),
-
+    .any()
+    .refine((file) => !file || file instanceof File, "Invalid video file")
+    .optional(),
 
   price: z
     .union([z.string(), z.number()])
@@ -76,4 +75,10 @@ export const productSchema = z.object({
   genericName: z.string().optional(),
   countryOfOrigin: z.enum(["India", "China"]).default("India"),
   manufacturerName: z.string().optional(),
+  gstSlab: z
+    .union([z.string(), z.number()])
+    .transform((val) => Number(String(val).replace("%", "")) || 0)
+    .refine((val) => [0, 5, 12, 18, 28].includes(val), {
+      message: "GST must be 0, 5, 12, 18, or 28%",
+    }),
 });

@@ -167,6 +167,7 @@ export default function OrdersContent() {
                   <tr>
                     <th className="p-3 text-left">Order</th>
                     <th className="p-3 text-left">Products</th>
+                    <th className="p-3 text-left">SKU</th>
                     <th className="p-3 text-right">Total</th>
                     <th className="p-3 text-center">Payment</th>
                     <th className="p-3 text-center">Status</th>
@@ -193,13 +194,15 @@ export default function OrdersContent() {
                           } hover:bg-blue-50/60 hover:shadow-md hover:scale-[1.01]`}
                           style={{ transition: "all 0.2s ease" }}
                         >
+                          {/* 🧾 Order Info */}
                           <td className="p-3 font-mono text-gray-700">
                             <div className="flex items-center gap-1">
                               <span className="font-semibold">#{shortId}</span>
                               <button
-                                onClick={() =>
-                                  navigator.clipboard.writeText(o._id)
-                                }
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigator.clipboard.writeText(o._id);
+                                }}
                                 className="text-gray-400 hover:text-blue-500 text-xs"
                                 title="Copy full ID"
                               >
@@ -211,8 +214,8 @@ export default function OrdersContent() {
                             </div>
                           </td>
 
+                          {/* 🛍️ Product Titles */}
                           <td className="p-3">
-                            {/* 🛍️ Product Titles */}
                             <div className="text-gray-800 font-medium text-sm leading-tight">
                               {o.products && o.products.length > 0 ? (
                                 <>
@@ -247,10 +250,35 @@ export default function OrdersContent() {
                             </div>
                           </td>
 
+                          {/* 🧾 SKU Column — now its own <td> */}
+                          <td className="p-3 text-gray-700">
+                            {o.products && o.products.length > 0 ? (
+                              <>
+                                {o.products.slice(0, 2).map((p, i) => (
+                                  <div
+                                    key={i}
+                                    className="truncate max-w-[150px] text-sm"
+                                  >
+                                    {p.product?.sku || "—"}
+                                  </div>
+                                ))}
+                                {o.products.length > 2 && (
+                                  <div className="text-xs text-gray-500 italic">
+                                    +{o.products.length - 2} more
+                                  </div>
+                                )}
+                              </>
+                            ) : (
+                              <div className="text-gray-400 text-sm">—</div>
+                            )}
+                          </td>
+
+                          {/* 💰 Total */}
                           <td className="p-3 text-right font-semibold text-gray-800">
                             ₹{(o.totalPrice || 0).toFixed(2)}
                           </td>
 
+                          {/* 💳 Payment */}
                           <td className="p-3 text-center">
                             <div className="flex flex-col items-center">
                               {payBadge(o.paymentStatus)}
@@ -260,10 +288,12 @@ export default function OrdersContent() {
                             </div>
                           </td>
 
+                          {/* 📦 Status */}
                           <td className="p-3 text-center">
                             {statusBadge(o.status)}
                           </td>
 
+                          {/* ⚙️ Actions */}
                           <td className="p-3 text-center">
                             <OrderActions order={o} fetchOrders={fetchOrders} />
                           </td>

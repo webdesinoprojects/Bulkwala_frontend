@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import {
+  downloadLabelService,
   getAllOrdersService,
   retryShipmentService,
   syncShipmentService,
@@ -152,6 +153,18 @@ export const useAdminOrdersStore = create((set, get) => ({
       return {
         success: false,
         message: e?.response?.data?.message || "Failed to retry shipment",
+      };
+    }
+  },
+
+  downloadLabel: async (orderId) => {
+    try {
+      const blob = await downloadLabelService(orderId);
+      return { success: true, blob };
+    } catch (e) {
+      return {
+        success: false,
+        message: e?.response?.data?.message || "Failed to download label",
       };
     }
   },

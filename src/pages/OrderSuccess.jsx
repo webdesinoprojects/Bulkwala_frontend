@@ -26,28 +26,27 @@ const OrderSuccess = () => {
   const generateInvoice = () => {
     const doc = new jsPDF();
 
-    // Header
+    // 🏷️ Header
     doc.setFontSize(18);
-    doc.text("Bulkwala Pvt. Ltd.", 14, 20);
+    doc.text("Awesome Accessories", 14, 20);
     doc.setFontSize(11);
-    doc.text("GSTIN: 07ABCDE1234F1Z9", 14, 26);
-    doc.text("Email: support@bulkwala.com | Phone: +91 98765 43210", 14, 31);
+    doc.text("GSTIN: 07AUEPJ8060D1ZT", 14, 26);
+    doc.text("Email: support@bulkwala.com | Phone: 9310701078", 14, 31);
     doc.text(
-      "Address: A-98, 2nd Floor, Jain Park, Uttam Nagar, Delhi 110059",
+      "Address: M-77, Block-M, Shyam Park, Uttam Nagar, New Delhi – 110059",
       14,
       36
     );
 
     doc.setFontSize(15);
-    doc.text("Invoice / Tax Invoice", 150, 20);
+    doc.text("Tax Invoice", 150, 20);
     doc.line(14, 38, 195, 38);
 
-    // Customer Info
+    // 🧾 Customer Info
     doc.setFontSize(12);
     doc.text("Bill To:", 14, 46);
     doc.setFontSize(11);
     doc.text(`${customerName}`, 14, 52);
-
     if (paymentMode !== "PICKUP") {
       doc.text(`${orderData?.shippingAddress?.street || ""}`, 14, 57);
       doc.text(
@@ -58,6 +57,8 @@ const OrderSuccess = () => {
         62
       );
       doc.text(`Phone: ${orderData?.shippingAddress?.phone || ""}`, 14, 67);
+    } else {
+      doc.text("Pickup from Store – Uttam Nagar Delhi 110059", 14, 57);
     }
 
     doc.text(`Invoice No: ${orderId.slice(-6).toUpperCase()}`, 150, 46);
@@ -65,23 +66,33 @@ const OrderSuccess = () => {
     doc.text(`Payment Mode: ${paymentMode}`, 150, 57);
     doc.text(`Payment Status: ${paymentStatus.toUpperCase()}`, 150, 62);
 
-    // Items Table
-    const tableColumn = ["Product", "Qty", "Price (₹)", "Subtotal (₹)"];
+    // 📦 Product Table
+    const tableColumn = [
+      "Product",
+      "Qty",
+      "GST Rate",
+      "Taxable Value (₹)",
+      "Total (₹)",
+    ];
     const tableRows = [];
 
     orderData?.products?.forEach((item) => {
-      const title =
-        item?.product?.title ||
-        item?.title ||
-        item?.productName ||
-        "Unknown Product";
-      const price = item?.priceAtPurchase || item?.product?.price || 0;
-      const subtotal = (price * (item?.quantity || 1)).toFixed(2);
+      const p = item?.product || {};
+      const title = p.title || "Product";
+      const qty = item?.quantity || 1;
+      const total = (p.discountPrice || p.price || 0).toFixed(2);
+      const gstRate = p.gstSlab ?? 18;
+      const taxableValue = (
+        (p.discountPrice || p.price || 0) /
+        (1 + gstRate / 100)
+      ).toFixed(2);
+
       tableRows.push([
         title,
-        item?.quantity?.toString() || "1",
-        price.toFixed(2),
-        subtotal,
+        qty.toString(),
+        `${gstRate}%`,
+        taxableValue,
+        total,
       ]);
     });
 
@@ -90,86 +101,47 @@ const OrderSuccess = () => {
       body: tableRows,
       startY: 75,
       theme: "grid",
-      styles: { fontSize: 10, cellPadding: 3 },
-      headStyles: { fillColor: [32, 32, 32], textColor: 255 },
+      styles: { fontSize: 9, cellPadding: 3 },
+      headStyles: { fillColor: [30, 30, 30], textColor: 255 },
     });
 
+    // 💰 Summary
     const summaryY = doc.lastAutoTable.finalY + 10;
     const itemsPrice = orderData?.itemsPrice || 0;
-    const taxPrice = orderData?.taxPrice || 0;
-    const shippingPrice = orderData?.shippingPrice || 0;
+    const shipping = orderData?.shippingPrice || 0;
+    const coupon = orderData?.couponDiscount || 0;
+    const referral = orderData?.referralDiscount || 0;
+    const flash = orderData?.flashDiscount || 0;
+    const prepaid = orderData?.prepaidDiscount || 0;
+    const grandTotal = orderData?.totalPrice || 0;
 
-    // ✅ All discount fields
-    const couponDiscount = orderData?.couponDiscount || 0;
-    const referralDiscount = orderData?.referralDiscount || 0;
-    const flashDiscount = orderData?.flashDiscount || 0;
-    const flashPercent = orderData?.flashDiscountPercent || 0;
-    const prepaidDiscount = orderData?.prepaidDiscount || 0;
-
-    // 💡 Grey background box for summary
-    let boxStartY = summaryY - 4;
-    let boxHeight = 70;
-    doc.setFillColor(245, 245, 245);
-    doc.rect(120, boxStartY, 75, boxHeight, "F");
+    const x = 130;
+    let y = summaryY;
 
     doc.setFontSize(11);
-    doc.text("Price Summary:", 14, summaryY);
-
-    let lineY = summaryY;
-    const xPos = 130; // shifted left to prevent cutoff
-
-    doc.text(`Items Total: ₹${itemsPrice.toFixed(2)}`, xPos, (lineY += 0));
-    doc.text(`Tax (18%): ₹${taxPrice.toFixed(2)}`, xPos, (lineY += 6));
-    doc.text(`Shipping: ₹${shippingPrice.toFixed(2)}`, xPos, (lineY += 6));
-
-    // ✅ Show each applied discount with color
-    if (couponDiscount > 0) {
-      doc.setTextColor(255, 0, 0);
-      doc.text(
-        `Coupon Discount: -₹${couponDiscount.toFixed(2)}`,
-        xPos,
-        (lineY += 6)
-      );
-      doc.setTextColor(0, 0, 0);
-    }
-    if (referralDiscount > 0) {
-      doc.setTextColor(128, 0, 128);
-      doc.text(
-        `Referral Discount: -₹${referralDiscount.toFixed(2)}`,
-        xPos,
-        (lineY += 6)
-      );
-      doc.setTextColor(0, 0, 0);
-    }
-    if (flashDiscount > 0) {
-      doc.setTextColor(0, 102, 204);
-      doc.text(
-        `Flash Offer (${flashPercent}%): -₹${flashDiscount.toFixed(2)}`,
-        xPos,
-        (lineY += 6)
-      );
-      doc.setTextColor(0, 0, 0);
-    }
-    if (prepaidDiscount > 0) {
-      doc.setTextColor(255, 140, 0);
-      doc.text(
-        `Prepaid Discount: -₹${prepaidDiscount.toFixed(2)}`,
-        xPos,
-        (lineY += 6)
-      );
-      doc.setTextColor(0, 0, 0);
-    }
+    doc.text("Summary", 14, y);
+    doc.setFontSize(10);
+    doc.text(`Items Total: ₹${itemsPrice.toFixed(2)}`, x, (y += 6));
+    doc.text(`Shipping: ₹${shipping.toFixed(2)}`, x, (y += 6));
+    if (coupon > 0)
+      doc.text(`Coupon Discount: -₹${coupon.toFixed(2)}`, x, (y += 6));
+    if (referral > 0)
+      doc.text(`Referral Discount: -₹${referral.toFixed(2)}`, x, (y += 6));
+    if (flash > 0) doc.text(`Flash Offer: -₹${flash.toFixed(2)}`, x, (y += 6));
+    if (prepaid > 0)
+      doc.text(`Prepaid Discount: -₹${prepaid.toFixed(2)}`, x, (y += 6));
 
     doc.setFont(undefined, "bold");
-    doc.text(`Grand Total: ₹${totalAmount.toFixed(2)}`, xPos, (lineY += 8));
+    doc.text(`Grand Total (Inc GST): ₹${grandTotal.toFixed(2)}`, x, (y += 8));
     doc.setFont(undefined, "normal");
 
-    doc.line(14, lineY + 4, 195, lineY + 4);
-    doc.setFontSize(10);
+    // Footer
+    doc.line(14, y + 4, 195, y + 4);
+    doc.setFontSize(9);
     doc.text(
-      "Thank you for shopping with Bulkwala! This is a computer-generated invoice.",
+      "Thank you for shopping with Awesome Accessories – This is a computer-generated invoice.",
       14,
-      lineY + 12
+      y + 12
     );
 
     doc.save(`Invoice_${orderId}.pdf`);

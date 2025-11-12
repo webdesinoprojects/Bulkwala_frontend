@@ -40,3 +40,11 @@ export const retryShipmentService = async (orderId) => {
   );
   return res.data.data;
 };
+
+export const downloadLabelService = async (orderId) => {
+  const res = await axiosInstance.get(`/api/order/${orderId}/shipping-label`, {
+    withCredentials: true,
+    responseType: "blob", // important for PDF
+  });
+  return res.data; // Blob
+};

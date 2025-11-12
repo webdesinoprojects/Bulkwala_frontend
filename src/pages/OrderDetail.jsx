@@ -121,9 +121,7 @@ const OrderDetail = () => {
           <p>
             <strong>Items Price:</strong> ₹{order.itemsPrice.toFixed(2)}
           </p>
-          <p>
-            <strong>Tax (18%):</strong> ₹{order.taxPrice.toFixed(2)}
-          </p>
+
           <p>
             <strong>Shipping Price:</strong> ₹{order.shippingPrice.toFixed(2)}
           </p>

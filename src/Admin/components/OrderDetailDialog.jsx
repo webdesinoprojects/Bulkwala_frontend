@@ -6,11 +6,30 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { useAdminOrdersStore } from "@/store/adminOrders.store";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export default function OrderDetailDialog({ open, onOpenChange, order }) {
+  const { downloadLabel } = useAdminOrdersStore();
+
   if (!order) return null;
+
+  const handleDownloadLabel = async () => {
+    const res = await downloadLabel(order._id);
+    if (res.success && res.blob) {
+      const blob = new Blob([res.blob], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Label_${order.trackingId}.pdf`;
+      a.click();
+      toast.success("Label downloaded successfully!");
+    } else {
+      toast.warning("Label not available yet (shipment not picked)");
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -96,32 +115,54 @@ export default function OrderDetailDialog({ open, onOpenChange, order }) {
           )}
 
           {/* Product List */}
+          {/* Product List */}
           <section className="border p-4 rounded-lg">
             <h3 className="font-semibold mb-2 text-gray-800">Products</h3>
             <div className="divide-y">
               {order.products?.map((p, i) => (
                 <div
                   key={i}
-                  className="flex items-center justify-between py-2 text-sm"
+                  className="flex items-center justify-between py-3 text-sm"
                 >
                   <div className="flex items-center gap-3">
-                    {p.product?.image_url?.[0] && (
+                    {p.product?.images?.[0] || p.product?.image_url?.[0] ? (
                       <img
-                        src={p.product.image_url[0]}
+                        src={
+                          p.product?.images?.[0] || p.product?.image_url?.[0]
+                        }
                         alt={p.product?.title}
-                        className="w-10 h-10 rounded object-cover"
+                        className="w-12 h-12 rounded object-cover"
                       />
+                    ) : (
+                      <div className="w-12 h-12 rounded bg-gray-100 flex items-center justify-center text-gray-400">
+                        📦
+                      </div>
                     )}
+
                     <div>
                       <p className="font-medium text-gray-800">
                         {p.product?.title || "Unnamed Product"}
                       </p>
+
                       <p className="text-gray-500 text-xs">
                         Qty: {p.quantity} × ₹{p.product?.price?.toFixed(2)}
                       </p>
+
+                      {p.product?.sku && (
+                        <p className="text-xs text-gray-600 mt-0.5">
+                          <strong>SKU:</strong> {p.product.sku}
+                        </p>
+                      )}
+
+                      {p.product?._id && (
+                        <p className="text-xs text-gray-400">
+                          <strong>ID:</strong> {p.product._id}
+                        </p>
+                      )}
                     </div>
                   </div>
-                  <p className="font-semibold text-gray-800">
+
+                  <p className="font-semibold text-gray-800 whitespace-nowrap">
                     ₹{(p.product?.price * p.quantity).toFixed(2)}
                   </p>
                 </div>
@@ -152,6 +193,14 @@ export default function OrderDetailDialog({ open, onOpenChange, order }) {
               <p>
                 <strong>Status:</strong> {order.shipmentStatus || "Not Shipped"}
               </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-3"
+                onClick={handleDownloadLabel}
+              >
+                📄 Download Label
+              </Button>
             </section>
           )}
 
