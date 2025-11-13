@@ -39,7 +39,7 @@ const AddProductForm = ({ onSuccess }) => {
       slug: "",
       description: "",
       price: "",
-      discountPrice: 0,
+      discountPrice: "",
       gstSlab: 18,
       stock: "",
       images: [],
@@ -113,7 +113,7 @@ const AddProductForm = ({ onSuccess }) => {
             <p className="text-red-500">{errors.description.message}</p>
           )}
           {/* Price */}
-          <Input type="number" placeholder="Price" {...register("price")} />
+          <Input type="number" placeholder="MRP" {...register("price")} />
           {errors.price && (
             <p className="text-red-500">{errors.price.message}</p>
           )}

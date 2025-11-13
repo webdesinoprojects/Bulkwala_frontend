@@ -85,6 +85,7 @@ const Cart = () => {
   const handleRemoveItem = async (productId) => {
     try {
       await removeCartItem(productId);
+      await fetchCart();
       toast.success("Item removed from cart");
     } catch {
       toast.error("Failed to remove item");

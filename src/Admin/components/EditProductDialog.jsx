@@ -167,7 +167,7 @@ export default function EditProductDialog({ open, onClose, slug, onSuccess }) {
                 {/* Price */}
                 <div>
                   <Label className="text-sm text-gray-700 mb-1 block">
-                    Price
+                    MRP
                   </Label>
                   <Input
                     type="number"
