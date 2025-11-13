@@ -31,7 +31,7 @@ const ProductDetail = () => {
   const { wishlist, toggleWishlist, fetchWishlist } = useWishlistStore();
   const { singleProduct, getProductBySlug, products, fetchProducts, loading } =
     useProductStore();
-  const { addToCart } = useCartStore();
+  const { addToCart, setBuyNowProduct } = useCartStore();
   const { reviews, fetchReviews, addReview, deleteReview, updateReview } =
     useReviewStore();
 
@@ -315,6 +315,17 @@ const ProductDetail = () => {
             </div>
 
             <div className="flex gap-3 w-full sm:w-auto">
+              <Button
+                onClick={async () => {
+                  await addToCart(product._id, quantity); // ensure in cart
+                  setBuyNowProduct(product._id); // enable buy now mode
+                  navigate("/cart"); // redirect
+                }}
+                className="flex-1 bg-orange-600 text-white hover:bg-orange-700"
+              >
+                Buy Now
+              </Button>
+
               <Button
                 onClick={handleAddToCart}
                 className={`flex-1 bg-blue-600 text-white hover:bg-blue-700 ${

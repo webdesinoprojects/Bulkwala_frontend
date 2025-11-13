@@ -26,6 +26,7 @@ const useCartStore = create((set, get) => ({
   isLoading: false,
   isUpdating: false,
   couponError: "",
+  buyNowProductId: null,
 
   fetchCart: async () => {
     set({ isLoading: true });
@@ -257,6 +258,10 @@ const useCartStore = create((set, get) => ({
       set({ isUpdating: false });
     }
   },
+
+  setBuyNowProduct: (productId) => set({ buyNowProductId: productId }),
+
+  clearBuyNow: () => set({ buyNowProductId: null }),
 }));
 
 export default useCartStore;

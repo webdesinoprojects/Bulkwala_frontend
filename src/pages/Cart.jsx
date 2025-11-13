@@ -19,16 +19,18 @@ const Cart = () => {
     updateCart,
     removeCartItem,
     clearCart,
-    applyCoupon, // From store to apply coupon
-    removeCoupon, // From store to remove coupon
-    discount, // From store for the discount value
-    couponApplied, // From store to check if coupon is applied
-    appliedCouponCode, // From store to show applied coupon code
+    applyCoupon,
+    removeCoupon,
+    discount,
+    couponApplied,
+    appliedCouponCode,
     flashDiscount,
     applyReferral,
     removeReferral,
     referralDiscount,
     referralApplied,
+    buyNowProductId,
+    clearBuyNow,
   } = useCartStore();
   const { fetchActiveOffer, timeLeft } = useOfferStore();
 
@@ -46,6 +48,23 @@ const Cart = () => {
     };
     loadCart();
   }, [fetchCart]);
+
+  // ⭐ Auto-scroll for BUY NOW product
+  useEffect(() => {
+    if (buyNowProductId) {
+      setTimeout(() => {
+        const el = document.getElementById(`cart-item-${buyNowProductId}`);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+          el.classList.add("ring-2", "ring-blue-500", "rounded-lg");
+          setTimeout(
+            () => el.classList.remove("ring-2", "ring-blue-500"),
+            2000
+          );
+        }
+      }, 300);
+    }
+  }, [buyNowProductId]);
 
   useEffect(() => {
     fetchActiveOffer();
@@ -198,6 +217,7 @@ const Cart = () => {
           {cart.items.map((item) => (
             <div
               key={item.product._id}
+              id={`cart-item-${item.product._id}`} // ⭐ Add this
               className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b py-4 gap-4 sm:gap-6"
             >
               {/* Left: Product Info */}

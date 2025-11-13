@@ -391,6 +391,59 @@ export default function Navbar() {
           </div>
         </div>
 
+        {/* 📱 ALWAYS VISIBLE MOBILE SEARCH BAR */}
+        <div className="md:hidden w-full px-4 pb-3">
+          <form
+            onSubmit={handleSearchSubmit}
+            className="flex items-center bg-gray-100 rounded-md px-4 py-2"
+          >
+            <ion-icon
+              name="search-outline"
+              class="text-xl text-gray-500 mr-2"
+            ></ion-icon>
+
+            <input
+              type="text"
+              placeholder="Search Your Products"
+              className="bg-transparent flex-1 outline-none text-base"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                if (e.target.value.trim()) setSuggestions(recentSearches);
+              }}
+              onFocus={() => {
+                if (searchQuery.trim()) setSuggestions(recentSearches);
+              }}
+            />
+
+            <ion-icon
+              name={listening ? "mic" : "mic-outline"}
+              class={`text-xl ml-2 cursor-pointer transition-all ${
+                listening ? "text-red-500 animate-pulse" : "text-gray-500"
+              }`}
+              onClick={handleVoiceSearch}
+            ></ion-icon>
+          </form>
+
+          {suggestions.length > 0 && (
+            <div className="bg-white shadow-md rounded-md mt-1 border border-gray-200 z-50">
+              {suggestions.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm text-gray-700"
+                  onClick={() => {
+                    setSearchQuery(item);
+                    performSearch(item);
+                    setSuggestions([]);
+                  }}
+                >
+                  {item}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* 🧭 NAV LINKS (desktop + mobile responsive) */}
         <nav className="w-full bg-[#AFC2D5] shadow-sm">
           <div
