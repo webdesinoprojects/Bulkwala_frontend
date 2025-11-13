@@ -160,6 +160,17 @@ const Login = () => {
                     Forgot Password?
                   </span>
                 </div>
+                <div className="text-center">
+                  <span className="text-sm text-gray-500">
+                    Don't have an account?{" "}
+                    <span
+                      className="text-sm text-[#02066F] cursor-pointer hover:underline"
+                      onClick={() => navigate("/signup")}
+                    >
+                      Sign Up
+                    </span>
+                  </span>
+                </div>
               </form>
             </Form>
           ) : (

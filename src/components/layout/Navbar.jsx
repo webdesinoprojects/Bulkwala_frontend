@@ -438,6 +438,101 @@ export default function Navbar() {
             >
               About Us
             </NavLink>
+            {/* ---- MOBILE MENU EXTRA OPTIONS ---- */}
+            <div className="flex flex-col gap-4 mt-5 md:hidden">
+              {/* ❤️ Wishlist */}
+              <Link to="/wishlist" className="flex items-center gap-3">
+                <ion-icon
+                  name="heart-outline"
+                  class="text-2xl text-[#02066F]"
+                ></ion-icon>
+                <span className="text-[#02066F] text-lg font-medium">
+                  Wishlist
+                </span>
+                {wishlist.length > 0 && (
+                  <span className="ml-auto bg-red-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                    {wishlist.length}
+                  </span>
+                )}
+              </Link>
+
+              {/* 🛒 Cart */}
+              <Link to="/cart" className="flex items-center gap-3">
+                <ion-icon
+                  name="cart-outline"
+                  class="text-2xl text-[#02066F]"
+                ></ion-icon>
+                <span className="text-[#02066F] text-lg font-medium">Cart</span>
+                {totalItems > 0 && (
+                  <span className="ml-auto bg-red-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                    {totalItems}
+                  </span>
+                )}
+              </Link>
+
+              {/* 👤 Login / Signup OR Profile */}
+              {user ? (
+                <div className="flex flex-col gap-3">
+                  <Link
+                    to="/profile"
+                    className="flex items-center gap-3 text-[#02066F] text-lg font-medium"
+                  >
+                    <ion-icon
+                      name="person-circle-outline"
+                      class="text-2xl"
+                    ></ion-icon>
+                    My Profile
+                  </Link>
+
+                  {user.role === "customer" && (
+                    <Link
+                      to="/my-orders"
+                      className="flex items-center gap-3 text-[#02066F] text-lg font-medium"
+                    >
+                      <ion-icon name="bag-outline" class="text-2xl"></ion-icon>
+                      My Orders
+                    </Link>
+                  )}
+
+                  {(user.role === "admin" || user.role === "seller") && (
+                    <Link
+                      to={`/${user.role}`}
+                      className="flex items-center gap-3 text-[#02066F] text-lg font-medium"
+                    >
+                      <ion-icon name="grid-outline" class="text-2xl"></ion-icon>
+                      Manage Dashboard
+                    </Link>
+                  )}
+
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-3 text-red-600 text-lg font-medium mt-2"
+                  >
+                    <ion-icon
+                      name="log-out-outline"
+                      class="text-2xl"
+                    ></ion-icon>
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 mt-2">
+                  <Link
+                    to="/login"
+                    className="text-[#02066F] text-lg font-medium hover:underline"
+                  >
+                    Login
+                  </Link>
+                  <span>/</span>
+                  <Link
+                    to="/signup"
+                    className="text-[#02066F] text-lg font-medium hover:underline"
+                  >
+                    Signup
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
         </nav>
       </header>
