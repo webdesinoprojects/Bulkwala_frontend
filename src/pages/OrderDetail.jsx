@@ -4,6 +4,8 @@ import { toast } from "sonner";
 import useOrderStore from "@/store/order.store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { generateInvoicePDF } from "../lib/invoiceGenerator";
+import { Download } from "lucide-react";
 
 const OrderDetail = () => {
   const { orderId } = useParams();
@@ -91,6 +93,15 @@ const OrderDetail = () => {
           <CardTitle className="text-base sm:text-lg font-semibold">
             Order #{order._id.slice(-6).toUpperCase()}
           </CardTitle>
+          {/* DOWNLOAD INVOICE BUTTON */}
+          <Button
+            onClick={() => generateInvoicePDF(order)}
+            className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto flex items-center gap-2"
+          >
+            <Download size={16} />
+            Download Invoice
+          </Button>
+
           <span
             className={`text-xs sm:text-sm px-3 py-1 rounded-full font-medium self-start sm:self-auto ${
               order.status === "Delivered"
