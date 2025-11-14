@@ -13,11 +13,14 @@ export default function ProductsContent() {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const { fetchProducts, products, deleteProduct, total } = useProductStore();
+
+  // ✅ Keep pagination state
   const [filters, setFilters] = useState({ page: 1, limit: 15 });
 
+  // ✅ Fetch products whenever filters change
   useEffect(() => {
     fetchProducts(filters);
-  }, [filters]);
+  }, [filters, fetchProducts]);
 
   const productList = Array.isArray(products)
     ? products
@@ -41,7 +44,9 @@ export default function ProductsContent() {
               await deleteProduct(slug);
               toast.dismiss(t);
               toast.success("Product deleted!");
-              fetchProducts();
+
+              // ✅ Maintain current page after delete
+              fetchProducts(filters);
             }}
           >
             Yes, Delete
@@ -69,16 +74,18 @@ export default function ProductsContent() {
         </Button>
       </div>
 
+      {/* Add Product Form */}
       {showAddForm && (
         <AddProductForm
           onSuccess={() => {
             setShowAddForm(false);
-            fetchProducts();
+            // ✅ Stay on same page after adding (or reload last page if needed)
+            fetchProducts(filters);
           }}
         />
       )}
 
-      {/* Table */}
+      {/* Product Table */}
       <Card className="bg-white border border-gray-200 rounded-xl shadow-sm">
         <CardContent className="overflow-x-auto p-0">
           <table className="min-w-full border-collapse text-sm">
@@ -227,11 +234,13 @@ export default function ProductsContent() {
         </div>
       )}
 
+      {/* Edit Product Dialog */}
       <EditProductDialog
         open={dialogOpen}
         slug={editSlug}
         onClose={() => setDialogOpen(false)}
-        onSuccess={fetchProducts}
+        // ✅ Refresh same page after editing
+        onSuccess={() => fetchProducts(filters)}
       />
     </>
   );
