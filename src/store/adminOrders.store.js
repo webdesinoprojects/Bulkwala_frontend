@@ -43,7 +43,7 @@ export const useAdminOrdersStore = create((set, get) => ({
         (sum, o) => sum + (o.totalPrice || 0),
         0
       );
-      const pending = data.filter((o) => o.status === "Pending").length;
+      const processing = data.filter((o) => o.status === "Processing").length;
       const delivered = data.filter((o) => o.status === "Delivered").length;
       const cancelled = data.filter((o) => o.status === "Cancelled").length;
       const successPayments = data.filter(
@@ -58,7 +58,7 @@ export const useAdminOrdersStore = create((set, get) => ({
         stats: {
           totalOrders,
           totalRevenue,
-          pending,
+          processing,
           delivered,
           cancelled,
           successPayments,

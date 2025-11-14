@@ -25,7 +25,7 @@ export default function Footer() {
 
             {/* ✅ X (Twitter) */}
             <a
-              href="https://x.com/bulkwale?s=21"
+              href="https://x.com/bulkwala1?t=iq5EVhmJ9j3iFhru1-WZeQ&s=09"
               target="_blank"
               rel="noopener noreferrer"
               className="cursor-pointer"
@@ -62,16 +62,23 @@ export default function Footer() {
 
         {/* Store Links */}
         <div>
-          <h3 className="text-lg text-[#02066F] font-semibold mb-3">Store</h3>
+          <h3 className="text-lg text-[#02066F] font-semibold mb-3">
+            Quick Links
+          </h3>
           <ul className="space-y-2 text-[#02066F] text-sm sm:text-base">
-            <li className="hover:underline cursor-pointer">Hot Accessories</li>
             <li className="hover:underline cursor-pointer">
-              Audio & Headphones
+              <Link to="/">Home</Link>
             </li>
             <li className="hover:underline cursor-pointer">
-              Mobile Accessories
+              <Link to="/about-us">About Us</Link>
             </li>
-            <li className="hover:underline cursor-pointer">Wholesale</li>
+            <li className="hover:underline cursor-pointer">
+              <Link to="/contact-us">Contact Us</Link>{" "}
+            </li>
+
+            <li className="hover:underline cursor-pointer">
+              <Link to="/products">Products</Link>
+            </li>
             <Link
               to="/become-seller"
               className="text-[#02066F] hover:underline hover:text-[#04127A]"
@@ -90,8 +97,13 @@ export default function Footer() {
             <li>Upper Ground Floor, Back Side</li>
             <li>Building No. M-77, Block-M, Shyam Park</li>
             <li>Uttam Nagar, New Delhi - 110059</li>
-            <li className="mt-2">📞 +91 9310701078</li>
-            <li>✉ support@bulkwala.com</li>
+            <a href="tel:+91 9310701078">
+              <li className="mt-2"> 📞 +91 9310701078</li>
+            </a>
+
+            <a href="mailto:support@bulkwala.com">
+              <li>✉ support@bulkwala.com</li>
+            </a>
           </ul>
         </div>
 

@@ -59,8 +59,9 @@ export default function OrdersContent() {
 
   const statusBadge = (status) => {
     switch (status) {
-      case "Pending":
-        return badge("Pending", "bg-yellow-100 text-yellow-700");
+      case "Processing":
+        return badge("Processing", "bg-yellow-100 text-yellow-700");
+
       case "Shipped":
         return badge("Shipped", "bg-blue-100 text-blue-700");
       case "Delivered":
@@ -97,7 +98,7 @@ export default function OrdersContent() {
           {[
             ["Total Orders", stats.totalOrders],
             ["Revenue", `₹${stats.totalRevenue?.toFixed(2)}`],
-            ["Pending", stats.pending],
+            ["Processing", stats.processing],
             ["Delivered", stats.delivered],
             ["Cancelled", stats.cancelled],
             ["Paid (Success)", stats.successPayments],
@@ -125,7 +126,7 @@ export default function OrdersContent() {
             onChange={(e) => setFilters({ status: e.target.value })}
           >
             <option value="ALL">All Status</option>
-            <option value="Pending">Pending</option>
+            <option value="Processing">Processing</option>
             <option value="Shipped">Shipped</option>
             <option value="Delivered">Delivered</option>
             <option value="Cancelled">Cancelled</option>

@@ -13,7 +13,6 @@ import {
   Heart,
   Minus,
   Plus,
-  MessageCircle,
   Trash2,
   Edit3,
   CheckCircle,
@@ -67,7 +66,7 @@ const ProductDetail = () => {
   }, []);
 
   useEffect(() => {
-    fetchProducts({ limit: 8 }); // fetch top 8 products
+    fetchProducts({ limit: 8 });
   }, []);
 
   useEffect(() => {
@@ -97,7 +96,7 @@ const ProductDetail = () => {
       setIsInWishlist(nowInWishlist);
       toast[nowInWishlist ? "success" : "info"](
         `${product.title} ${
-          nowInWishlist ? "added to wishlist ❤️" : "removed from wishlist ❌"
+          nowInWishlist ? "added to wishlist ❤" : "removed from wishlist ❌"
         }`
       );
     } catch {
@@ -155,7 +154,7 @@ const ProductDetail = () => {
     setSelectedRating(review.rating);
     setIsEditing(true);
     setEditReviewId(review._id);
-    toast.info("You can now edit your review ✏️");
+    toast.info("You can now edit your review ✏");
     formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
   };
 
@@ -169,7 +168,7 @@ const ProductDetail = () => {
 
   const handleDeleteReview = async (reviewId) => {
     await deleteReview(product._id, reviewId);
-    toast.success("Review deleted successfully 🗑️");
+    toast.success("Review deleted successfully 🗑");
     await fetchReviews(product._id);
     await getProductBySlug(slug);
   };
@@ -188,7 +187,7 @@ const ProductDetail = () => {
   return (
     <section className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-10">
-        {/* ---------------- IMAGE SECTION ---------------- */}
+        {/* IMAGE SECTION */}
         <div className="flex flex-col items-center">
           <div className="w-full h-[300px] sm:h-[400px] bg-white rounded-xl shadow-md flex justify-center items-center overflow-hidden">
             <img
@@ -209,7 +208,7 @@ const ProductDetail = () => {
           </div>
         </div>
 
-        {/* ---------------- DETAILS SECTION ---------------- */}
+        {/* DETAILS */}
         <div className="flex flex-col justify-between space-y-6">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
@@ -287,18 +286,29 @@ const ProductDetail = () => {
               {isInWishlist ? "Wishlisted" : "Add to Wishlist"}
             </Button>
 
+            {/* UPDATED WHATSAPP BUTTON */}
             <Button
               onClick={() =>
                 window.open(
                   `https://wa.me/9310701078?text=${encodeURIComponent(
-                    `Hi, I'm interested in ${product.title} (₹${product.price})`
+                    `Hi, I'm interested in this product: ${product.title}`
                   )}`,
                   "_blank"
                 )
               }
               className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
             >
-              <MessageCircle className="w-5 h-5" /> WhatsApp
+              {/* Real WhatsApp SVG */}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="white"
+              >
+                <path d="M20.52 3.48A11.8 11.8 0 0 0 12.04 0C5.5 0 .32 5.18.32 11.72c0 2.07.54 4.08 1.57 5.86L0 24l6.57-1.85a11.68 11.68 0 0 0 5.47 1.38h.01c6.54 0 11.82-5.18 11.82-11.72 0-3.13-1.22-6.08-3.35-8.33zM12.05 21.3c-1.72 0-3.4-.46-4.87-1.33l-.35-.21-3.9 1.1 1.04-3.8-.23-.39a9.51 9.51 0 0 1-1.47-5.15c0-5.28 4.32-9.58 9.62-9.58 2.57 0 4.99 1 6.82 2.8a9.42 9.42 0 0 1 2.81 6.77c-.01 5.27-4.33 9.59-9.47 9.59zm5.28-7.14c-.29-.15-1.72-.85-1.98-.94-.27-.1-.46-.15-.65.15-.19.29-.75.94-.92 1.13-.17.2-.34.22-.63.07-.29-.15-1.22-.45-2.32-1.45-.86-.77-1.44-1.72-1.61-2.01-.17-.29-.02-.45.13-.6.14-.15.29-.34.44-.51.15-.17.2-.29.3-.48.1-.19.05-.36-.02-.51-.08-.15-.65-1.57-.9-2.15-.24-.58-.49-.5-.65-.51h-.56c-.19 0-.5.07-.76.36-.26.29-1 1-1 2.44 0 1.43 1.03 2.81 1.17 3 .14.19 2.02 3.18 4.88 4.46.68.29 1.22.46 1.64.59.69.22 1.32.19 1.82.12.55-.08 1.72-.7 1.97-1.38.24-.67.24-1.25.17-1.38-.07-.12-.26-.2-.55-.35z" />
+              </svg>
+              Share on WhatsApp
             </Button>
           </div>
 
@@ -317,9 +327,9 @@ const ProductDetail = () => {
             <div className="flex gap-3 w-full sm:w-auto">
               <Button
                 onClick={async () => {
-                  await addToCart(product._id, quantity); // ensure in cart
-                  setBuyNowProduct(product._id); // enable buy now mode
-                  navigate("/cart"); // redirect
+                  await addToCart(product._id, quantity);
+                  setBuyNowProduct(product._id);
+                  navigate("/cart");
                 }}
                 className="flex-1 bg-orange-600 text-white hover:bg-orange-700"
               >
@@ -352,13 +362,12 @@ const ProductDetail = () => {
         </div>
       </div>
 
-      {/* ---------------- REVIEWS SECTION ---------------- */}
+      {/* REVIEWS */}
       <div className="max-w-7xl mx-auto mt-16 px-4 sm:px-6 lg:px-8">
         <h2 className="text-2xl font-semibold text-[#02066F] mb-6">
           Customer Reviews
         </h2>
 
-        {/* Review Form */}
         <form
           ref={formRef}
           onSubmit={(e) => {
@@ -367,7 +376,6 @@ const ProductDetail = () => {
           }}
           className="mb-8 space-y-4 bg-white p-4 sm:p-6 rounded-lg shadow"
         >
-          {/* Rating Stars */}
           <div className="flex gap-2">
             {[1, 2, 3, 4, 5].map((star) => (
               <Star
@@ -426,7 +434,6 @@ const ProductDetail = () => {
           </div>
         </form>
 
-        {/* Review Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {reviews?.length > 0 ? (
             reviews.map((rev) => (
@@ -500,7 +507,7 @@ const ProductDetail = () => {
         </div>
       </div>
 
-      {/* ---------------- TOP SUGGESTIONS SECTION ---------------- */}
+      {/* TOP SUGGESTIONS */}
       <div className="max-w-7xl mx-auto mt-20 px-4 sm:px-6 lg:px-8">
         <h2 className="text-2xl font-semibold text-[#02066F] mb-6">
           Top Suggestions

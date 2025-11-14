@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,9 +12,42 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 export default function OrderDetailDialog({ open, onOpenChange, order }) {
-  const { downloadLabel } = useAdminOrdersStore();
+  const { downloadLabel, updateOrderStatus, updatePaymentStatus, fetchOrders } =
+    useAdminOrdersStore();
 
+  const [localOrderStatus, setLocalOrderStatus] = useState("");
+  const [localPaymentStatus, setLocalPaymentStatus] = useState("");
+
+  useEffect(() => {
+    if (order) {
+      setLocalOrderStatus(order.status);
+      setLocalPaymentStatus(order.paymentStatus);
+    }
+  }, [order]);
   if (!order) return null;
+  const handleManualUpdate = async () => {
+    if (!order?._id) return;
+
+    const id = order._id;
+
+    // Update order status
+    const os = await updateOrderStatus(id, localOrderStatus);
+    if (!os.success) {
+      toast.error("Failed to update order status");
+      return;
+    }
+
+    // Update payment status
+    const ps = await updatePaymentStatus(id, localPaymentStatus);
+    if (!ps.success) {
+      toast.error("Failed to update payment status");
+      return;
+    }
+
+    toast.success("Order updated successfully");
+    fetchOrders();
+    onOpenChange(false);
+  };
 
   const handleDownloadLabel = async () => {
     const res = await downloadLabel(order._id);
@@ -203,6 +236,48 @@ export default function OrderDetailDialog({ open, onOpenChange, order }) {
               </Button>
             </section>
           )}
+
+          {/* ===== Manual Update Section ===== */}
+          <section className="border p-4 rounded-lg bg-blue-50">
+            <h3 className="font-semibold mb-3 text-gray-800">Manual Update</h3>
+
+            {/* Order Status */}
+            <div className="mb-3">
+              <label className="text-sm text-gray-600">Order Status</label>
+              <select
+                className="w-full border rounded-md px-3 py-2 mt-1"
+                value={localOrderStatus}
+                onChange={(e) => setLocalOrderStatus(e.target.value)}
+              >
+                <option value="Processing">Processing</option>
+                <option value="Shipped">Shipped</option>
+                <option value="Delivered">Delivered</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+
+            {/* Payment Status */}
+            <div className="mb-3">
+              <label className="text-sm text-gray-600">Payment Status</label>
+              <select
+                className="w-full border rounded-md px-3 py-2 mt-1"
+                value={localPaymentStatus}
+                onChange={(e) => setLocalPaymentStatus(e.target.value)}
+              >
+                <option value="pending">Pending</option>
+                <option value="success">Success</option>
+                <option value="failed">Failed</option>
+                <option value="refunded">Refunded</option>
+              </select>
+            </div>
+
+            <Button
+              className="mt-2 w-full bg-green-600 text-white hover:bg-green-700"
+              onClick={handleManualUpdate}
+            >
+              Save Changes
+            </Button>
+          </section>
 
           <div className="text-right">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
