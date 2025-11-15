@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { useAdminOrdersStore } from "@/store/adminOrders.store";
 import { toast } from "sonner";
-
+import OrderDetailDialog from "./OrderDetailDialog";
 export default function OrdersContent() {
   const {
     orders,
@@ -23,6 +23,8 @@ export default function OrdersContent() {
   } = useAdminOrdersStore();
 
   const [pagination, setPagination] = useState({ page: 1, limit: 15 });
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchOrders(pagination);
@@ -151,7 +153,7 @@ export default function OrdersContent() {
 
       {/* Table */}
       <Card className="bg-white border border-gray-200 rounded-xl shadow-sm">
-        <CardContent className="overflow-x-auto p-0">
+        <CardContent className="p-0 overflow-hidden">
           {loading ? (
             <p className="text-center py-8 text-gray-500">Loading orders...</p>
           ) : error ? (
@@ -160,11 +162,11 @@ export default function OrdersContent() {
             <p className="text-center py-8 text-gray-500">No orders found.</p>
           ) : (
             <>
-              <table className="min-w-full border-collapse">
+              <table className="w-full border-collapse table-auto">
                 <thead className="bg-gray-100 text-gray-700 text-sm">
                   <tr>
                     <th className="p-3 text-left">Order</th>
-                    <th className="p-3 text-left">Customer</th>
+                    <th className="p-3 text-left">Products</th>
                     <th className="p-3 text-right">Total</th>
                     <th className="p-3 text-center">Payment</th>
                     <th className="p-3 text-center">Status</th>
@@ -182,9 +184,14 @@ export default function OrdersContent() {
                       return (
                         <tr
                           key={o._id}
-                          className={`transition ${
+                          onClick={() => {
+                            setSelectedOrder(o);
+                            setIsDialogOpen(true);
+                          }}
+                          className={`transition cursor-pointer ${
                             idx % 2 === 0 ? "bg-white" : "bg-gray-50"
-                          } hover:bg-blue-50/40`}
+                          } hover:bg-blue-50/60 hover:shadow-md hover:scale-[1.01]`}
+                          style={{ transition: "all 0.2s ease" }}
                         >
                           <td className="p-3 font-mono text-gray-700">
                             <div className="flex items-center gap-1">
@@ -205,11 +212,38 @@ export default function OrdersContent() {
                           </td>
 
                           <td className="p-3">
-                            <div className="font-medium text-gray-800 capitalize">
-                              {o.user?.name || "-"}
+                            {/* 🛍️ Product Titles */}
+                            <div className="text-gray-800 font-medium text-sm leading-tight">
+                              {o.products && o.products.length > 0 ? (
+                                <>
+                                  {o.products.slice(0, 2).map((p, i) => (
+                                    <div
+                                      key={i}
+                                      className="truncate max-w-[180px]"
+                                    >
+                                      • {p.product?.title || "Unnamed Product"}{" "}
+                                      × {p.quantity}
+                                    </div>
+                                  ))}
+                                  {o.products.length > 2 && (
+                                    <div className="text-xs text-gray-500 italic">
+                                      +{o.products.length - 2} more
+                                    </div>
+                                  )}
+                                </>
+                              ) : (
+                                <div className="text-gray-400 text-sm">
+                                  No products
+                                </div>
+                              )}
                             </div>
-                            <div className="text-xs text-gray-500 truncate max-w-[160px]">
-                              {o.user?.email || "-"}
+
+                            {/* 👤 Customer Info */}
+                            <div className="text-xs text-gray-500 mt-2">
+                              {o.user?.name || "Unknown"}{" "}
+                              <span className="text-gray-400">
+                                ({o.user?.email || "No email"})
+                              </span>
                             </div>
                           </td>
 
@@ -238,6 +272,11 @@ export default function OrdersContent() {
                     })}
                 </tbody>
               </table>
+              <OrderDetailDialog
+                open={isDialogOpen}
+                onOpenChange={setIsDialogOpen}
+                order={selectedOrder}
+              />
 
               {/* Pagination */}
               {totalOrders > pagination.limit && (
@@ -276,6 +315,19 @@ export default function OrdersContent() {
 function OrderActions({ order, fetchOrders }) {
   const { syncOneOrder, retryShipment } = useAdminOrdersStore();
 
+  // 🧩 If order is pickup, don't show shipment controls
+  if (order.paymentMode === "pickup") {
+    return (
+      <div className="flex flex-col items-center gap-1">
+        <p className="text-[11px] text-blue-700 font-medium">
+          Pickup from Store
+        </p>
+        <p className="text-[10px] text-gray-500">No shipping required</p>
+      </div>
+    );
+  }
+
+  // 🧩 For normal shipped orders
   return (
     <div className="flex flex-col items-center gap-1">
       {order.trackingId && (
@@ -288,6 +340,7 @@ function OrderActions({ order, fetchOrders }) {
           {order.trackingId}
         </a>
       )}
+
       <p className="text-[10px] text-gray-500">
         {order.courierName || "Delhivery"}{" "}
         {order.shipmentStatus ? `· ${order.shipmentStatus}` : ""}

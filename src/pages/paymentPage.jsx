@@ -28,6 +28,22 @@ const PaymentPage = () => {
   const { user, updateAddress } = useAuthStore();
   const navigate = useNavigate();
 
+  // ✅ Detect prepaid mode (any online option except COD & pickup)
+  const isPrepaid = ["card", "upi", "netbanking", "online"].includes(
+    paymentMode
+  );
+  // Flat ₹30 off for prepaid
+  const prepaidDiscount = isPrepaid ? 30 : 0;
+
+  // ✅ If pickup — remove shipping cost
+  const adjustedShipping = paymentMode === "pickup" ? 0 : shippingPrice;
+
+  // ✅ Recalculate displayed total dynamically
+  const finalDisplayTotal = Math.max(
+    itemsPrice + adjustedShipping + taxPrice - prepaidDiscount,
+    0
+  );
+
   const [shippingAddress, setShippingAddress] = useState(
     user?.address?.[0] || null
   );
@@ -75,15 +91,19 @@ const PaymentPage = () => {
 
   const proceedToPay = async () => {
     if (!paymentMode) return toast.error("Please select a payment method");
-    if (!shippingAddress) return toast.error("Please fill in your address");
+    if (paymentMode !== "pickup" && !shippingAddress)
+      return toast.error("Please fill in your address");
     if (!user) return toast.error("User not authenticated");
 
     const result = await handlePayment(cart, shippingAddress);
-    if (result?.type === "COD") {
-      toast.success("COD Order Placed Successfully");
+
+    if (result?.type === "COD" || result?.type === "PICKUP") {
+      const paymentLabel =
+        result.type === "PICKUP" ? "Pickup from Store" : "Cash on Delivery";
+      toast.success(result.message);
       await clearCart();
       navigate("/order-success", {
-        state: { orderData: result.order, paymentType: "Cash on Delivery" },
+        state: { orderData: result.order, paymentType: paymentLabel },
       });
     }
   };
@@ -113,39 +133,59 @@ const PaymentPage = () => {
           <h2 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6 text-center lg:text-left">
             Shipping Address
           </h2>
-          <ShippingAddressForm
-            onSubmit={handleAddressSubmit}
-            address={shippingAddress}
-          />
+          {paymentMode !== "pickup" ? (
+            <ShippingAddressForm
+              onSubmit={handleAddressSubmit}
+              address={shippingAddress}
+            />
+          ) : (
+            <div className="bg-yellow-50 border border-yellow-300 rounded-md p-4 text-sm text-gray-700 mb-4">
+              <p>
+                <strong>Pickup selected:</strong> You can collect your order
+                directly from our store.
+              </p>
+              <p className="mt-1 text-[#02066F] font-medium">
+                Bulkwala Store, Jain Park, Uttam Nagar, Delhi 110059
+              </p>
+            </div>
+          )}
 
           {/* Saved Addresses */}
-          <h3 className="text-lg sm:text-xl font-semibold mt-8 mb-4">
-            Saved Addresses
-          </h3>
-          <div className="space-y-3">
-            {user?.address?.length > 0 ? (
-              user.address.map((address, index) => (
-                <div
-                  key={index}
-                  className={`border p-3 sm:p-4 rounded-lg cursor-pointer hover:bg-gray-50 ${
-                    shippingAddress === address ? "border-black" : ""
-                  }`}
-                  onClick={() => handleSelectAddress(address)}
-                >
-                  <p className="text-gray-800 font-medium">{address.name}</p>
-                  <p className="text-gray-600 text-sm">
-                    {address.street}, {address.city}, {address.state}
+          {paymentMode !== "pickup" && (
+            <>
+              <h3 className="text-lg sm:text-xl font-semibold mt-8 mb-4">
+                Saved Addresses
+              </h3>
+              <div className="space-y-3">
+                {user?.address?.length > 0 ? (
+                  user.address.map((address, index) => (
+                    <div
+                      key={index}
+                      className={`border p-3 sm:p-4 rounded-lg cursor-pointer hover:bg-gray-50 ${
+                        shippingAddress === address ? "border-black" : ""
+                      }`}
+                      onClick={() => handleSelectAddress(address)}
+                    >
+                      <p className="text-gray-800 font-medium">
+                        {address.name}
+                      </p>
+                      <p className="text-gray-600 text-sm">
+                        {address.street}, {address.city}, {address.state}
+                      </p>
+                      <p className="text-gray-600 text-sm">
+                        {address.postalCode}, {address.country}
+                      </p>
+                      <p className="text-gray-700 text-sm">{address.phone}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-500 text-sm">
+                    No saved addresses found.
                   </p>
-                  <p className="text-gray-600 text-sm">
-                    {address.postalCode}, {address.country}
-                  </p>
-                  <p className="text-gray-700 text-sm">{address.phone}</p>
-                </div>
-              ))
-            ) : (
-              <p className="text-gray-500 text-sm">No saved addresses found.</p>
-            )}
-          </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
 
         {/* 💳 Order Summary + Payment */}
@@ -189,8 +229,17 @@ const PaymentPage = () => {
             </div>
             <div className="flex justify-between">
               <span>Shipping</span>
-              <span>₹{shippingPrice.toFixed(2)}</span>
+              <span>
+                {paymentMode === "pickup" ? (
+                  <span className="text-green-600 font-medium">
+                    Free (Pickup)
+                  </span>
+                ) : (
+                  `₹${shippingPrice.toFixed(2)}`
+                )}
+              </span>
             </div>
+
             <div className="flex justify-between">
               <span>Tax</span>
               <span>₹{taxPrice.toFixed(2)}</span>
@@ -214,9 +263,17 @@ const PaymentPage = () => {
               </div>
             ) : null}
 
+            {/* ✅ Prepaid discount line */}
+            {isPrepaid && (
+              <div className="flex justify-between text-green-600 font-medium">
+                <span>Prepaid Discount</span>
+                <span>-₹{prepaidDiscount.toFixed(2)}</span>
+              </div>
+            )}
+
             <div className="flex justify-between border-t pt-2 font-semibold text-base sm:text-lg">
               <span>Total</span>
-              <span>₹{totalPrice.toFixed(2)}</span>
+              <span>₹{finalDisplayTotal.toFixed(2)}</span>
             </div>
           </div>
 
@@ -224,12 +281,18 @@ const PaymentPage = () => {
           <h3 className="text-lg sm:text-xl font-semibold text-center lg:text-left mt-8 mb-3">
             Select Payment Method
           </h3>
+          {/** 💸 Prepaid Offer Note */}
+          <p className="text-green-700 text-sm mb-3">
+            💸 Get flat ₹30 OFF on prepaid orders (UPI, Card, NetBanking)
+          </p>
+
           <div className="space-y-3 mb-6">
             {[
               { label: "💳 Pay Online (Card)", value: "card" },
               { label: "💳 Pay Online (UPI)", value: "upi" },
               { label: "🏦 Net Banking", value: "netbanking" },
               { label: "💵 Cash on Delivery (COD)", value: "cod" },
+              { label: "🏬 Pickup from Store", value: "pickup" },
             ].map((option) => (
               <label
                 key={option.value}
@@ -251,11 +314,17 @@ const PaymentPage = () => {
           <div className="border-t pt-5 text-center">
             <p className="text-gray-600 text-sm mb-2">{totalItems} item(s)</p>
             <h3 className="text-2xl sm:text-3xl font-bold mb-6">
-              ₹{totalPrice.toFixed(2)}
+              ₹{finalDisplayTotal.toFixed(2)}
             </h3>
 
+            {isPrepaid && (
+              <p className="text-gray-500 text-xs text-right">
+                ₹30 prepaid discount applied
+              </p>
+            )}
+
             <button
-              disabled={!paymentMode || isLoading || totalPrice <= 0}
+              disabled={!paymentMode || isLoading || finalDisplayTotal <= 0}
               onClick={proceedToPay}
               className="w-full bg-black text-white py-3 sm:py-4 rounded-lg text-sm sm:text-lg font-medium hover:bg-gray-800 transition disabled:opacity-50"
             >
@@ -263,9 +332,11 @@ const PaymentPage = () => {
                 ? "Payment Cancelled"
                 : paymentMode === "cod"
                 ? "Place Order (COD)"
+                : paymentMode === "pickup"
+                ? "Place Order (Pickup)"
                 : isLoading
                 ? "Processing..."
-                : `Proceed to Pay ₹${totalPrice.toFixed(2)}`}
+                : `Proceed to Pay ₹${finalDisplayTotal.toFixed(2)}`}
             </button>
           </div>
         </div>

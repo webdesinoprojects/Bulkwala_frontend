@@ -14,10 +14,18 @@ export default function Footer() {
             whole world.
           </p>
           <div className="flex items-center gap-4 mt-4">
-            <FaFacebookF className="text-[#02066F] hover:text-white cursor-pointer transition" />
-            {/* ✅ New Twitter (X) logo SVG */}
+            {/* ✅ Facebook */}
             <a
-              href="https://twitter.com"
+              href="https://www.facebook.com/share/1BBdHy5oGh/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <FaFacebookF className="text-[#02066F] hover:text-white cursor-pointer transition" />
+            </a>
+
+            {/* ✅ X (Twitter) */}
+            <a
+              href="https://x.com/bulkwale?s=21"
               target="_blank"
               rel="noopener noreferrer"
               className="cursor-pointer"
@@ -31,8 +39,24 @@ export default function Footer() {
                 <path d="M18.244 2.25h3.308l-7.227 8.26L22.5 21.75h-5.902l-4.622-6.063L6.61 21.75H3.3l7.73-8.839L1.5 2.25h6.086l4.168 5.52 6.49-5.52zM17.21 19.92h1.833L7.845 4.01H5.865L17.21 19.92z" />
               </svg>
             </a>
-            <FaInstagram className="text-[#02066F] hover:text-white cursor-pointer transition" />
-            <FaYoutube className="text-[#02066F] hover:text-white cursor-pointer transition" />
+
+            {/* ✅ Instagram */}
+            <a
+              href="https://www.instagram.com/bulkwala01?igsh=ZTk5eXRqOXpidG16&utm_source=qr"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <FaInstagram className="text-[#02066F] hover:text-white cursor-pointer transition" />
+            </a>
+
+            {/* ✅ YouTube */}
+            <a
+              href="https://youtube.com/@bulkwala01?si=r1sSdtnuuRcprTp3"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <FaYoutube className="text-[#02066F] hover:text-white cursor-pointer transition" />
+            </a>
           </div>
         </div>
 
@@ -67,7 +91,7 @@ export default function Footer() {
             <li>Building No. M-77, Block-M, Shyam Park</li>
             <li>Uttam Nagar, New Delhi - 110059</li>
             <li className="mt-2">📞 +91 9310701078</li>
-            <li>✉️ bulkwalaindia@gmail.com</li>
+            <li>✉️ support@bulkwala.com</li>
           </ul>
         </div>
 
