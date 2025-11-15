@@ -19,7 +19,14 @@ export const useReviewStore = create((set) => ({
       const data = await getReviewsService(productId);
       set({ reviews: data || [], isLoading: false });
     } catch (error) {
-      console.error("❌ Fetch reviews failed:", error);
+      // Silently handle 401 errors (user not logged in) - this is expected behavior
+      if (error.response?.status === 401) {
+        set({ isLoading: false });
+        return;
+      }
+      if (process.env.NODE_ENV === "development") {
+        console.error("Fetch reviews failed:", error);
+      }
       set({ error: error.message, isLoading: false });
     }
   },
@@ -36,7 +43,9 @@ export const useReviewStore = create((set) => ({
       }));
       return newReview;
     } catch (error) {
-      console.error("❌ Add review failed:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Add review failed:", error);
+      }
       set({ error: error.message, isLoading: false });
       throw error;
     }
@@ -53,7 +62,9 @@ export const useReviewStore = create((set) => ({
         isLoading: false,
       }));
     } catch (error) {
-      console.error("❌ Delete review failed:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Delete review failed:", error);
+      }
       set({ error: error.message, isLoading: false });
       throw error;
     }
@@ -71,7 +82,9 @@ export const useReviewStore = create((set) => ({
       }));
       return updated;
     } catch (error) {
-      console.error("❌ Update review failed:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Update review failed:", error);
+      }
       set({ error: error.message, isLoading: false });
       throw error;
     }

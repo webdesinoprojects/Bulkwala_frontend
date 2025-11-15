@@ -30,14 +30,25 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ Load user, cart, wishlist, products
+  // ✅ Load products and offers (auth is checked in AppInitializer)
   useEffect(() => {
-    checkauthstatus();
-    fetchCart();
-    fetchWishlist();
     fetchProducts();
     fetchActiveOffer();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // fetchProducts and fetchActiveOffer are stable from zustand stores
+
+  // ✅ Load guest cart and fetch cart/wishlist
+  useEffect(() => {
+    const cartStore = useCartStore.getState();
+    cartStore.loadGuestCart();
+    cartStore.fetchCart();
+    
+    // Fetch wishlist only when user is logged in
+    if (user && user._id) {
+      fetchWishlist();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]); // fetchCart and fetchWishlist are stable from zustand stores
 
   // ✅ Close dropdown when clicking outside
   useEffect(() => {

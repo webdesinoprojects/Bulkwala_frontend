@@ -13,6 +13,7 @@ const PaymentPage = () => {
     handlePayment,
     isLoading,
     paymentStatus,
+    resetPaymentStatus,
   } = useOrderStore();
 
   const {
@@ -60,7 +61,16 @@ const PaymentPage = () => {
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
     script.async = true;
     document.body.appendChild(script);
-  }, [fetchCart]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // fetchCart is stable from zustand store
+
+  // ✅ Check if cart is empty and redirect
+  useEffect(() => {
+    if (!cartLoading && (!cart || !cart.items || cart.items.length === 0)) {
+      toast.error("Your cart is empty. Please add items before checkout.");
+      navigate("/cart");
+    }
+  }, [cart, cartLoading, navigate]);
 
   // ✅ Razorpay success listener
   useEffect(() => {
@@ -83,10 +93,29 @@ const PaymentPage = () => {
       }
     };
 
+    // ✅ Razorpay failure listener
+    const handleRazorpayFailed = (e) => {
+      const error = e.detail?.error;
+      let errorMessage = "Payment failed. Please try again.";
+      
+      if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
+      // Payment status is set in order store's error handler (already handled in order.store.js)
+    };
+
     window.addEventListener("razorpay-success", handleRazorpaySuccess);
-    return () =>
+    window.addEventListener("razorpay-failed", handleRazorpayFailed);
+    
+    return () => {
       window.removeEventListener("razorpay-success", handleRazorpaySuccess);
-  }, [navigate]);
+      window.removeEventListener("razorpay-failed", handleRazorpayFailed);
+    };
+  }, [navigate, clearCart]);
 
   const handleAddressSubmit = (address) => {
     setShippingAddress(address);
@@ -100,6 +129,11 @@ const PaymentPage = () => {
     if (paymentMode !== "pickup" && !shippingAddress)
       return toast.error("Please fill in your address");
     if (!user) return toast.error("User not authenticated");
+
+    // ✅ Reset payment status before attempting payment (if previously failed/cancelled)
+    if (paymentStatus === "CANCELLED" || paymentStatus === "FAILED") {
+      resetPaymentStatus();
+    }
 
     const result = await handlePayment(cart, shippingAddress);
 
@@ -120,6 +154,11 @@ const PaymentPage = () => {
         Loading cart details...
       </div>
     );
+
+  // ✅ Redirect if cart is empty (after loading)
+  if (!cart || !cart.items || cart.items.length === 0) {
+    return null; // Will redirect via useEffect
+  }
 
   if (isLoading)
     return (
@@ -211,18 +250,28 @@ const PaymentPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {cart?.items?.map((item) => (
-                  <tr
-                    key={item.product._id}
-                    className="border-b last:border-none hover:bg-gray-50 text-sm sm:text-base"
-                  >
-                    <td className="p-3 text-gray-800">{item.product.title}</td>
-                    <td className="p-3 text-center">{item.quantity}</td>
-                    <td className="p-3 text-right">
-                      ₹{(item.product.price * item.quantity).toFixed(2)}
-                    </td>
-                  </tr>
-                ))}
+                {cart?.items?.map((item, index) => {
+                  // ✅ Handle both guest cart and backend cart structures
+                  const product = item.product || null;
+                  const productId = product?._id || item.productId || index;
+                  
+                  if (!product) return null; // Skip if product not loaded
+                  
+                  const price = product.discountPrice || product.price || 0;
+                  
+                  return (
+                    <tr
+                      key={productId}
+                      className="border-b last:border-none hover:bg-gray-50 text-sm sm:text-base"
+                    >
+                      <td className="p-3 text-gray-800">{product.title || "Product"}</td>
+                      <td className="p-3 text-center">{item.quantity}</td>
+                      <td className="p-3 text-right">
+                        ₹{(price * item.quantity).toFixed(2)}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -306,7 +355,13 @@ const PaymentPage = () => {
                   name="payment"
                   value={option.value}
                   checked={paymentMode === option.value}
-                  onChange={(e) => setPaymentMode(e.target.value)}
+                  onChange={(e) => {
+                    setPaymentMode(e.target.value);
+                    // ✅ Reset payment status when changing payment method (if previously failed/cancelled)
+                    if (paymentStatus === "CANCELLED" || paymentStatus === "FAILED") {
+                      resetPaymentStatus();
+                    }
+                  }}
                 />
                 <span>{option.label}</span>
               </label>
@@ -329,10 +384,12 @@ const PaymentPage = () => {
             <button
               disabled={!paymentMode || isLoading || finalDisplayTotal <= 0}
               onClick={proceedToPay}
-              className="w-full bg-black text-white py-3 sm:py-4 rounded-lg text-sm sm:text-lg font-medium hover:bg-gray-800 transition disabled:opacity-50"
+              className="w-full bg-black text-white py-3 sm:py-4 rounded-lg text-sm sm:text-lg font-medium hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {paymentStatus === "cancelled"
-                ? "Payment Cancelled"
+              {paymentStatus === "CANCELLED"
+                ? "Payment Cancelled - Select Payment Method Again"
+                : paymentStatus === "FAILED"
+                ? "Payment Failed - Try Again"
                 : paymentMode === "cod"
                 ? "Place Order (COD)"
                 : paymentMode === "pickup"
@@ -341,6 +398,20 @@ const PaymentPage = () => {
                 ? "Processing..."
                 : `Proceed to Pay ₹${finalDisplayTotal.toFixed(2)}`}
             </button>
+            
+            {/* ✅ Show cancellation message */}
+            {paymentStatus === "CANCELLED" && (
+              <p className="text-sm text-orange-600 mt-2 text-center">
+                Payment was cancelled. Please select a payment method and try again.
+              </p>
+            )}
+            
+            {/* ✅ Show failure message */}
+            {paymentStatus === "FAILED" && (
+              <p className="text-sm text-red-600 mt-2 text-center">
+                Payment failed. Please check your payment details and try again.
+              </p>
+            )}
           </div>
         </div>
       </div>

@@ -17,7 +17,9 @@ export const useBannerStore = create((set, get) => ({
       const data = await getActiveBannersService();
       set({ banners: data, isLoading: false });
     } catch (err) {
-      console.error("Failed to fetch banners:", err);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Failed to fetch banners:", err);
+      }
       set({ isLoading: false });
     }
   },
@@ -44,7 +46,9 @@ export const useBannerStore = create((set, get) => ({
       });
       return { success: true, data };
     } catch (err) {
-      console.error("Toggle failed:", err);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Toggle failed:", err);
+      }
       return { success: false };
     }
   },
@@ -55,7 +59,9 @@ export const useBannerStore = create((set, get) => ({
       const data = await getAllBannersService();
       set({ banners: data, isLoading: false });
     } catch (err) {
-      console.error("Failed to fetch banners:", err);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Failed to fetch banners:", err);
+      }
       set({ isLoading: false });
     }
   },
@@ -68,7 +74,9 @@ export const useBannerStore = create((set, get) => ({
       });
       return { success: true, data };
     } catch (err) {
-      console.error("Delete failed:", err);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Delete failed:", err);
+      }
       return { success: false };
     }
   },

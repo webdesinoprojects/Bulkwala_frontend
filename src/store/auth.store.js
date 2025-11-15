@@ -80,6 +80,9 @@ export const useAuthStore = create(
           error: null,
         });
 
+        // ✅ Merge guest cart with backend cart after login
+        await useCartStore.getState().mergeGuestCart();
+
         return { success: true, user: userData };
       } catch (apiError) {
         const status = apiError.response?.status;
@@ -130,6 +133,10 @@ export const useAuthStore = create(
         const user = await verifyOtpService(data);
         set({ user, isLoggedIn: true, isLoading: false });
         localStorage.setItem("user", JSON.stringify(user));
+        
+        // ✅ Merge guest cart with backend cart after OTP login
+        await useCartStore.getState().mergeGuestCart();
+        
         return { success: true, user };
       } catch (error) {
         const message =
@@ -191,33 +198,50 @@ export const useAuthStore = create(
       try {
         set({ isLoading: true });
 
-        // Check localStorage for existing user data
-        const storedUser = JSON.parse(localStorage.getItem("user"));
-        if (storedUser && storedUser.isVerified) {
-          set({
-            user: storedUser,
-            isLoggedIn: true,
-          });
-          return;
+        // Check localStorage for existing user data first
+        const storedUserStr = localStorage.getItem("user");
+        if (storedUserStr) {
+          try {
+            const storedUser = JSON.parse(storedUserStr);
+            if (storedUser && storedUser.isVerified) {
+              // We have a stored user - verify session is still valid via API
+              const user = await checkauthService();
+              if (user && user.isVerified) {
+                set({
+                  user,
+                  isLoggedIn: true,
+                });
+                // Update localStorage with fresh data
+                localStorage.setItem("user", JSON.stringify(user));
+              } else {
+                // Session expired or invalid - clear everything
+                set({
+                  user: null,
+                  isLoggedIn: false,
+                });
+                localStorage.removeItem("user");
+              }
+              set({ isLoading: false });
+              return;
+            }
+          } catch (e) {
+            // Invalid JSON in localStorage, clear it
+            localStorage.removeItem("user");
+          }
         }
 
-        const user = await checkauthService();
-        if (user && user.isVerified) {
-          set({
-            user,
-            isLoggedIn: true,
-          });
-
-          // Persist user in localStorage
-          localStorage.setItem("user", JSON.stringify(user));
-        } else {
-          set({
-            user: null,
-            isLoggedIn: false,
-          });
-          localStorage.removeItem("user"); // Clear if no valid user
-        }
+        // No stored user - don't make API call, just set to null
+        // This avoids unnecessary 401 requests when browsing as guest
+        set({
+          user: null,
+          isLoggedIn: false,
+        });
+        localStorage.removeItem("user");
       } catch (error) {
+        // Only log non-401 errors (401 is expected when not authenticated)
+        if (error.response?.status !== 401 && process.env.NODE_ENV === "development") {
+          console.error("Auth check error:", error);
+        }
         set({
           user: null,
           isLoggedIn: false,

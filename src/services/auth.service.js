@@ -35,8 +35,17 @@ export const updateShippingAddressService = async (addressData) => {
   return res.data.data;
 };
 export const checkauthService = async () => {
-  const res = await axiosInstance.get("/api/users/profile");
-  return res.data.data;
+  try {
+    const res = await axiosInstance.get("/api/users/profile");
+    return res.data.data;
+  } catch (error) {
+    // Silently handle 401 errors - user is not authenticated (expected behavior)
+    if (error.response?.status === 401) {
+      return null;
+    }
+    // Re-throw other errors
+    throw error;
+  }
 };
 
 export const verifyEmailService = async ({ userid, token }) => {

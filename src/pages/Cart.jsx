@@ -2,9 +2,10 @@ import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import useCartStore from "@/store/cart.store";
 import { useOfferStore } from "@/store/offer.store";
+import useAuthStore from "@/store/auth.store";
 
 const Cart = () => {
   const {
@@ -33,8 +34,8 @@ const Cart = () => {
     clearBuyNow,
   } = useCartStore();
   const { fetchActiveOffer, timeLeft } = useOfferStore();
+  const { user } = useAuthStore();
 
-  console.log("total price in cart page:", totalPrice);
   const navigate = useNavigate();
   const [isFetched, setIsFetched] = useState(false);
   const [couponCode, setCouponCode] = useState(""); // State to store coupon code
@@ -47,7 +48,8 @@ const Cart = () => {
       setIsFetched(true);
     };
     loadCart();
-  }, [fetchCart]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // fetchCart is stable from zustand store
 
   // ⭐ Auto-scroll for BUY NOW product
   useEffect(() => {
@@ -210,65 +212,126 @@ const Cart = () => {
   return (
     <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
       <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-lg p-4 sm:p-6 md:p-8">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-6"></h1>
-        Your Cart
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-6">
+          Your Cart
+        </h1>
+        
+        {/* ✅ Guest cart message */}
+        {!user && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+            <p className="text-yellow-800 text-sm">
+              You're browsing as a guest.{" "}
+              <Link to="/login" className="underline font-semibold hover:text-yellow-900">
+                Login
+              </Link>{" "}
+              to save your cart and proceed to checkout.
+            </p>
+          </div>
+        )}
+        
         {/* Cart Items */}
         <div className="space-y-6">
-          {cart.items.map((item) => (
-            <div
-              key={item.product._id}
-              id={`cart-item-${item.product._id}`} // ⭐ Add this
-              className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b py-4 gap-4 sm:gap-6"
-            >
-              {/* Left: Product Info */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 w-full">
-                <img
-                  src={
-                    item.product.images?.[0] ||
-                    "https://ik.imagekit.io/bulkwala/demo/default-product.png"
-                  }
-                  alt={item.product.title}
-                  className="w-28 h-28 sm:w-32 sm:h-32 md:w-40 md:h-40 object-cover rounded-md mx-auto sm:mx-0"
-                />
-                <div className="flex flex-col gap-2 w-full">
-                  <h3 className="text-lg sm:text-xl font-medium text-gray-800">
-                    {item.product.title}
-                  </h3>
-                  <p className="text-gray-500 text-sm line-clamp-2">
-                    {item.product.description}
-                  </p>
-                  <p className="text-gray-900 font-semibold text-base sm:text-lg">
-                    ₹{item.product.price}
-                  </p>
-                </div>
-              </div>
+          {cart.items.map((item, index) => {
+            // ✅ Handle both guest cart (productId) and backend cart (product._id) structures
+            const productId = item.product?._id || item.productId;
+            const product = item.product || null;
+            
+            // Skip if no product info available
+            if (!productId) return null;
+            
+            return (
+              <div
+                key={productId || index}
+                id={`cart-item-${productId}`}
+                className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b py-4 gap-4 sm:gap-6"
+              >
+                {/* Show loading state if product details not loaded yet (guest cart) */}
+                {!product ? (
+                  <div className="w-full flex items-center justify-center py-8">
+                    <p className="text-gray-500">Loading product details...</p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Left: Product Info */}
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 w-full">
+                      <img
+                        src={
+                          product.images?.[0] ||
+                          "https://ik.imagekit.io/bulkwala/demo/default-product.png"
+                        }
+                        alt={product.title || "Product"}
+                        className="w-28 h-28 sm:w-32 sm:h-32 md:w-40 md:h-40 object-cover rounded-md mx-auto sm:mx-0"
+                      />
+                      <div className="flex flex-col gap-2 w-full">
+                        <h3 className="text-lg sm:text-xl font-medium text-gray-800">
+                          {product.title || "Product"}
+                        </h3>
+                        <p className="text-gray-500 text-sm line-clamp-2">
+                          {product.description || ""}
+                        </p>
+                        <p className="text-gray-900 font-semibold text-base sm:text-lg">
+                          ₹{product.discountPrice || product.price || 0}
+                          {product.discountPrice && product.discountPrice < product.price && (
+                            <span className="text-gray-400 line-through text-sm ml-2">
+                              ₹{product.price}
+                            </span>
+                          )}
+                        </p>
+                        {/* ✅ Stock warnings */}
+                        {product.stock !== undefined && (
+                          <div className="mt-1">
+                            {product.stock === 0 ? (
+                              <p className="text-red-600 text-xs font-medium">
+                                ⚠️ Out of Stock
+                              </p>
+                            ) : product.stock < 5 ? (
+                              <p className="text-orange-600 text-xs font-medium">
+                                ⚠️ Only {product.stock} left in stock
+                              </p>
+                            ) : item.quantity > product.stock ? (
+                              <p className="text-red-600 text-xs font-medium">
+                                ⚠️ Only {product.stock} available. Quantity adjusted.
+                              </p>
+                            ) : null}
+                          </div>
+                        )}
+                      </div>
+                    </div>
 
-              {/* Right: Quantity + Remove */}
-              <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
-                <Input
-                  type="number"
-                  min={1}
-                  value={item.quantity}
-                  onChange={(e) =>
-                    handleUpdateQuantity(
-                      item.product._id,
-                      parseInt(e.target.value)
-                    )
-                  }
-                  className="w-16 text-center border border-gray-300 rounded-md shadow-sm text-sm"
-                  disabled={isUpdating}
-                />
-                <Button
-                  variant="destructive"
-                  onClick={() => handleRemoveItem(item.product._id)}
-                  disabled={isUpdating}
-                  className="text-sm sm:text-base px-3 sm:px-4"
-                >
-                  Remove
-                </Button>
+                    {/* Right: Quantity + Remove */}
+                    <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
+                      <Input
+                        type="number"
+                        min={1}
+                        max={product?.stock || 999}
+                        value={item.quantity}
+                        onChange={(e) => {
+                          const newQty = parseInt(e.target.value) || 1;
+                          const maxQty = product?.stock || 999;
+                          if (newQty > maxQty) {
+                            toast.warning(`Only ${maxQty} items available in stock`);
+                            return;
+                          }
+                          handleUpdateQuantity(productId, newQty);
+                        }}
+                        className="w-16 text-center border border-gray-300 rounded-md shadow-sm text-sm"
+                        disabled={isUpdating || (product?.stock === 0)}
+                        title={product?.stock === 0 ? "Out of stock" : `Max: ${product?.stock || "N/A"}`}
+                      />
+                      <Button
+                        variant="destructive"
+                        onClick={() => handleRemoveItem(productId)}
+                        disabled={isUpdating}
+                        className="text-sm sm:text-base px-3 sm:px-4"
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  </>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
         {/* Flash Offer Banner */}
         {cart.flashDiscount > 0 && timeLeft > 0 && (

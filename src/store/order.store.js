@@ -7,6 +7,7 @@ import {
   trackOrderService,
   verifyOrderService,
 } from "@/services/order.service";
+import useAuthStore from "./auth.store";
 
 const useOrderStore = create((set, get) => ({
   orders: [],
@@ -19,18 +20,24 @@ const useOrderStore = create((set, get) => ({
   razorpayOrderId: "",
   amount: 0,
   trackingData: null,
+  user: null, // ✅ Store user for Razorpay prefill
 
   setPaymentMode: (mode) => set({ paymentMode: mode }),
+  
+  resetPaymentStatus: () => set({ paymentStatus: "PENDING" }),
 
   handlePayment: async (cart, shippingAddress) => {
     const { paymentMode } = get();
+    const { user } = useAuthStore.getState(); // ✅ Get user data for Razorpay prefill
 
     if (!paymentMode) {
-      console.error("No payment mode selected");
+      if (process.env.NODE_ENV === "development") {
+        console.error("No payment mode selected");
+      }
       return;
     }
 
-    set({ isLoading: true });
+    set({ isLoading: true, user }); // ✅ Store user in state for prefill
 
     try {
       const orderPayload = {
@@ -44,8 +51,6 @@ const useOrderStore = create((set, get) => ({
 
       // Step 1: Create Order
       const res = await createOrderService(orderPayload);
-
-      console.log("createOrderService response:", res);
       // Step 2: COD / PICKUP flow
       if (paymentMode === "cod" || paymentMode === "pickup") {
         const statusText =
@@ -74,7 +79,9 @@ const useOrderStore = create((set, get) => ({
         name: "Bulkwala Store",
         description: "Order Payment",
         handler: async function (response) {
-          console.log("response from razorpay handler", response);
+          if (process.env.NODE_ENV === "development") {
+            console.log("response from razorpay handler", response);
+          }
           const { razorpay_payment_id, razorpay_order_id, razorpay_signature } =
             response;
           set({ isLoading: true });
@@ -85,7 +92,9 @@ const useOrderStore = create((set, get) => ({
               razorpay_signature,
             });
 
-            console.log("✅ verifyOrderService response:", verifyResponse);
+            if (process.env.NODE_ENV === "development") {
+              console.log("verifyOrderService response:", verifyResponse);
+            }
 
             const verifiedOrder = verifyResponse?.populatedOrder;
 
@@ -101,7 +110,9 @@ const useOrderStore = create((set, get) => ({
               );
             }, 100);
           } catch (error) {
-            console.error("Error verifying payment:", error);
+            if (process.env.NODE_ENV === "development") {
+              console.error("Error verifying payment:", error);
+            }
             set({ isLoading: false, paymentStatus: "FAILED" });
             // Optionally, pass error details if component wants to handle message
             window.dispatchEvent(
@@ -121,9 +132,9 @@ const useOrderStore = create((set, get) => ({
           },
         },
         prefill: {
-          name: "User Name",
-          email: "user@example.com",
-          contact: "9999999999",
+          name: user?.name || "Customer",
+          email: user?.email || "",
+          contact: user?.phone || "",
         },
         theme: { color: "#02066F" },
       };
@@ -132,7 +143,9 @@ const useOrderStore = create((set, get) => ({
       rzp.open();
       return { message: "Razorpay window opened", type: "ONLINE" };
     } catch (error) {
-      console.error("Payment initiation failed", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Payment initiation failed", error);
+      }
       set({ isLoading: false });
     }
   },
@@ -143,7 +156,9 @@ const useOrderStore = create((set, get) => ({
       const res = await getMyOrdersService();
       set({ orders: res, isLoading: false });
     } catch (error) {
-      console.error(error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error fetching orders:", error);
+      }
       set({
         error: error.response?.data?.message || "Failed to fetch orders",
         isLoading: false,
@@ -157,7 +172,9 @@ const useOrderStore = create((set, get) => ({
       const res = await getSingleOrderService(orderId);
       set({ singleOrder: res, isLoading: false });
     } catch (error) {
-      console.error(error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error fetching order details:", error);
+      }
       set({
         error: error.response?.data?.message || "Failed to fetch order details",
         isLoading: false,
@@ -171,7 +188,9 @@ const useOrderStore = create((set, get) => ({
       const data = await trackOrderService(orderId);
       set({ trackingData: data, isLoading: false });
     } catch (error) {
-      console.error("Error fetching tracking:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error fetching tracking:", error);
+      }
       set({
         error:
           error.response?.data?.message ||
@@ -189,7 +208,9 @@ const useOrderStore = create((set, get) => ({
       return { success: true, order: res };
     } catch (error) {
       set({ isLoading: false });
-      console.error("Cancel order failed:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Cancel order failed:", error);
+      }
       return {
         success: false,
         message: error.response?.data?.message || "Failed to cancel order",

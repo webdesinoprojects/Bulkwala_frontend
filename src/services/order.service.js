@@ -12,7 +12,6 @@ export const verifyOrderService = async (payload) => {
   const res = await axiosInstance.post(`/api/order/verify-payment`, payload, {
     withCredentials: true,
   });
-  console.log("verifyOrderService payload:", res.data.data);
   return res.data.data;
 };
 

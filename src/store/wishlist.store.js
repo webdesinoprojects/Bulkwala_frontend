@@ -17,7 +17,14 @@ export const useWishlistStore = create((set) => ({
       const data = await getWishlistService();
       set({ wishlist: data.products || [], isLoading: false });
     } catch (error) {
-      console.error("Fetch wishlist failed:", error);
+      // Silently handle 401 errors (user not logged in) - this is expected behavior
+      if (error.response?.status === 401) {
+        set({ isLoading: false });
+        return;
+      }
+      if (process.env.NODE_ENV === "development") {
+        console.error("Fetch wishlist failed:", error);
+      }
       set({ error: error.message, isLoading: false });
     }
   },
@@ -29,7 +36,9 @@ export const useWishlistStore = create((set) => ({
       set({ wishlist: data.products || [], isLoading: false });
       return data.products || [];
     } catch (error) {
-      console.error("Toggle wishlist failed:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Toggle wishlist failed:", error);
+      }
       set({ error: error.message, isLoading: false });
       return null;
     }
@@ -41,7 +50,9 @@ export const useWishlistStore = create((set) => ({
       const data = await removeFromWishlistService(productId);
       set({ wishlist: data.products || [], isLoading: false });
     } catch (error) {
-      console.error("Remove wishlist item failed:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Remove wishlist item failed:", error);
+      }
       set({ error: error.message, isLoading: false });
     }
   },
@@ -52,7 +63,9 @@ export const useWishlistStore = create((set) => ({
       await clearWishlistService();
       set({ wishlist: [], isLoading: false });
     } catch (error) {
-      console.error("Clear wishlist failed:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Clear wishlist failed:", error);
+      }
       set({ error: error.message, isLoading: false });
     }
   },

@@ -3,19 +3,15 @@ import { Toaster } from "sonner";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import { useAuthStore } from "@/store/auth.store";
-import { useEffect } from "react";
 import ScrollToTop from "../ScrollToTop";
 import SignupPopup from "../SignupPopup";
 import WhatsAppFloatingButton from "../WhatsAppFloatingButton"; 
 
 const Mainlayout = () => {
-  const checkauthstatus = useAuthStore((state) => state.checkauthstatus);
   const { user } = useAuthStore(); // ✅ get logged-in user
   const location = useLocation();  // ✅ to hide on login/signup
 
-  useEffect(() => {
-    checkauthstatus();
-  }, []);
+  // Auth check is handled in AppInitializer, no need to duplicate here
 
   // Hide WhatsApp button on these routes
   const hideFor = ["/login", "/signup"];

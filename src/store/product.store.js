@@ -85,7 +85,9 @@ export const useProductStore = create((set) => ({
         return { products: updatedList, loading: false };
       });
     } catch (error) {
-      console.error("Update failed:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Update failed:", error);
+      }
       set({ error: error.message, loading: false });
       throw error;
     }
@@ -104,7 +106,9 @@ export const useProductStore = create((set) => ({
         return { products: updatedList, loading: false };
       });
     } catch (error) {
-      console.error("Delete failed:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Delete failed:", error);
+      }
       set({ error: error.message, loading: false });
     }
   },

@@ -111,11 +111,7 @@ const App = createBrowserRouter([
 
       {
         path: "/cart",
-        element: (
-          <ProtectedRoutes>
-            <Cart />
-          </ProtectedRoutes>
-        ),
+        element: <Cart />,
       },
 
       {

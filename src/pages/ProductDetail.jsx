@@ -21,12 +21,14 @@ import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import useCartStore from "@/store/cart.store";
 import { useWishlistStore } from "@/store/wishlist.store";
+import useAuthStore from "@/store/auth.store";
 
 const ProductDetail = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const formRef = useRef(null);
 
+  const { user } = useAuthStore();
   const { wishlist, toggleWishlist, fetchWishlist } = useWishlistStore();
   const { singleProduct, getProductBySlug, products, fetchProducts, loading } =
     useProductStore();
@@ -53,21 +55,38 @@ const ProductDetail = () => {
     defaultValues: { text: "", rating: 0 },
   });
 
+  // ✅ Fetch product by slug when slug changes
   useEffect(() => {
-    getProductBySlug(slug);
+    if (slug) {
+      getProductBySlug(slug);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 
+  // ✅ Fetch reviews only when product ID changes (not on every product update)
   useEffect(() => {
-    if (singleProduct?._id) fetchReviews(singleProduct._id);
-  }, [singleProduct]);
+    if (singleProduct?._id) {
+      fetchReviews(singleProduct._id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [singleProduct?._id]);
 
+  // ✅ Only fetch wishlist if user is logged in
   useEffect(() => {
-    fetchWishlist();
-  }, []);
+    if (user && user._id) {
+      fetchWishlist();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?._id]);
 
+  // ✅ Only fetch suggestions if products list is empty or stale
   useEffect(() => {
-    fetchProducts({ limit: 8 });
-  }, []);
+    // Only fetch if we don't have products or have less than 8
+    if (!products || products.length < 8) {
+      fetchProducts({ limit: 8 });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only fetch once on mount
 
   useEffect(() => {
     if (singleProduct && wishlist?.length >= 0) {

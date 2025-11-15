@@ -34,7 +34,8 @@ const Products = () => {
   // Initial fetch
   useEffect(() => {
     fetchCategories();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // fetchCategories is stable from zustand store
 
   // ✅ Update filter when user navigates with ?subcategory=Name
   useEffect(() => {
@@ -50,7 +51,8 @@ const Products = () => {
     }, 300); // wait 300ms after typing stops
 
     return () => clearTimeout(delay);
-  }, [filters]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters]); // fetchProducts is stable from zustand store
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value, page: 1 }));

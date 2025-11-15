@@ -66,7 +66,9 @@ export const useAdminOrdersStore = create((set, get) => ({
       });
       return { success: true };
     } catch (e) {
-      console.error(e);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error fetching orders:", e);
+      }
       set({
         loading: false,
         error: e?.response?.data?.message || "Failed to fetch orders",
@@ -97,7 +99,9 @@ export const useAdminOrdersStore = create((set, get) => ({
       }));
       return { success: true };
     } catch (e) {
-      console.error(e);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error updating order status:", e);
+      }
       return {
         success: false,
         message: e?.response?.data?.message || "Failed to update status",
@@ -116,7 +120,9 @@ export const useAdminOrdersStore = create((set, get) => ({
       }));
       return { success: true };
     } catch (e) {
-      console.error(e);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error updating payment status:", e);
+      }
       return {
         success: false,
         message:
@@ -149,7 +155,9 @@ export const useAdminOrdersStore = create((set, get) => ({
       }));
       return { success: true };
     } catch (e) {
-      console.error(e);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error retrying shipment:", e);
+      }
       return {
         success: false,
         message: e?.response?.data?.message || "Failed to retry shipment",
