@@ -15,6 +15,12 @@ export const registerSellerService = async (sellerData) => {
 
 export const loginService = async (credentials) => {
   const res = await axiosInstance.post("/api/users/login", credentials);
+  // Ensure tokens are returned in the response and stored in localStorage
+  if (res.data.accessToken && res.data.refreshToken) {
+    localStorage.setItem("accessToken", res.data.accessToken); // Store accessToken
+    localStorage.setItem("refreshToken", res.data.refreshToken); // Store refreshToken
+  }
+
   return res.data.data;
 };
 
@@ -36,7 +42,13 @@ export const updateShippingAddressService = async (addressData) => {
 };
 export const checkauthService = async () => {
   try {
-    const res = await axiosInstance.get("/api/users/profile");
+    const accessToken = localStorage.getItem("accessToken");
+
+    const res = await axiosInstance.get("/api/users/profile", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`, // Attach the access token
+      },
+    });
     return res.data.data;
   } catch (error) {
     // Silently handle 401 errors - user is not authenticated (expected behavior)

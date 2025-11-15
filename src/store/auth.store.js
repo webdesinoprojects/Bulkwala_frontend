@@ -73,6 +73,11 @@ export const useAuthStore = create(
       try {
         const userData = await loginService(credentials);
 
+        if (userData.accessToken && userData.refreshToken) {
+          localStorage.setItem("accessToken", userData.accessToken);
+          localStorage.setItem("refreshToken", userData.refreshToken);
+        }
+
         set({
           user: userData,
           isLoggedIn: true,
@@ -132,11 +137,15 @@ export const useAuthStore = create(
       try {
         const user = await verifyOtpService(data);
         set({ user, isLoggedIn: true, isLoading: false });
+
+        // Save the user and tokens in localStorage
+        localStorage.setItem("accessToken", user.accessToken);
+        localStorage.setItem("refreshToken", user.refreshToken);
         localStorage.setItem("user", JSON.stringify(user));
-        
+
         // ✅ Merge guest cart with backend cart after OTP login
         await useCartStore.getState().mergeGuestCart();
-        
+
         return { success: true, user };
       } catch (error) {
         const message =
@@ -155,6 +164,8 @@ export const useAuthStore = create(
         clearCartOnLogout();
 
         set({ user: null, isLoggedIn: false, isLoading: false, error: null });
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
         localStorage.removeItem("user");
 
         return { success: true };
@@ -239,7 +250,10 @@ export const useAuthStore = create(
         localStorage.removeItem("user");
       } catch (error) {
         // Only log non-401 errors (401 is expected when not authenticated)
-        if (error.response?.status !== 401 && process.env.NODE_ENV === "development") {
+        if (
+          error.response?.status !== 401 &&
+          process.env.NODE_ENV === "development"
+        ) {
           console.error("Auth check error:", error);
         }
         set({
