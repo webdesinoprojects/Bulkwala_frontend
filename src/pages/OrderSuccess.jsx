@@ -45,15 +45,18 @@ const OrderSuccess = () => {
     doc.text("Bill To:", 14, 46);
     doc.setFontSize(11);
     doc.text(`${customerName}`, 14, 52);
-    doc.text(`${orderData?.shippingAddress?.street || ""}`, 14, 57);
-    doc.text(
-      `${city}, ${orderData?.shippingAddress?.state || ""} - ${
-        orderData?.shippingAddress?.postalCode || ""
-      }`,
-      14,
-      62
-    );
-    doc.text(`Phone: ${orderData?.shippingAddress?.phone || ""}`, 14, 67);
+
+    if (paymentMode !== "PICKUP") {
+      doc.text(`${orderData?.shippingAddress?.street || ""}`, 14, 57);
+      doc.text(
+        `${city}, ${orderData?.shippingAddress?.state || ""} - ${
+          orderData?.shippingAddress?.postalCode || ""
+        }`,
+        14,
+        62
+      );
+      doc.text(`Phone: ${orderData?.shippingAddress?.phone || ""}`, 14, 67);
+    }
 
     doc.text(`Invoice No: ${orderId.slice(-6).toUpperCase()}`, 150, 46);
     doc.text(`Date: ${date}`, 150, 52);
@@ -234,7 +237,7 @@ const OrderSuccess = () => {
 
         {/* 🧭 Navigation */}
         <button
-          onClick={() => navigate("/orders")}
+          onClick={() => navigate("/my-orders")}
           className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition text-sm sm:text-base"
         >
           View My Orders

@@ -46,10 +46,20 @@ const useOrderStore = create((set, get) => ({
       const res = await createOrderService(orderPayload);
 
       console.log("createOrderService response:", res);
-      // Step 2: COD flow
-      if (paymentMode === "cod") {
-        set({ isLoading: false, paymentStatus: "PENDING" });
-        return { type: "COD", order: res };
+      // Step 2: COD / PICKUP flow
+      if (paymentMode === "cod" || paymentMode === "pickup") {
+        const statusText =
+          paymentMode === "pickup"
+            ? "Pickup order placed successfully"
+            : "COD order placed successfully";
+
+        set({ isLoading: false, paymentStatus: "SUCCESS" });
+
+        return {
+          type: paymentMode.toUpperCase(),
+          order: res,
+          message: statusText,
+        };
       }
 
       // Step 3: Online flow
