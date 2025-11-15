@@ -13,7 +13,7 @@ import PrivacyPolicy from "./requiredpages/PrivacyPolicy";
 import ShippingPolicy from "./requiredpages/ShipingPolicy";
 import RefundAndReturnPolicy from "./requiredpages/Refund&ReturnPolicy";
 import Profile from "./pages/Profile";
-import SellerDashboard from "./Seller/pages/sellerDashboard";
+import SellerDashboard from "./Seller/pages/SellerDashboard";
 import Contact from "./pages/Contact";
 import About from "./pages/About";
 import ProductDetail from "./pages/ProductDetail";
