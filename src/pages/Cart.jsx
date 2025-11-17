@@ -129,7 +129,7 @@ const Cart = () => {
         return;
       }
 
-      if (cart.referralCode) {
+      if (referralApplied) {
         toast.error("You can't use a coupon when a referral is applied.");
         return;
       }
@@ -168,7 +168,7 @@ const Cart = () => {
 
   const handleApplyReferral = async () => {
     try {
-      if (cart.coupon) {
+      if (couponApplied) {
         toast.error("You can't use referral when a coupon is applied.");
         return;
       }
@@ -215,30 +215,33 @@ const Cart = () => {
         <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-6">
           Your Cart
         </h1>
-        
+
         {/* ✅ Guest cart message */}
         {!user && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
             <p className="text-yellow-800 text-sm">
               You're browsing as a guest.{" "}
-              <Link to="/login" className="underline font-semibold hover:text-yellow-900">
+              <Link
+                to="/login"
+                className="underline font-semibold hover:text-yellow-900"
+              >
                 Login
               </Link>{" "}
               to save your cart and proceed to checkout.
             </p>
           </div>
         )}
-        
+
         {/* Cart Items */}
         <div className="space-y-6">
           {cart.items.map((item, index) => {
             // ✅ Handle both guest cart (productId) and backend cart (product._id) structures
             const productId = item.product?._id || item.productId;
             const product = item.product || null;
-            
+
             // Skip if no product info available
             if (!productId) return null;
-            
+
             return (
               <div
                 key={productId || index}
@@ -271,11 +274,12 @@ const Cart = () => {
                         </p>
                         <p className="text-gray-900 font-semibold text-base sm:text-lg">
                           ₹{product.discountPrice || product.price || 0}
-                          {product.discountPrice && product.discountPrice < product.price && (
-                            <span className="text-gray-400 line-through text-sm ml-2">
-                              ₹{product.price}
-                            </span>
-                          )}
+                          {product.discountPrice &&
+                            product.discountPrice < product.price && (
+                              <span className="text-gray-400 line-through text-sm ml-2">
+                                ₹{product.price}
+                              </span>
+                            )}
                         </p>
                         {/* ✅ Stock warnings */}
                         {product.stock !== undefined && (
@@ -290,7 +294,8 @@ const Cart = () => {
                               </p>
                             ) : item.quantity > product.stock ? (
                               <p className="text-red-600 text-xs font-medium">
-                                ⚠️ Only {product.stock} available. Quantity adjusted.
+                                ⚠️ Only {product.stock} available. Quantity
+                                adjusted.
                               </p>
                             ) : null}
                           </div>
@@ -309,14 +314,20 @@ const Cart = () => {
                           const newQty = parseInt(e.target.value) || 1;
                           const maxQty = product?.stock || 999;
                           if (newQty > maxQty) {
-                            toast.warning(`Only ${maxQty} items available in stock`);
+                            toast.warning(
+                              `Only ${maxQty} items available in stock`
+                            );
                             return;
                           }
                           handleUpdateQuantity(productId, newQty);
                         }}
                         className="w-16 text-center border border-gray-300 rounded-md shadow-sm text-sm"
-                        disabled={isUpdating || (product?.stock === 0)}
-                        title={product?.stock === 0 ? "Out of stock" : `Max: ${product?.stock || "N/A"}`}
+                        disabled={isUpdating || product?.stock === 0}
+                        title={
+                          product?.stock === 0
+                            ? "Out of stock"
+                            : `Max: ${product?.stock || "N/A"}`
+                        }
                       />
                       <Button
                         variant="destructive"
@@ -456,7 +467,7 @@ const Cart = () => {
             <div className="mt-4 flex items-center justify-between bg-green-50 border border-green-200 p-3 rounded-md">
               <div>
                 <p className="text-green-800 font-medium">
-                  ✅ Referral applied — {cart.referralCode}
+                  ✅ Referral applied — {referralCode}
                 </p>
                 <p className="text-sm text-gray-600 mt-1">
                   You saved ₹{referralDiscount.toFixed(2)}

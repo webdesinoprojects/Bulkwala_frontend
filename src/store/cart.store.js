@@ -77,42 +77,42 @@ const useCartStore = create((set, get) => ({
   // ✅ Fetch cart (backend for logged in, localStorage for guests)
   fetchCart: async () => {
     const { user } = useAuthStore.getState();
-    
+
     // ✅ If not logged in, load from localStorage and normalize guest cart
     if (!user || !user._id) {
       const guestCart = getGuestCart();
-      
+
       // ✅ If guest cart has items, fetch product details for each
       if (guestCart.items && guestCart.items.length > 0) {
         set({ isLoading: true });
         try {
           // Fetch all products to get details
           const allProducts = await getProducts({ limit: 1000 });
-          const productsArray = Array.isArray(allProducts.products) 
-            ? allProducts.products 
-            : Array.isArray(allProducts) 
-            ? allProducts 
+          const productsArray = Array.isArray(allProducts.products)
+            ? allProducts.products
+            : Array.isArray(allProducts)
+            ? allProducts
             : [];
-          
+
           // ✅ Normalize guest cart items to match backend structure
           // ✅ Filter out deleted/inactive products and handle missing products gracefully
           const normalizedItems = [];
           const removedProductIds = [];
-          
+
           for (const item of guestCart.items) {
             const product = productsArray.find((p) => p._id === item.productId);
-            
+
             // Skip if product not found, deleted, or inactive
             if (!product) {
               removedProductIds.push(item.productId);
               continue;
             }
-            
+
             if (product.isDeleted || !product.isActive) {
               removedProductIds.push(item.productId);
               continue;
             }
-            
+
             // ✅ Adjust quantity if it exceeds available stock
             let quantity = item.quantity;
             if (product.stock !== undefined && quantity > product.stock) {
@@ -123,7 +123,7 @@ const useCartStore = create((set, get) => ({
                 continue;
               }
             }
-            
+
             normalizedItems.push({
               product: {
                 _id: product._id,
@@ -139,22 +139,22 @@ const useCartStore = create((set, get) => ({
               quantity,
             });
           }
-          
+
           // ✅ Update guest cart if products were removed
           if (removedProductIds.length > 0) {
             const updatedGuestCart = {
-              items: normalizedItems.map(item => ({
+              items: normalizedItems.map((item) => ({
                 productId: item.product._id,
                 quantity: item.quantity,
               })),
             };
             saveGuestCart(updatedGuestCart);
           }
-          
+
           const normalizedCart = {
             items: normalizedItems,
           };
-          
+
           // Calculate totals for guest cart
           const itemsPrice = normalizedItems.reduce((acc, item) => {
             const price = item.product.discountPrice || item.product.price || 0;
@@ -162,27 +162,33 @@ const useCartStore = create((set, get) => ({
           }, 0);
           const shippingPrice = itemsPrice > 297 ? 0 : 50;
           const totalPrice = itemsPrice + shippingPrice;
-          const totalItems = normalizedItems.reduce((acc, item) => acc + item.quantity, 0);
-          
-          set({ 
+          const totalItems = normalizedItems.reduce(
+            (acc, item) => acc + item.quantity,
+            0
+          );
+
+          set({
             cart: normalizedCart,
             itemsPrice,
             shippingPrice,
             totalPrice,
             totalItems,
-            isLoading: false 
+            isLoading: false,
           });
           return;
         } catch (error) {
           if (process.env.NODE_ENV === "development") {
-            console.error("Error fetching product details for guest cart:", error);
+            console.error(
+              "Error fetching product details for guest cart:",
+              error
+            );
           }
           // Fallback to basic guest cart structure
           set({ cart: guestCart, isLoading: false });
           return;
         }
       }
-      
+
       set({ cart: guestCart, isLoading: false });
       return;
     }
@@ -191,19 +197,30 @@ const useCartStore = create((set, get) => ({
     set({ isLoading: true });
     try {
       const cartData = await fetchCartService();
+
+      const hasReferral = !!cartData.referralCode;
+      const hasCoupon = !!cartData.coupon;
+
       set({
         cart: cartData,
         itemsPrice: cartData.itemsPrice || 0,
         shippingPrice: cartData.shippingPrice || 0,
         totalPrice: cartData.totalPrice || 0,
-        discount: cartData.discount || 0,
-        couponApplied: !!cartData.coupon,
-        appliedCouponCode: cartData.couponCode || "",
+
+        // Coupon reset logic
+        couponApplied: hasCoupon,
+        appliedCouponCode: hasCoupon ? cartData.couponCode : "",
+        discount: hasCoupon ? cartData.discount : 0,
+
+        // Referral reset logic
+        referralApplied: hasReferral,
+        referralCode: hasReferral ? cartData.referralCode : null,
+        referralDiscount: hasReferral ? cartData.referralDiscount : 0,
+
+        // Flash offer data
         flashDiscount: cartData.flashDiscount || 0,
         flashDiscountPercent: cartData.flashDiscountPercent || 0,
-        referralApplied: !!cartData.referralCode,
-        referralCode: cartData.referralCode,
-        referralDiscount: cartData.referralDiscount || 0,
+
         isLoading: false,
       });
     } catch (error) {
@@ -227,7 +244,7 @@ const useCartStore = create((set, get) => ({
         });
         return;
       }
-      
+
       if (error.response?.status === 401) {
         // User logged out, switch to guest cart
         const guestCart = getGuestCart();
@@ -249,7 +266,10 @@ const useCartStore = create((set, get) => ({
     const shippingPrice = cart.shippingPrice || 0;
     const discount = state.discount || 0;
 
-    const totalItems = items.reduce((acc, item) => acc + (item.quantity || 0), 0);
+    const totalItems = items.reduce(
+      (acc, item) => acc + (item.quantity || 0),
+      0
+    );
     const totalPrice = itemsPrice + shippingPrice - discount;
 
     set({ totalItems, totalPrice });
@@ -258,9 +278,9 @@ const useCartStore = create((set, get) => ({
   // ✅ Add to cart (works for both guest and authenticated)
   addToCart: async (productId, quantity = 1) => {
     const { user } = useAuthStore.getState();
-    
+
     set({ isUpdating: true });
-    
+
     try {
       // ✅ If logged in, use backend
       if (user && user._id) {
@@ -294,11 +314,11 @@ const useCartStore = create((set, get) => ({
       saveGuestCart(guestCart);
       set({ cart: guestCart, isUpdating: false });
       get().calculateTotals();
-      
+
       return { success: true, message: "Item added to cart successfully" };
     } catch (error) {
       set({ isUpdating: false });
-      
+
       if (error.response?.status === 401) {
         // User session expired, switch to guest cart
         const guestCart = getGuestCart();
@@ -316,14 +336,14 @@ const useCartStore = create((set, get) => ({
         set({ cart: guestCart });
         return { success: true, message: "Item added to cart (guest mode)" };
       }
-      
+
       if (process.env.NODE_ENV === "development") {
         console.error("Error adding to cart:", error);
       }
-      
-      return { 
-        success: false, 
-        message: error.response?.data?.message || "Failed to add item to cart" 
+
+      return {
+        success: false,
+        message: error.response?.data?.message || "Failed to add item to cart",
       };
     }
   },
@@ -345,14 +365,17 @@ const useCartStore = create((set, get) => ({
         } catch (error) {
           // If item already exists or other error, continue with next item
           if (process.env.NODE_ENV === "development") {
-            console.warn(`Failed to add item ${item.productId} to cart:`, error.message);
+            console.warn(
+              `Failed to add item ${item.productId} to cart:`,
+              error.message
+            );
           }
         }
       }
-      
+
       // Clear guest cart after successful merge
       clearGuestCart();
-      
+
       // Refresh cart from backend (this will handle 404 gracefully now)
       await get().fetchCart();
     } catch (error) {
@@ -366,9 +389,9 @@ const useCartStore = create((set, get) => ({
 
   updateCart: async (productId, quantity) => {
     const { user } = useAuthStore.getState();
-    
+
     set({ isUpdating: true });
-    
+
     try {
       if (user && user._id) {
         await updateCartItemService(productId, quantity);
@@ -383,7 +406,9 @@ const useCartStore = create((set, get) => ({
       } else {
         // Guest cart update
         const guestCart = getGuestCart();
-        const item = guestCart.items.find((item) => item.productId === productId);
+        const item = guestCart.items.find(
+          (item) => item.productId === productId
+        );
         if (item) {
           item.quantity = quantity;
           saveGuestCart(guestCart);
@@ -397,7 +422,10 @@ const useCartStore = create((set, get) => ({
       if (process.env.NODE_ENV === "development") {
         console.error("Error updating cart:", error);
       }
-      return { success: false, message: error.response?.data?.message || "Failed to update cart" };
+      return {
+        success: false,
+        message: error.response?.data?.message || "Failed to update cart",
+      };
     } finally {
       set({ isUpdating: false });
     }
@@ -405,9 +433,9 @@ const useCartStore = create((set, get) => ({
 
   removeCartItem: async (productId) => {
     const { user } = useAuthStore.getState();
-    
+
     set({ isUpdating: true });
-    
+
     try {
       if (user && user._id) {
         await removeCartItemService(productId);
@@ -440,7 +468,10 @@ const useCartStore = create((set, get) => ({
       if (process.env.NODE_ENV === "development") {
         console.error("Error removing item:", error);
       }
-      return { success: false, message: error.response?.data?.message || "Failed to remove item" };
+      return {
+        success: false,
+        message: error.response?.data?.message || "Failed to remove item",
+      };
     } finally {
       set({ isUpdating: false });
     }
@@ -448,14 +479,14 @@ const useCartStore = create((set, get) => ({
 
   clearCart: async () => {
     const { user } = useAuthStore.getState();
-    
+
     set({ isUpdating: true });
-    
+
     try {
       if (user && user._id) {
         await clearCartService();
       }
-      
+
       // Clear both backend and guest cart
       clearGuestCart();
       set({
@@ -473,7 +504,10 @@ const useCartStore = create((set, get) => ({
       if (process.env.NODE_ENV === "development") {
         console.error("Error clearing cart:", error);
       }
-      return { success: false, message: error.response?.data?.message || "Failed to clear cart" };
+      return {
+        success: false,
+        message: error.response?.data?.message || "Failed to clear cart",
+      };
     } finally {
       set({ isUpdating: false });
     }
@@ -496,9 +530,20 @@ const useCartStore = create((set, get) => ({
   // ✅ Apply coupon (only for logged in users)
   applyCoupon: async (code) => {
     const { user } = useAuthStore.getState();
-    
+    const { referralApplied, couponApplied } = get();
+
     if (!user || !user._id) {
       return { success: false, message: "Please login to apply coupon" };
+    }
+    if (referralApplied) {
+      return {
+        success: false,
+        message: "Referral already applied. Remove referral to use coupon.",
+      };
+    }
+
+    if (couponApplied) {
+      return { success: false, message: "Coupon already applied." };
     }
 
     try {
@@ -530,7 +575,7 @@ const useCartStore = create((set, get) => ({
 
   removeCoupon: async () => {
     const { user } = useAuthStore.getState();
-    
+
     if (!user || !user._id) {
       return { success: false, message: "Please login to remove coupon" };
     }
@@ -554,7 +599,10 @@ const useCartStore = create((set, get) => ({
         console.error("Error removing coupon:", error);
       }
       set({ couponError: error.response?.data?.message || error.message });
-      return { success: false, message: error.response?.data?.message || error.message };
+      return {
+        success: false,
+        message: error.response?.data?.message || error.message,
+      };
     } finally {
       set({ isUpdating: false });
     }
@@ -562,9 +610,21 @@ const useCartStore = create((set, get) => ({
 
   applyReferral: async (referralCode) => {
     const { user } = useAuthStore.getState();
-    
+    const { couponApplied, referralApplied } = get();
+
     if (!user || !user._id) {
       return { success: false, message: "Please login to apply referral" };
+    }
+
+    if (couponApplied) {
+      return {
+        success: false,
+        message: "Coupon already applied. Remove coupon to use referral.",
+      };
+    }
+
+    if (referralApplied) {
+      return { success: false, message: "Referral already applied." };
     }
 
     set({ isUpdating: true });
@@ -583,7 +643,7 @@ const useCartStore = create((set, get) => ({
 
   removeReferral: async () => {
     const { user } = useAuthStore.getState();
-    
+
     if (!user || !user._id) {
       return { success: false, message: "Please login to remove referral" };
     }
