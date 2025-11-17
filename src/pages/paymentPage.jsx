@@ -50,9 +50,7 @@ const PaymentPage = () => {
   // ✅ Ensure total never goes below zero
   finalDisplayTotal = Math.max(finalDisplayTotal, 0);
 
-  const [shippingAddress, setShippingAddress] = useState(
-    user?.address?.[0] || null
-  );
+  const [shippingAddress, setShippingAddress] = useState(user?.address || null);
 
   // ✅ Fetch cart and Razorpay script once
   useEffect(() => {
@@ -97,20 +95,20 @@ const PaymentPage = () => {
     const handleRazorpayFailed = (e) => {
       const error = e.detail?.error;
       let errorMessage = "Payment failed. Please try again.";
-      
+
       if (error?.response?.data?.message) {
         errorMessage = error.response.data.message;
       } else if (error?.message) {
         errorMessage = error.message;
       }
-      
+
       toast.error(errorMessage);
       // Payment status is set in order store's error handler (already handled in order.store.js)
     };
 
     window.addEventListener("razorpay-success", handleRazorpaySuccess);
     window.addEventListener("razorpay-failed", handleRazorpayFailed);
-    
+
     return () => {
       window.removeEventListener("razorpay-success", handleRazorpaySuccess);
       window.removeEventListener("razorpay-failed", handleRazorpayFailed);
@@ -202,30 +200,30 @@ const PaymentPage = () => {
                 Saved Addresses
               </h3>
               <div className="space-y-3">
-                {user?.address?.length > 0 ? (
-                  user.address.map((address, index) => (
-                    <div
-                      key={index}
-                      className={`border p-3 sm:p-4 rounded-lg cursor-pointer hover:bg-gray-50 ${
-                        shippingAddress === address ? "border-black" : ""
-                      }`}
-                      onClick={() => handleSelectAddress(address)}
-                    >
-                      <p className="text-gray-800 font-medium">
-                        {address.name}
-                      </p>
-                      <p className="text-gray-600 text-sm">
-                        {address.street}, {address.city}, {address.state}
-                      </p>
-                      <p className="text-gray-600 text-sm">
-                        {address.postalCode}, {address.country}
-                      </p>
-                      <p className="text-gray-700 text-sm">{address.phone}</p>
-                    </div>
-                  ))
+                {user?.address ? (
+                  <div
+                    className={`border p-3 sm:p-4 rounded-lg cursor-pointer hover:bg-gray-50 ${
+                      shippingAddress === user.address ? "border-black" : ""
+                    }`}
+                    onClick={() => handleSelectAddress(user.address)}
+                  >
+                    <p className="text-gray-800 font-medium">
+                      {user.address.name}
+                    </p>
+                    <p className="text-gray-600 text-sm">
+                      {user.address.street}, {user.address.city},{" "}
+                      {user.address.state}
+                    </p>
+                    <p className="text-gray-600 text-sm">
+                      {user.address.postalCode}, {user.address.country}
+                    </p>
+                    <p className="text-gray-700 text-sm">
+                      {user.address.phone}
+                    </p>
+                  </div>
                 ) : (
                   <p className="text-gray-500 text-sm">
-                    No saved addresses found.
+                    No saved address found.
                   </p>
                 )}
               </div>
@@ -254,17 +252,19 @@ const PaymentPage = () => {
                   // ✅ Handle both guest cart and backend cart structures
                   const product = item.product || null;
                   const productId = product?._id || item.productId || index;
-                  
+
                   if (!product) return null; // Skip if product not loaded
-                  
+
                   const price = product.discountPrice || product.price || 0;
-                  
+
                   return (
                     <tr
                       key={productId}
                       className="border-b last:border-none hover:bg-gray-50 text-sm sm:text-base"
                     >
-                      <td className="p-3 text-gray-800">{product.title || "Product"}</td>
+                      <td className="p-3 text-gray-800">
+                        {product.title || "Product"}
+                      </td>
                       <td className="p-3 text-center">{item.quantity}</td>
                       <td className="p-3 text-right">
                         ₹{(price * item.quantity).toFixed(2)}
@@ -358,7 +358,10 @@ const PaymentPage = () => {
                   onChange={(e) => {
                     setPaymentMode(e.target.value);
                     // ✅ Reset payment status when changing payment method (if previously failed/cancelled)
-                    if (paymentStatus === "CANCELLED" || paymentStatus === "FAILED") {
+                    if (
+                      paymentStatus === "CANCELLED" ||
+                      paymentStatus === "FAILED"
+                    ) {
                       resetPaymentStatus();
                     }
                   }}
@@ -398,14 +401,15 @@ const PaymentPage = () => {
                 ? "Processing..."
                 : `Proceed to Pay ₹${finalDisplayTotal.toFixed(2)}`}
             </button>
-            
+
             {/* ✅ Show cancellation message */}
             {paymentStatus === "CANCELLED" && (
               <p className="text-sm text-orange-600 mt-2 text-center">
-                Payment was cancelled. Please select a payment method and try again.
+                Payment was cancelled. Please select a payment method and try
+                again.
               </p>
             )}
-            
+
             {/* ✅ Show failure message */}
             {paymentStatus === "FAILED" && (
               <p className="text-sm text-red-600 mt-2 text-center">
