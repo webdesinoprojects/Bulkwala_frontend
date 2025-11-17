@@ -25,7 +25,7 @@ export const useAuthStore = create((set, get) => ({
   user: null,
   isLoggedIn: false,
   allUsers: [],
-  isLoading: false,
+  isLoading: true,
   pendingVerificationUser: null,
   error: null,
 

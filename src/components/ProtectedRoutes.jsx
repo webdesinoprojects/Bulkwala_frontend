@@ -10,7 +10,7 @@ export default function ProtectedRoutes({ children, allowedRoles }) {
   const isLoading = useAuthStore((state) => state.isLoading);
 
   // show loader only when first checking
-  if (isLoading && !user) {
+  if (isLoading) {
     return (
       <div className="flex flex-col justify-center items-center h-screen bg-white text-[#02066F]">
         <Loader2 className="animate-spin w-10 h-10 mb-3 text-[#02066F]" />
