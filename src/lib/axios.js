@@ -1,5 +1,10 @@
 import axios from "axios";
 
+console.log(
+  "🚀 FRONTEND is using backend URL:",
+  import.meta.env.VITE_BACKEND_URL
+);
+
 export const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL || "http://localhost:5000",
   withCredentials: true, // send cookies automatically
@@ -15,7 +20,7 @@ axiosInstance.interceptors.response.use(
 
     // ❌ If no refreshToken cookie exists → DON'T try refreshing
     const hasRefreshToken = document.cookie.includes("refreshToken=");
-    
+
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
