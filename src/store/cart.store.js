@@ -48,6 +48,7 @@ const clearGuestCart = () => {
 
 const useCartStore = create((set, get) => ({
   cart: { items: [] },
+  cartInitialized: false,
   itemsPrice: 0,
   shippingPrice: 0,
   totalPrice: 0,
@@ -58,7 +59,7 @@ const useCartStore = create((set, get) => ({
   referralApplied: false,
   referralCode: null,
   referralDiscount: 0,
-  isLoading: false,
+  isLoading: true,
   isUpdating: false,
   couponError: "",
   buyNowProductId: null,
@@ -69,7 +70,7 @@ const useCartStore = create((set, get) => ({
     if (!user || !user._id) {
       const guestCart = getGuestCart();
       if (guestCart.items && guestCart.items.length > 0) {
-        set({ cart: guestCart });
+        set({ cart: guestCart, isLoading: false, cartInitialized: true });
       }
     }
   },
@@ -77,6 +78,8 @@ const useCartStore = create((set, get) => ({
   // ✅ Fetch cart (backend for logged in, localStorage for guests)
   fetchCart: async () => {
     const { user } = useAuthStore.getState();
+
+    set({ isLoading: true });
 
     // ✅ If not logged in, load from localStorage and normalize guest cart
     if (!user || !user._id) {
@@ -174,6 +177,7 @@ const useCartStore = create((set, get) => ({
             totalPrice,
             totalItems,
             isLoading: false,
+            cartInitialized: true, // ⭐ IMPORTANT
           });
           return;
         } catch (error) {
@@ -184,12 +188,21 @@ const useCartStore = create((set, get) => ({
             );
           }
           // Fallback to basic guest cart structure
-          set({ cart: guestCart, isLoading: false });
+          set({
+            cart: guestCart,
+            isLoading: false,
+            cartInitialized: true, // ⭐ IMPORTANT
+          });
           return;
         }
       }
 
-      set({ cart: guestCart, isLoading: false });
+      set({
+        cart: guestCart,
+        isLoading: false,
+        cartInitialized:
+          guestCart.items && guestCart.items.length > 0 ? true : false,
+      });
       return;
     }
 
@@ -222,6 +235,7 @@ const useCartStore = create((set, get) => ({
         flashDiscountPercent: cartData.flashDiscountPercent || 0,
 
         isLoading: false,
+        cartInitialized: true, // ⭐ FIX HERE
       });
     } catch (error) {
       // ✅ Handle 404 as empty cart (not an error - normal for new users)
@@ -241,6 +255,7 @@ const useCartStore = create((set, get) => ({
           referralCode: null,
           referralDiscount: 0,
           isLoading: false,
+          cartInitialized: true, // ⭐ MAKE SURE THIS ALWAYS RUNS
         });
         return;
       }
@@ -390,38 +405,70 @@ const useCartStore = create((set, get) => ({
   updateCart: async (productId, quantity) => {
     const { user } = useAuthStore.getState();
 
+    // Enforce limits
+    if (quantity > 5) quantity = 5;
+    if (quantity < 1) quantity = 1;
+
     set({ isUpdating: true });
 
     try {
       if (user && user._id) {
+        // Backend update
         await updateCartItemService(productId, quantity);
+
         set((state) => {
+          // Update items
           const updatedItems = state.cart.items.map((item) =>
             item.product._id === productId ? { ...item, quantity } : item
           );
-          return { cart: { ...state.cart, items: updatedItems } };
+
+          // 🔥 Recalculate itemsPrice
+          const itemsPrice = updatedItems.reduce((acc, item) => {
+            const price = item.product.discountPrice || item.product.price || 0;
+            return acc + item.quantity * price;
+          }, 0);
+
+          // 🔥 Recalculate shipping
+          const shippingPrice = itemsPrice > 297 ? 0 : 50;
+
+          // 🔥 Recalculate total
+          const totalPrice = itemsPrice + shippingPrice - state.discount;
+
+          return {
+            cart: { ...state.cart, items: updatedItems },
+            itemsPrice,
+            shippingPrice,
+            totalPrice,
+          };
         });
-        get().calculateTotals();
+
         return { success: true };
-      } else {
-        // Guest cart update
-        const guestCart = getGuestCart();
-        const item = guestCart.items.find(
-          (item) => item.productId === productId
-        );
-        if (item) {
-          item.quantity = quantity;
-          saveGuestCart(guestCart);
-          set({ cart: guestCart });
-          get().calculateTotals();
-          return { success: true };
-        }
-        return { success: false, message: "Item not found in cart" };
       }
+
+      // Guest cart
+      const guestCart = getGuestCart();
+      const item = guestCart.items.find((item) => item.productId === productId);
+      if (item) {
+        item.quantity = quantity;
+        saveGuestCart(guestCart);
+
+        // 🔥 Recalculate totals for guest
+        set((state) => {
+          return {
+            cart: guestCart,
+            itemsPrice: state.itemsPrice,
+            shippingPrice: state.shippingPrice,
+            totalPrice: state.totalPrice,
+          };
+        });
+
+        get().fetchCart(); // refresh guest totals
+        return { success: true };
+      }
+
+      return { success: false, message: "Item not found in cart" };
     } catch (error) {
-      if (process.env.NODE_ENV === "development") {
-        console.error("Error updating cart:", error);
-      }
+      console.error("Error updating cart:", error);
       return {
         success: false,
         message: error.response?.data?.message || "Failed to update cart",

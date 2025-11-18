@@ -7,11 +7,13 @@ import useAuthStore from "@/store/auth.store";
 import { useNavigate } from "react-router-dom";
 
 const PaymentPage = () => {
+  const navigate = useNavigate();
+
   const {
     paymentMode,
     setPaymentMode,
     handlePayment,
-    isLoading,
+    isLoading: orderLoading,
     paymentStatus,
     resetPaymentStatus,
   } = useOrderStore();
@@ -24,31 +26,11 @@ const PaymentPage = () => {
     totalItems,
     fetchCart,
     clearCart,
+    cartInitialized,
     isLoading: cartLoading,
   } = useCartStore();
 
   const { user, updateAddress } = useAuthStore();
-  const navigate = useNavigate();
-
-  // ✅ Detect prepaid mode (any online option except COD & pickup)
-  const isPrepaid = ["card", "upi", "netbanking", "online"].includes(
-    paymentMode
-  );
-
-  // ✅ Base total from backend (already includes coupon/referral/flash discounts)
-  let finalDisplayTotal = totalPrice || 0;
-
-  // ✅ If pickup, remove shipping
-  if (paymentMode === "pickup") {
-    finalDisplayTotal -= shippingPrice || 0;
-  }
-
-  // ✅ Apply prepaid discount (₹30 off for online methods)
-  const prepaidDiscount = isPrepaid ? 30 : 0;
-  if (isPrepaid) finalDisplayTotal -= prepaidDiscount;
-
-  // ✅ Ensure total never goes below zero
-  finalDisplayTotal = Math.max(finalDisplayTotal, 0);
 
   const [shippingAddress, setShippingAddress] = useState(user?.address || null);
 
@@ -62,13 +44,19 @@ const PaymentPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // fetchCart is stable from zustand store
 
-  // ✅ Check if cart is empty and redirect
   useEffect(() => {
-    if (!cartLoading && (!cart || !cart.items || cart.items.length === 0)) {
+    // 🚨 Redirect only after real cart loaded & not during temporary empty state
+    if (
+      cartInitialized &&
+      !cartLoading &&
+      Array.isArray(cart?.items) &&
+      cart.items.length === 0 &&
+      user // only redirect logged in users
+    ) {
       toast.error("Your cart is empty. Please add items before checkout.");
       navigate("/cart");
     }
-  }, [cart, cartLoading, navigate]);
+  }, [cartInitialized, cartLoading, cart]);
 
   // ✅ Razorpay success listener
   useEffect(() => {
@@ -115,6 +103,35 @@ const PaymentPage = () => {
     };
   }, [navigate, clearCart]);
 
+  // 🚨 Wait until cart items are fully loaded (prevents false redirect)
+  if (!cartInitialized || cartLoading || !cart?.items) {
+    return (
+      <div className="min-h-screen flex justify-center items-center">
+        Loading cart...
+      </div>
+    );
+  }
+
+  // ✅ Detect prepaid mode (any online option except COD & pickup)
+  const isPrepaid = ["card", "upi", "netbanking", "online"].includes(
+    paymentMode
+  );
+
+  // ✅ Base total from backend (already includes coupon/referral/flash discounts)
+  let finalDisplayTotal = totalPrice || 0;
+
+  // ✅ If pickup, remove shipping
+  if (paymentMode === "pickup") {
+    finalDisplayTotal -= shippingPrice || 0;
+  }
+
+  // ✅ Apply prepaid discount (₹30 off for online methods)
+  const prepaidDiscount = isPrepaid ? 30 : 0;
+  if (isPrepaid) finalDisplayTotal -= prepaidDiscount;
+
+  // ✅ Ensure total never goes below zero
+  finalDisplayTotal = Math.max(finalDisplayTotal, 0);
+
   const handleAddressSubmit = (address) => {
     setShippingAddress(address);
     updateAddress(address);
@@ -153,12 +170,7 @@ const PaymentPage = () => {
       </div>
     );
 
-  // ✅ Redirect if cart is empty (after loading)
-  if (!cart || !cart.items || cart.items.length === 0) {
-    return null; // Will redirect via useEffect
-  }
-
-  if (isLoading)
+  if (orderLoading)
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-50">
         <div className="text-center">
@@ -385,7 +397,7 @@ const PaymentPage = () => {
             )}
 
             <button
-              disabled={!paymentMode || isLoading || finalDisplayTotal <= 0}
+              disabled={!paymentMode || orderLoading || finalDisplayTotal <= 0}
               onClick={proceedToPay}
               className="w-full bg-black text-white py-3 sm:py-4 rounded-lg text-sm sm:text-lg font-medium hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -397,7 +409,7 @@ const PaymentPage = () => {
                 ? "Place Order (COD)"
                 : paymentMode === "pickup"
                 ? "Place Order (Pickup)"
-                : isLoading
+                : orderLoading
                 ? "Processing..."
                 : `Proceed to Pay ₹${finalDisplayTotal.toFixed(2)}`}
             </button>

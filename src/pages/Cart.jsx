@@ -96,8 +96,6 @@ const Cart = () => {
   const handleUpdateQuantity = async (productId, quantity) => {
     try {
       await updateCart(productId, quantity);
-      await fetchCart();
-      toast.success("Quantity updated");
     } catch {
       toast.error("Failed to update quantity");
     }
@@ -308,17 +306,48 @@ const Cart = () => {
                       <Input
                         type="number"
                         min={1}
-                        max={product?.stock || 999}
+                        max={5}
                         value={item.quantity}
                         onChange={(e) => {
-                          const newQty = parseInt(e.target.value) || 1;
-                          const maxQty = product?.stock || 999;
-                          if (newQty > maxQty) {
-                            toast.warning(
-                              `Only ${maxQty} items available in stock`
-                            );
+                          const raw = e.target.value;
+                          let newQty = parseInt(raw) || 1;
+
+                          // 💥 Detect increment attempt
+                          const isIncrement = newQty > item.quantity;
+
+                          // 💥 Check max quantity
+                          if (newQty > 5) {
+                            if (isIncrement) {
+                              toast.warning(
+                                "Maximum allowed quantity is 5 per product"
+                              );
+                            }
+
+                            // Force UI to remain 5
+                            newQty = 5;
+                            e.target.value = 5;
+
+                            if (item.quantity !== 5) {
+                              handleUpdateQuantity(productId, 5);
+                            }
                             return;
                           }
+
+                          // 🚨 Stock check
+                          const maxStock = product?.stock || 999;
+                          if (newQty > maxStock) {
+                            toast.warning(
+                              `Only ${maxStock} items available in stock`
+                            );
+                            newQty = maxStock;
+                            e.target.value = maxStock;
+
+                            if (item.quantity !== maxStock) {
+                              handleUpdateQuantity(productId, maxStock);
+                            }
+                            return;
+                          }
+
                           handleUpdateQuantity(productId, newQty);
                         }}
                         className="w-16 text-center border border-gray-300 rounded-md shadow-sm text-sm"
