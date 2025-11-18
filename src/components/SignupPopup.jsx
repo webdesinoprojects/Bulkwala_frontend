@@ -1,18 +1,18 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from '@/components/ui/dialog';
-import { useAuthStore } from '@/store/auth.store';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { SignupSchema } from '@/schemas/userSchema';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+} from "@/components/ui/dialog";
+import { useAuthStore } from "@/store/auth.store";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { SignupSchema } from "@/schemas/userSchema";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormItem,
@@ -20,8 +20,8 @@ import {
   FormControl,
   FormMessage,
   FormField,
-} from '@/components/ui/form';
-import { toast } from 'sonner';
+} from "@/components/ui/form";
+import { toast } from "sonner";
 
 export default function SignupPopup() {
   const [open, setOpen] = useState(false);
@@ -33,7 +33,7 @@ export default function SignupPopup() {
 
   const form = useForm({
     resolver: zodResolver(SignupSchema),
-    defaultValues: { name: '', email: '', phone: '', password: '' },
+    defaultValues: { name: "", email: "", phone: "", password: "" },
   });
 
   useEffect(() => {
@@ -41,44 +41,45 @@ export default function SignupPopup() {
     if (repeatTimerRef.current) clearInterval(repeatTimerRef.current);
 
     const isAuthPage =
-      location.pathname.includes('/login') ||
-      location.pathname.includes('/signup');
+      location.pathname.includes("/login") ||
+      location.pathname.includes("/signup") ||
+      location.pathname.includes("/verify");
 
     if (user?._id || isAuthPage) {
       setOpen(false);
-      if (import.meta.NODE_ENV === 'development') {
-        console.log('Popup disabled (user logged in or on auth page)');
+      if (import.meta.NODE_ENV === "development") {
+        console.log("Popup disabled (user logged in or on auth page)");
       }
       return;
     }
 
-    if (import.meta.NODE_ENV === 'development') {
-      console.log('Popup scheduled to open in 15 seconds...');
+    if (import.meta.NODE_ENV === "development") {
+      console.log("Popup scheduled to open in 15 seconds...");
     }
     firstTimerRef.current = setTimeout(() => {
-      if (import.meta.NODE_ENV === 'development') {
-        console.log('Popup opened (15s delay)');
+      if (import.meta.NODE_ENV === "development") {
+        console.log("Popup opened (15s delay)");
       }
       setOpen(true);
 
-      if (import.meta.NODE_ENV === 'development') {
-        console.log('Setting repeat popup every 2 minutes...');
+      if (import.meta.NODE_ENV === "development") {
+        console.log("Setting repeat popup every 2 minutes...");
       }
       repeatTimerRef.current = setInterval(() => {
         const stillValid =
           !user?._id &&
           !(
-            location.pathname.includes('/login') ||
-            location.pathname.includes('/signup')
+            location.pathname.includes("/login") ||
+            location.pathname.includes("/signup")
           );
         if (stillValid) {
-          if (import.meta.NODE_ENV === 'development') {
-            console.log('Popup reopened (2-minute repeat)');
+          if (import.meta.NODE_ENV === "development") {
+            console.log("Popup reopened (2-minute repeat)");
           }
           setOpen(true);
         } else {
-          if (import.meta.NODE_ENV === 'development') {
-            console.log('Skipping popup (user logged in or on auth page)');
+          if (import.meta.NODE_ENV === "development") {
+            console.log("Skipping popup (user logged in or on auth page)");
           }
         }
       }, 120000);
@@ -87,8 +88,8 @@ export default function SignupPopup() {
     return () => {
       if (firstTimerRef.current) clearTimeout(firstTimerRef.current);
       if (repeatTimerRef.current) clearInterval(repeatTimerRef.current);
-      if (import.meta.NODE_ENV === 'development') {
-        console.log('Popup timers cleared');
+      if (import.meta.NODE_ENV === "development") {
+        console.log("Popup timers cleared");
       }
     };
   }, [location, user]);
@@ -96,12 +97,12 @@ export default function SignupPopup() {
   const onSubmit = async (values) => {
     const res = await signup(values);
     if (res.success && res.user?._id) {
-      toast.success('Account created successfully! Please verify your email.');
+      toast.success("Account created successfully! Please verify your email.");
       form.reset();
       setOpen(false);
       navigate(`/verify/${res.user._id}`);
     } else {
-      toast.error(res.error || 'Signup failed');
+      toast.error(res.error || "Signup failed");
     }
   };
 
@@ -135,7 +136,7 @@ export default function SignupPopup() {
               src="https://ik.imagekit.io/bulkwala/demo/cyfty%20logo.png?updatedAt=1762595451720"
               alt="Cyfty Logo"
               className="w-20 h-20 object-contain opacity-85 grayscale-[30%]"
-              style={{ filter: 'brightness(0.85) contrast(1.1)' }}
+              style={{ filter: "brightness(0.85) contrast(1.1)" }}
             />
           </div>
         </DialogHeader>
@@ -144,7 +145,7 @@ export default function SignupPopup() {
         <div className="p-6 sm:p-8 bg-white max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-[#AFC2D5]/40 scrollbar-track-transparent hover:scrollbar-thumb-[#AFC2D5]/60">
           <div className="text-center text-gray-700 space-y-1.5 mb-4">
             <p className="text-[17px] sm:text-[18px] font-semibold">
-              Join the{' '}
+              Join the{" "}
               <span className="font-bold text-[#02066F]">Bulkwala</span> family
               & start saving today!
             </p>
@@ -256,17 +257,17 @@ export default function SignupPopup() {
                 className="w-full bg-[#02066F] text-white font-semibold rounded-lg py-2.5 mt-2 shadow-md transition-all"
                 disabled={form.formState.isSubmitting}
               >
-                {form.formState.isSubmitting ? 'Signing up...' : 'Sign Up'}
+                {form.formState.isSubmitting ? "Signing up..." : "Sign Up"}
               </Button>
 
               {/* Login Link */}
               <p className="text-center text-sm text-gray-600 mt-2">
-                Already have an account?{' '}
+                Already have an account?{" "}
                 <span
                   className="text-[#02066F] font-medium cursor-pointer hover:underline"
                   onClick={() => {
                     setOpen(false);
-                    navigate('/login');
+                    navigate("/login");
                   }}
                 >
                   Log in

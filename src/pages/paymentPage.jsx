@@ -30,9 +30,11 @@ const PaymentPage = () => {
     isLoading: cartLoading,
   } = useCartStore();
 
-  const { user, updateAddress } = useAuthStore();
+  const { user, updateAddress, removeAddress } = useAuthStore();
 
-  const [shippingAddress, setShippingAddress] = useState(user?.address || null);
+  const [shippingAddress, setShippingAddress] = useState(
+    user?.addresses?.[0] || null
+  );
 
   // ✅ Fetch cart and Razorpay script once
   useEffect(() => {
@@ -200,6 +202,10 @@ const PaymentPage = () => {
                 directly from our store.
               </p>
               <p className="mt-1 text-[#02066F] font-medium">
+                U-33,Khanna Market, West Patel Nagar New Delhi, Delhi 110008
+              </p>
+              <p className="font-semibold">OR</p>
+              <p className="mt-1 text-[#02066F] font-medium">
                 Bulkwala Store, Jain Park, Uttam Nagar, Delhi 110059
               </p>
             </div>
@@ -211,31 +217,85 @@ const PaymentPage = () => {
               <h3 className="text-lg sm:text-xl font-semibold mt-8 mb-4">
                 Saved Addresses
               </h3>
-              <div className="space-y-3">
-                {user?.address ? (
-                  <div
-                    className={`border p-3 sm:p-4 rounded-lg cursor-pointer hover:bg-gray-50 ${
-                      shippingAddress === user.address ? "border-black" : ""
-                    }`}
-                    onClick={() => handleSelectAddress(user.address)}
-                  >
-                    <p className="text-gray-800 font-medium">
-                      {user.address.name}
-                    </p>
-                    <p className="text-gray-600 text-sm">
-                      {user.address.street}, {user.address.city},{" "}
-                      {user.address.state}
-                    </p>
-                    <p className="text-gray-600 text-sm">
-                      {user.address.postalCode}, {user.address.country}
-                    </p>
-                    <p className="text-gray-700 text-sm">
-                      {user.address.phone}
-                    </p>
-                  </div>
+
+              <div className="space-y-4">
+                {user?.addresses?.length > 0 ? (
+                  user.addresses.map((addr, index) => (
+                    <div
+                      key={index}
+                      className={`relative border p-4 rounded-lg cursor-pointer hover:bg-gray-50 transition ${
+                        shippingAddress === addr
+                          ? "border-black"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      {/* SELECT ADDRESS */}
+                      <div onClick={() => handleSelectAddress(addr)}>
+                        <p className="text-lg font-semibold capitalize">
+                          {addr.name}
+                        </p>
+
+                        <p className="text-gray-600 text-sm">
+                          {addr.street}, {addr.city}, {addr.state}
+                        </p>
+
+                        <p className="text-gray-600 text-sm">
+                          {addr.postalCode}, {addr.country}
+                        </p>
+
+                        <p className="text-gray-700 text-sm">{addr.phone}</p>
+                      </div>
+
+                      {/* DELETE BUTTON */}
+                      <button
+                        onClick={() => {
+                          toast.custom((t) => (
+                            <div className="bg-white shadow-xl rounded-lg p-4 border border-gray-200">
+                              <p className="font-medium text-gray-800 mb-2">
+                                Delete this address?
+                              </p>
+
+                              <div className="flex gap-3">
+                                <button
+                                  onClick={async () => {
+                                    toast.dismiss(t.id);
+
+                                    const result = await removeAddress(index);
+
+                                    if (result.success) {
+                                      toast.success("Address deleted");
+
+                                      if (shippingAddress === addr) {
+                                        setShippingAddress(null);
+                                      }
+                                    } else {
+                                      toast.error(result.error);
+                                    }
+                                  }}
+                                  className="px-4 py-2 bg-red-600 text-white rounded-md text-sm hover:bg-red-700"
+                                >
+                                  Delete
+                                </button>
+
+                                <button
+                                  onClick={() => toast.dismiss(t.id)}
+                                  className="px-4 py-2 bg-gray-200 rounded-md text-sm hover:bg-gray-300"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          ));
+                        }}
+                        className="absolute top-3 right-3 text-red-500 text-xs underline"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  ))
                 ) : (
                   <p className="text-gray-500 text-sm">
-                    No saved address found.
+                    No saved addresses found.
                   </p>
                 )}
               </div>

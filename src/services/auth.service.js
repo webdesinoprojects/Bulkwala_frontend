@@ -34,6 +34,15 @@ export const updateShippingAddressService = async (addressData) => {
   const res = await axiosInstance.put("/api/users/address", addressData);
   return res.data.data;
 };
+
+export const deleteAddressService = async (index) => {
+  const res = await axiosInstance.delete(`/api/users/address/${index}`, {
+    withCredentials: true,
+  });
+  return res.data.data; // return updated user
+};
+
+
 export const checkauthService = async () => {
   try {
     const res = await axiosInstance.get("/api/users/profile", {

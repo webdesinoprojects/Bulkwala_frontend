@@ -17,6 +17,7 @@ import {
   registerSellerService,
   verifyOtpService,
   sendOtpService,
+  deleteAddressService,
 } from "@/services/auth.service";
 import { create } from "zustand";
 import useCartStore from "./cart.store";
@@ -180,6 +181,26 @@ export const useAuthStore = create((set, get) => ({
     } catch (error) {
       set({ isLoading: false, error: error.message });
       return { success: false, error: error.message };
+    }
+  },
+
+  removeAddress: async (index) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const updatedUser = await deleteAddressService(index);
+      set({ user: updatedUser, isLoading: false });
+
+      return { success: true };
+    } catch (error) {
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to delete address";
+
+      set({ isLoading: false, error: message });
+
+      return { success: false, error: message };
     }
   },
 
