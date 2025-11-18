@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import shippingAddressSchema from "@/schemas/shippingFormSchema";
 
-const ShippingAddressForm = ({ onSubmit, address }) => {
+const ShippingAddressForm = ({ onSubmit, initialData, mode }) => {
   const {
     register,
     handleSubmit,
@@ -11,7 +11,7 @@ const ShippingAddressForm = ({ onSubmit, address }) => {
     reset,
   } = useForm({
     resolver: zodResolver(shippingAddressSchema),
-    defaultValues: address || {
+    defaultValues: initialData || {
       name: "",
       phone: "",
       street: "",
@@ -21,13 +21,21 @@ const ShippingAddressForm = ({ onSubmit, address }) => {
       country: "India",
     },
   });
-
-  // Reset form if address prop changes
   useEffect(() => {
-    if (address) {
-      reset(address);
-    }
-  }, [address, reset]);
+    if (initialData) reset(initialData);
+    else
+      reset(
+        initialData || {
+          name: "",
+          phone: "",
+          street: "",
+          city: "",
+          state: "",
+          postalCode: "",
+          country: "India",
+        }
+      );
+  }, [initialData, reset]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -119,7 +127,7 @@ const ShippingAddressForm = ({ onSubmit, address }) => {
         type="submit"
         className="w-full bg-blue-600 text-white py-2 rounded-lg"
       >
-        {address ? "Update Address" : "Save Address"}
+        {mode === "edit" ? "Update Address" : "Save Address"}
       </button>
     </form>
   );

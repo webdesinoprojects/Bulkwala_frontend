@@ -172,15 +172,28 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
-  updateAddress: async (addressData) => {
+  updateAddress: async ({ address, index }) => {
     set({ isLoading: true, error: null });
+
     try {
-      const updatedUser = await updateShippingAddressService(addressData);
+      const payload = {
+        address, // flat address object
+        index: index ?? undefined,
+      };
+
+      const updatedUser = await updateShippingAddressService(payload);
+
       set({ user: updatedUser, isLoading: false });
+
       return { success: true, user: updatedUser };
     } catch (error) {
-      set({ isLoading: false, error: error.message });
-      return { success: false, error: error.message };
+      const msg =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to update address";
+
+      set({ isLoading: false, error: msg });
+      return { success: false, error: msg };
     }
   },
 
@@ -190,7 +203,6 @@ export const useAuthStore = create((set, get) => ({
     try {
       const updatedUser = await deleteAddressService(index);
       set({ user: updatedUser, isLoading: false });
-
       return { success: true };
     } catch (error) {
       const message =
@@ -199,7 +211,6 @@ export const useAuthStore = create((set, get) => ({
         "Failed to delete address";
 
       set({ isLoading: false, error: message });
-
       return { success: false, error: message };
     }
   },

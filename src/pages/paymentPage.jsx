@@ -32,6 +32,16 @@ const PaymentPage = () => {
 
   const { user, updateAddress, removeAddress } = useAuthStore();
 
+  const [formMode, setFormMode] = useState({
+    type: "add", // "add" or "edit"
+    index: null,
+    data: null,
+  });
+
+  const resetForm = () => {
+    setFormMode({ type: "add", index: null, data: null });
+  };
+
   const [shippingAddress, setShippingAddress] = useState(
     user?.addresses?.[0] || null
   );
@@ -134,9 +144,23 @@ const PaymentPage = () => {
   // ✅ Ensure total never goes below zero
   finalDisplayTotal = Math.max(finalDisplayTotal, 0);
 
-  const handleAddressSubmit = (address) => {
-    setShippingAddress(address);
-    updateAddress(address);
+  const handleUpdateAddress = async (formData) => {
+    const result = await updateAddress({
+      address: formData,
+      index: formMode.type === "edit" ? formMode.index : undefined,
+    });
+
+    if (result.success) {
+      toast.success(
+        formMode.type === "edit"
+          ? "Address updated successfully"
+          : "New address added"
+      );
+
+      resetForm();
+    } else {
+      toast.error(result.error);
+    }
   };
 
   const handleSelectAddress = (address) => setShippingAddress(address);
@@ -192,8 +216,9 @@ const PaymentPage = () => {
           </h2>
           {paymentMode !== "pickup" ? (
             <ShippingAddressForm
-              onSubmit={handleAddressSubmit}
-              address={shippingAddress}
+              onSubmit={handleUpdateAddress}
+              initialData={formMode.data || shippingAddress} // ← FIX
+              mode={formMode.type}
             />
           ) : (
             <div className="bg-yellow-50 border border-yellow-300 rounded-md p-4 text-sm text-gray-700 mb-4">
@@ -202,11 +227,13 @@ const PaymentPage = () => {
                 directly from our store.
               </p>
               <p className="mt-1 text-[#02066F] font-medium">
-                U-33,Khanna Market, West Patel Nagar New Delhi, Delhi 110008
+                U-33,Khanna Market, West Patel Nagar New Delhi,Near Opposite
+                Cottage 9A Delhi 110008
               </p>
               <p className="font-semibold">OR</p>
               <p className="mt-1 text-[#02066F] font-medium">
-                Bulkwala Store, Jain Park, Uttam Nagar, Delhi 110059
+                Upper Ground Floor, Back Side Building No. M-77, Block-M, Shyam
+                Park Uttam Nagar, New Delhi - 110059
               </p>
             </div>
           )}
@@ -223,74 +250,93 @@ const PaymentPage = () => {
                   user.addresses.map((addr, index) => (
                     <div
                       key={index}
-                      className={`relative border p-4 rounded-lg cursor-pointer hover:bg-gray-50 transition ${
+                      className={`relative border p-4 rounded-lg cursor-pointer transition ${
                         shippingAddress === addr
-                          ? "border-black"
-                          : "border-gray-300"
+                          ? "border-black bg-gray-50"
+                          : "border-gray-300 hover:bg-gray-50"
                       }`}
+                      onClick={() => handleSelectAddress(addr)}
                     >
-                      {/* SELECT ADDRESS */}
-                      <div onClick={() => handleSelectAddress(addr)}>
-                        <p className="text-lg font-semibold capitalize">
-                          {addr.name}
-                        </p>
+                      {/* ADDRESS DETAILS */}
+                      <p className="text-lg font-semibold capitalize">
+                        {addr.name}
+                      </p>
 
-                        <p className="text-gray-600 text-sm">
-                          {addr.street}, {addr.city}, {addr.state}
-                        </p>
+                      <p className="text-gray-600 text-sm">
+                        {addr.street}, {addr.city}, {addr.state}
+                      </p>
 
-                        <p className="text-gray-600 text-sm">
-                          {addr.postalCode}, {addr.country}
-                        </p>
+                      <p className="text-gray-600 text-sm">
+                        {addr.postalCode}, {addr.country}
+                      </p>
 
-                        <p className="text-gray-700 text-sm">{addr.phone}</p>
-                      </div>
+                      <p className="text-gray-700 text-sm">{addr.phone}</p>
 
-                      {/* DELETE BUTTON */}
-                      <button
-                        onClick={() => {
-                          toast.custom((t) => (
-                            <div className="bg-white shadow-xl rounded-lg p-4 border border-gray-200">
-                              <p className="font-medium text-gray-800 mb-2">
-                                Delete this address?
-                              </p>
+                      {/* BUTTONS */}
+                      <div className="absolute top-3 right-3 flex gap-3">
+                        {/* EDIT BUTTON */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setFormMode({
+                              type: "edit",
+                              index,
+                              data: { ...addr }, // clone to avoid circular JSON error
+                            });
+                          }}
+                          className="text-blue-600 text-xs underline"
+                        >
+                          Edit
+                        </button>
 
-                              <div className="flex gap-3">
-                                <button
-                                  onClick={async () => {
-                                    toast.dismiss(t.id);
+                        {/* DELETE BUTTON */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
 
-                                    const result = await removeAddress(index);
+                            toast.custom((t) => (
+                              <div className="bg-white shadow-xl rounded-lg p-4 border border-gray-200">
+                                <p className="font-medium text-gray-800 mb-2">
+                                  Delete this address?
+                                </p>
 
-                                    if (result.success) {
-                                      toast.success("Address deleted");
+                                <div className="flex gap-3">
+                                  <button
+                                    onClick={async () => {
+                                      toast.dismiss(t.id);
 
-                                      if (shippingAddress === addr) {
-                                        setShippingAddress(null);
+                                      const result = await removeAddress(index);
+
+                                      if (result.success) {
+                                        toast.success("Address deleted");
+
+                                        if (shippingAddress === addr) {
+                                          setShippingAddress(null);
+                                        }
+                                      } else {
+                                        toast.error(result.error);
                                       }
-                                    } else {
-                                      toast.error(result.error);
-                                    }
-                                  }}
-                                  className="px-4 py-2 bg-red-600 text-white rounded-md text-sm hover:bg-red-700"
-                                >
-                                  Delete
-                                </button>
+                                    }}
+                                    className="px-4 py-2 bg-red-600 text-white rounded-md text-sm hover:bg-red-700"
+                                  >
+                                    Delete
+                                  </button>
 
-                                <button
-                                  onClick={() => toast.dismiss(t.id)}
-                                  className="px-4 py-2 bg-gray-200 rounded-md text-sm hover:bg-gray-300"
-                                >
-                                  Cancel
-                                </button>
+                                  <button
+                                    onClick={() => toast.dismiss(t.id)}
+                                    className="px-4 py-2 bg-gray-200 rounded-md text-sm hover:bg-gray-300"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
                               </div>
-                            </div>
-                          ));
-                        }}
-                        className="absolute top-3 right-3 text-red-500 text-xs underline"
-                      >
-                        Delete
-                      </button>
+                            ));
+                          }}
+                          className="text-red-500 text-xs underline"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   ))
                 ) : (

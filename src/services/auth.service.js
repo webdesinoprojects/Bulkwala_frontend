@@ -30,8 +30,12 @@ export const verifyOtpService = async (data) => {
   return res.data.data; // returns user
 };
 
-export const updateShippingAddressService = async (addressData) => {
-  const res = await axiosInstance.put("/api/users/address", addressData);
+export const updateShippingAddressService = async ({ address, index }) => {
+  const res = await axiosInstance.put(
+    "/api/users/address",
+    { address, index },
+    { withCredentials: true }
+  );
   return res.data.data;
 };
 
@@ -39,9 +43,8 @@ export const deleteAddressService = async (index) => {
   const res = await axiosInstance.delete(`/api/users/address/${index}`, {
     withCredentials: true,
   });
-  return res.data.data; // return updated user
+  return res.data.data;
 };
-
 
 export const checkauthService = async () => {
   try {
