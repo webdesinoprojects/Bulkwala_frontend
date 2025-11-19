@@ -11,8 +11,11 @@ import { toast } from "sonner";
 import { useAuthStore } from "@/store/auth.store";
 
 export default function UsersContent() {
-  const { allUsers, fetchAllUsers, approveSeller, rejectSeller, isLoading } =
-    useAuthStore();
+  const allUsers = useAuthStore((s) => s.allUsers);
+  const fetchAllUsers = useAuthStore((s) => s.fetchAllUsers);
+  const approveSeller = useAuthStore((s) => s.approveSeller);
+  const rejectSeller = useAuthStore((s) => s.rejectSeller);
+  const isLoading = useAuthStore((s) => s.isLoading);
 
   useEffect(() => {
     fetchAllUsers();

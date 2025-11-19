@@ -323,39 +323,32 @@ export const useAuthStore = create((set, get) => ({
   },
 
   fetchAllUsers: async () => {
-    set({ isLoading: true });
     try {
       const users = await getAllUsersService();
-      set({ allUsers: users, isLoading: false });
+      set({ allUsers: users });
       return { success: true, users };
     } catch (error) {
-      set({ isLoading: false, error: "Failed to fetch users" });
+      set({ error: "Failed to fetch users" });
       return { success: false, error };
     }
   },
 
   approveSeller: async (userid) => {
-    set({ isLoading: true });
     try {
       await approveSellerService(userid);
-      await useAuthStore.getState().fetchAllUsers(); // refresh list
-      set({ isLoading: false });
+      await get().fetchAllUsers();
       return { success: true };
     } catch (error) {
-      set({ isLoading: false, error: "Failed to approve seller" });
       return { success: false, error };
     }
   },
 
   rejectSeller: async (userid) => {
-    set({ isLoading: true });
     try {
       await rejectSellerService(userid);
-      await useAuthStore.getState().fetchAllUsers(); // refresh list
-      set({ isLoading: false });
+      await get().fetchAllUsers();
       return { success: true };
     } catch (error) {
-      set({ isLoading: false, error: "Failed to reject seller" });
       return { success: false, error };
     }
   },
