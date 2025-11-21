@@ -43,6 +43,7 @@ const ProductDetail = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editReviewId, setEditReviewId] = useState(null);
   const [isAddedToCart, setIsAddedToCart] = useState(false);
+  const [selectedMedia, setSelectedMedia] = useState(null);
 
   const {
     register,
@@ -60,33 +61,25 @@ const ProductDetail = () => {
     if (slug) {
       getProductBySlug(slug);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 
-  // ✅ Fetch reviews only when product ID changes (not on every product update)
   useEffect(() => {
     if (singleProduct?._id) {
       fetchReviews(singleProduct._id);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [singleProduct?._id]);
 
-  // ✅ Only fetch wishlist if user is logged in
   useEffect(() => {
     if (user && user._id) {
       fetchWishlist();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?._id]);
 
-  // ✅ Only fetch suggestions if products list is empty or stale
   useEffect(() => {
-    // Only fetch if we don't have products or have less than 8
     if (!products || products.length < 8) {
       fetchProducts({ limit: 8 });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only fetch once on mount
+  }, []);
 
   useEffect(() => {
     if (singleProduct && wishlist?.length >= 0) {
@@ -94,6 +87,14 @@ const ProductDetail = () => {
       setIsInWishlist(exists);
     }
   }, [wishlist, singleProduct]);
+
+  useEffect(() => {
+    if (singleProduct?.images?.length > 0) {
+      setSelectedMedia({ type: "image", url: singleProduct.images[0] });
+    } else if (singleProduct?.videos?.length > 0) {
+      setSelectedMedia({ type: "video", url: singleProduct.videos[0] });
+    }
+  }, [singleProduct]);
 
   if (loading || !singleProduct) {
     return (
@@ -206,24 +207,65 @@ const ProductDetail = () => {
   return (
     <section className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-10">
-        {/* IMAGE SECTION */}
         <div className="flex flex-col items-center">
+          {/* BIG IMAGE SECTION */}
           <div className="w-full h-[300px] sm:h-[400px] bg-white rounded-xl shadow-md flex justify-center items-center overflow-hidden">
-            <img
-              src={product.images?.[0]}
-              alt={product.title}
-              className="max-h-full max-w-full object-contain"
-            />
+            {selectedMedia?.type === "image" && (
+              <img
+                src={selectedMedia.url}
+                alt={product.title}
+                className="max-h-full max-w-full object-contain"
+              />
+            )}
+
+            {selectedMedia?.type === "video" && (
+              <video
+                key={selectedMedia.url}
+                src={selectedMedia.url}
+                controls
+                autoPlay
+                playsInline
+                className="w-full h-full object-contain rounded-xl bg-black"
+              />
+            )}
           </div>
+          {/* Thumbnail section */}
           <div className="flex flex-wrap justify-center gap-3 mt-4">
-            {product.images?.slice(0, 4).map((img, i) => (
+            {/* All Images */}
+            {product.images?.map((img, i) => (
               <img
                 key={i}
                 src={img}
-                alt={`thumb-${i}`}
-                className="w-16 h-16 sm:w-20 sm:h-20 border rounded-md object-cover cursor-pointer hover:ring-2 hover:ring-[#02066F]"
+                onClick={() => setSelectedMedia({ type: "image", url: img })}
+                className={`w-16 h-16 sm:w-20 sm:h-20 border rounded-md object-cover cursor-pointer 
+      ${selectedMedia?.url === img ? "ring-2 ring-[#02066F]" : ""}`}
               />
             ))}
+
+            {/* Video Thumbnail */}
+            {product.videos?.length > 0 &&
+              product.videos.map((vid, i) => (
+                <div
+                  key={i}
+                  onClick={() => setSelectedMedia({ type: "video", url: vid })}
+                  className={`
+        w-16 h-16 sm:w-20 sm:h-20 border rounded-md relative cursor-pointer 
+        bg-black flex items-center justify-center overflow-hidden
+        ${selectedMedia?.url === vid ? "ring-2 ring-[#02066F]" : ""}
+      `}
+                >
+                  {/* Play Icon */}
+                  <div className="text-white text-2xl opacity-80">▶</div>
+
+                  {/* Optional blurred video preview background */}
+                  <video
+                    src={vid}
+                    className="absolute inset-0 w-full h-full object-cover opacity-40"
+                    muted
+                    preload="metadata"
+                  ></video>
+                </div>
+              ))}
           </div>
         </div>
 

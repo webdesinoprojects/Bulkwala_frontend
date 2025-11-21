@@ -38,7 +38,6 @@ const SellerDashboard = () => {
     { name: "Dashboard", icon: <FaTachometerAlt /> },
     { name: "Products", icon: <FaBoxOpen /> },
     { name: "Categories", icon: <FaTags /> },
-    { name: "Settings", icon: <FaCog /> },
   ];
 
   return (
@@ -47,7 +46,7 @@ const SellerDashboard = () => {
       <aside
         className={`${
           sidebarOpen ? "w-64" : "w-20"
-        } bg-white shadow-md transition-all duration-300 flex flex-col`}
+        } bg-white shadow-md border-r border-gray-200 transition-all duration-300 flex flex-col`}
       >
         <div className="flex items-center justify-between p-4 border-b">
           <h1
@@ -60,22 +59,29 @@ const SellerDashboard = () => {
           <Button
             size="icon"
             variant="ghost"
+            className="hover:bg-gray-100 text-[#02066F]"
             onClick={() => setSidebarOpen(!sidebarOpen)}
           >
             {sidebarOpen ? "←" : "→"}
           </Button>
         </div>
 
-        <nav className="flex-1 mt-4">
+        <nav className="flex-1 mt-4 overflow-y-auto space-y-1 px-2">
           {menuItems.map((item) => (
             <Button
               key={item.name}
               variant={activeSection === item.name ? "secondary" : "ghost"}
-              className="w-full justify-start px-4 py-2 text-gray-700 hover:bg-gray-100"
+              className={`w-full justify-start px-4 py-2 text-gray-700 rounded-lg transition-all duration-200 ${
+                activeSection === item.name
+                  ? "bg-[#02066F] text-white hover:bg-[#04127A]"
+                  : "hover:bg-gray-100"
+              }`}
               onClick={() => setActiveSection(item.name)}
             >
               <span className="text-lg">{item.icon}</span>
-              {sidebarOpen && <span className="ml-3">{item.name}</span>}
+              {sidebarOpen && (
+                <span className="ml-3 text-sm font-medium">{item.name}</span>
+              )}
             </Button>
           ))}
         </nav>
@@ -83,18 +89,10 @@ const SellerDashboard = () => {
 
       {/* Main Content */}
       <main className="flex-1 p-6 overflow-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold text-gray-800">
-            {activeSection}
-          </h2>
-          <Input type="text" placeholder="Search..." className="w-64" />
-        </div>
-
         {/* Section Rendering */}
         {activeSection === "Dashboard" && <SellerDashboardContent />}
         {activeSection === "Products" && <SellerProductsContent />}
         {activeSection === "Categories" && <SellerCategoryView />}
-        {activeSection === "Settings" && <SellerSettings />}
       </main>
     </div>
   );
@@ -133,21 +131,35 @@ const SellerDashboardContent = () => {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-      {cardData.map((card) => (
-        <Card key={card.title} className={`${card.bg} shadow-sm rounded-xl`}>
-          <CardHeader className="flex items-center justify-between">
-            <div>
-              <CardDescription>{card.title}</CardDescription>
-              <CardTitle className={`text-2xl font-bold ${card.text}`}>
-                {card.value}
-              </CardTitle>
-            </div>
-            {card.icon}
-          </CardHeader>
-        </Card>
-      ))}
-    </div>
+    <Card className="bg-white border border-gray-200 rounded-xl shadow-sm">
+      <CardHeader>
+        <CardTitle className="text-[#02066F]">Dashboard Overview</CardTitle>
+        <CardDescription>Your product performance summary</CardDescription>
+      </CardHeader>
+
+      <CardContent>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {cardData.map((card) => (
+            <Card
+              key={card.title}
+              className="bg-white shadow-md rounded-xl border border-gray-200"
+            >
+              <CardHeader className="flex items-center justify-between">
+                <div>
+                  <CardDescription className="text-sm">
+                    {card.title}
+                  </CardDescription>
+                  <CardTitle className="text-2xl font-bold text-[#02066F]">
+                    {card.value}
+                  </CardTitle>
+                </div>
+                {card.icon}
+              </CardHeader>
+            </Card>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
@@ -204,123 +216,183 @@ const SellerProductsContent = () => {
 
   return (
     <>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Manage Products</h2>
-        <Button onClick={() => setShowAddForm(!showAddForm)}>
-          {showAddForm ? "Close Form" : "Add Product"}
-        </Button>
-      </div>
+      {/* OUTER WRAPPER LIKE ADMIN */}
+      <Card className="bg-white border border-gray-200 rounded-xl shadow-sm">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-[#02066F] text-m">
+            Manage Products
+          </CardTitle>
+          <CardDescription>View and manage your products</CardDescription>
+        </CardHeader>
 
-      {showAddForm && (
-        <AddProductForm
-          onSuccess={() => {
-            setShowAddForm(false);
-            fetchProducts({ sellerId: user._id, page, limit });
-          }}
-        />
-      )}
+        <CardContent className="pt-0">
+          {/* Add Product Button */}
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold text-gray-700">
+              Product List
+            </h2>
+            <Button onClick={() => setShowAddForm(!showAddForm)}>
+              {showAddForm ? "Close Form" : "Add Product"}
+            </Button>
+          </div>
 
-      <Card className="bg-white border border-gray-200 rounded-xl shadow-sm mt-4">
-        <CardContent className="overflow-x-auto p-0">
-          <table className="min-w-full border-collapse">
-            <thead className="bg-gray-100 text-gray-700 text-sm">
-              <tr>
-                <th className="p-3 text-left">Image</th>
-                <th className="p-3 text-left">Title</th>
-                <th className="p-3 text-center">Price</th>
-                <th className="p-3 text-center">Stock</th>
-                <th className="p-3 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {productList.length > 0 ? (
-                productList.map((p) => (
-                  <tr key={p._id} className="border-b hover:bg-gray-50">
-                    <td className="p-3">
-                      <img
-                        src={p.images?.[0]}
-                        alt={p.title}
-                        className="w-14 h-14 rounded-md object-cover border"
-                      />
-                    </td>
-                    <td className="p-3 text-sm font-medium text-gray-900 line-clamp-1 max-w-[200px]">
-                      {p.title}
-                    </td>
-                    <td className="p-3 text-center font-semibold">
-                      ₹{p.price}
-                    </td>
-                    <td className="p-3 text-center">
-                      {p.stock > 0 ? (
-                        <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
-                          In Stock
-                        </span>
-                      ) : (
-                        <span className="px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full">
-                          Out
-                        </span>
-                      )}
-                    </td>
-                    <td className="p-3 text-center">
-                      <div className="flex justify-center gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-blue-600 border-blue-200 hover:bg-blue-50"
-                          onClick={() => handleEdit(p.slug)}
+          {/* Add Form */}
+          {showAddForm && (
+            <AddProductForm
+              onSuccess={() => {
+                setShowAddForm(false);
+                fetchProducts({ sellerId: user._id, page, limit });
+              }}
+            />
+          )}
+
+          {/* PRODUCT TABLE */}
+          <div className="overflow-x-auto border rounded-lg shadow-sm">
+            <table className="min-w-full border-collapse bg-white">
+              <thead className="bg-[#e4e9f2] text-[#02066F] border-b text-sm font-medium">
+                <tr>
+                  <th className="p-3 text-left">Image</th>
+                  <th className="p-3 text-left w-[250px]">Title</th>
+                  <th className="p-3 text-left">Category</th>
+                  <th className="p-3 text-left">Subcategory</th>
+                  <th className="p-3 text-center">Price</th>
+                  <th className="p-3 text-center">SKU</th>
+                  <th className="p-3 text-center">Stock</th>
+                  <th className="p-3 text-center">Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {productList.length > 0 ? (
+                  productList.map((p, index) => (
+                    <tr
+                      key={p._id}
+                      className={`${
+                        index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                      } hover:bg-[#f1f5f9] transition-colors border-b`}
+                    >
+                      {/* Image */}
+                      <td className="p-3">
+                        <div className="flex justify-center">
+                          <img
+                            src={
+                              p.images?.[0] ||
+                              "https://ik.imagekit.io/bulkwala/demo/default-product.png"
+                            }
+                            alt={p.title}
+                            className="w-14 h-14 rounded-md object-cover border shadow-sm"
+                          />
+                        </div>
+                      </td>
+
+                      {/* Title */}
+                      <td className="p-3 font-medium text-gray-800 leading-tight">
+                        <div className="line-clamp-2">{p.title}</div>
+                      </td>
+
+                      {/* Category */}
+                      <td className="p-3 text-gray-700">
+                        {p.category?.name || "-"}
+                      </td>
+
+                      {/* Subcategory */}
+                      <td className="p-3 text-gray-700">
+                        {p.subcategory?.name || "-"}
+                      </td>
+
+                      {/* Price */}
+                      <td className="p-3 text-center font-semibold">
+                        {p.discountPrice && p.discountPrice < p.price ? (
+                          <span className="text-green-600 font-bold">
+                            ₹{p.discountPrice}
+                          </span>
+                        ) : (
+                          <span>₹{p.price}</span>
+                        )}
+                      </td>
+
+                      {/* SKU */}
+                      <td className="p-3 text-center text-gray-700">
+                        {p.sku || "-"}
+                      </td>
+
+                      {/* Stock */}
+                      <td className="p-3 text-center">
+                        <span
+                          className={`inline-flex items-center justify-center min-w-[80px] px-3 py-1 rounded-full text-sm font-medium shadow-sm ${
+                            p.stock > 0
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700"
+                          }`}
                         >
-                          <Edit size={16} />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-red-600 border-red-200 hover:bg-red-50"
-                          onClick={() => handleDelete(p.slug)}
-                        >
-                          <Trash2 size={16} />
-                        </Button>
-                      </div>
+                          {p.stock > 0 ? "In Stock" : "Out of Stock"}
+                        </span>
+                      </td>
+
+                      {/* Actions */}
+                      <td className="p-3 text-center">
+                        <div className="flex justify-center gap-2">
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            className="h-8 w-8 text-blue-600 border-blue-200 hover:bg-blue-50"
+                            onClick={() => handleEdit(p.slug)}
+                          >
+                            <Edit size={15} />
+                          </Button>
+
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            className="h-8 w-8 text-red-600 border-red-200 hover:bg-red-50"
+                            onClick={() => handleDelete(p.slug)}
+                          >
+                            <Trash2 size={15} />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan="8"
+                      className="text-center py-8 text-gray-500 text-sm"
+                    >
+                      No products found.
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan="5"
-                    className="text-center py-6 text-gray-500 text-sm"
-                  >
-                    No products found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center mt-6 space-x-3">
+              <Button
+                variant="outline"
+                disabled={page === 1}
+                onClick={() => setPage((prev) => prev - 1)}
+              >
+                Prev
+              </Button>
+              <span className="text-sm text-gray-700">
+                Page {page} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                disabled={page === totalPages}
+                onClick={() => setPage((prev) => prev + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center mt-6 space-x-3">
-          <Button
-            variant="outline"
-            disabled={page === 1}
-            onClick={() => setPage((prev) => prev - 1)}
-          >
-            Prev
-          </Button>
-          <span className="text-sm text-gray-600">
-            Page {page} of {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            disabled={page === totalPages}
-            onClick={() => setPage((prev) => prev + 1)}
-          >
-            Next
-          </Button>
-        </div>
-      )}
-
-      {/* Edit Dialog */}
+      {/* EDIT PRODUCT MODAL */}
       <EditProductDialog
         open={dialogOpen}
         slug={editSlug}
@@ -369,18 +441,5 @@ const SellerCategoryView = () => {
     </Card>
   );
 };
-
-/*  SETTINGS SECTION*/
-const SellerSettings = () => (
-  <Card>
-    <CardHeader>
-      <CardTitle>Settings</CardTitle>
-      <CardDescription>Manage your seller account preferences.</CardDescription>
-    </CardHeader>
-    <CardContent>
-      <p className="text-gray-500 text-sm">Coming soon...</p>
-    </CardContent>
-  </Card>
-);
 
 export default SellerDashboard;

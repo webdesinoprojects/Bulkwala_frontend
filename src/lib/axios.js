@@ -1,42 +1,35 @@
 import axios from "axios";
 
-console.log(
-  "🚀 FRONTEND is using backend URL:",
-  import.meta.env.VITE_BACKEND_URL
-);
-
 export const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL || "http://localhost:5000",
-  withCredentials: true, // send cookies automatically
+  withCredentials: true, // IMPORTANT: allows sending cookies
 });
 
-// No request interceptor needed (we don't use tokens in header)
+// No request interceptor needed (cookies auto included)
 
-// Response interceptor
+// Response interceptor — auto refresh token
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // ❌ If no refreshToken cookie exists → DON'T try refreshing
-    const hasRefreshToken = document.cookie.includes("refreshToken=");
-
-    if (
-      error.response?.status === 401 &&
-      !originalRequest._retry &&
-      hasRefreshToken
-    ) {
+    // If access token expired (401)
+    if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
-        // Try refresh endpoint
-        await axiosInstance.post("/api/users/refresh-token");
+        // Call refresh endpoint — COOKIE will be used automatically
+        await axios.post(
+          `${import.meta.env.VITE_BACKEND_URL}/api/users/refresh-token`,
+          {},
+          { withCredentials: true }
+        );
 
-        // Retry original request after refresh
+        // Retry original request
         return axiosInstance(originalRequest);
-      } catch (refreshError) {
-        // Logout user
-        return Promise.reject(refreshError);
+      } catch (err) {
+        // Refresh failed → logout
+        return Promise.reject(err);
       }
     }
 
