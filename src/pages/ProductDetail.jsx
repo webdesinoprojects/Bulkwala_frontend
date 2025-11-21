@@ -278,7 +278,6 @@ const ProductDetail = () => {
             <p className="text-gray-600 mt-2 text-sm sm:text-base leading-relaxed">
               {product.description}
             </p>
-
             <div className="flex items-center justify-between mt-4 flex-wrap gap-3">
               <div className="flex items-center gap-2 mt-2">
                 {product.discountPrice &&
@@ -323,100 +322,101 @@ const ProductDetail = () => {
                 </span>
               </div>
             </div>
-          </div>
+            <Separator className="mt-6" />
+            {/* Quantity + Add to Cart */}
+            <div className="flex flex-col sm:flex-row items-center gap-4 mt-4">
+              <div className="flex items-center gap-3">
+                <Button size="icon" variant="outline" onClick={decreaseQty}>
+                  <Minus size={18} />
+                </Button>
+                <span className="text-lg font-semibold">{quantity}</span>
+                <Button size="icon" variant="outline" onClick={increaseQty}>
+                  <Plus size={18} />
+                </Button>
+              </div>
 
-          <Separator className="my-2" />
+              <div className="flex gap-3 w-full sm:w-auto">
+                <Button
+                  onClick={async () => {
+                    await addToCart(product._id, quantity);
+                    setBuyNowProduct(product._id);
+                    navigate("/cart");
+                  }}
+                  className="flex-1 bg-orange-600 text-white hover:bg-orange-700"
+                >
+                  Buy Now
+                </Button>
 
-          {/* Wishlist + WhatsApp */}
-          <div className="flex flex-wrap items-center gap-4">
-            <Button
-              onClick={handleAddToWishlist}
-              disabled={isWishlistLoading}
-              variant="outline"
-              className={`flex items-center gap-2 ${
-                isInWishlist
-                  ? "border-red-500 text-red-600 bg-red-50 hover:bg-red-100"
-                  : "border-gray-300 text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              <Heart
-                className={`w-5 h-5 ${
-                  isInWishlist ? "fill-red-500 text-red-500" : "text-[#02066F]"
-                }`}
-              />
-              {isInWishlist ? "Wishlisted" : "Add to Wishlist"}
-            </Button>
+                <Button
+                  onClick={handleAddToCart}
+                  className={`flex-1 bg-blue-600 text-white hover:bg-blue-700 ${
+                    isAddedToCart ? "opacity-80" : ""
+                  }`}
+                >
+                  {isAddedToCart ? (
+                    <span className="flex items-center gap-2">
+                      <CheckCircle size={18} /> Added
+                    </span>
+                  ) : (
+                    "Add to Cart"
+                  )}
+                </Button>
 
-            {/* UPDATED WHATSAPP BUTTON */}
-            <Button
-              onClick={() =>
-                window.open(
-                  `https://wa.me/9310701078?text=${encodeURIComponent(
-                    `Hi, I'm interested in this product: ${product.title}`
-                  )}`,
-                  "_blank"
-                )
-              }
-              className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
-            >
-              {/* Real WhatsApp SVG */}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="white"
-              >
-                <path d="M20.52 3.48A11.8 11.8 0 0 0 12.04 0C5.5 0 .32 5.18.32 11.72c0 2.07.54 4.08 1.57 5.86L0 24l6.57-1.85a11.68 11.68 0 0 0 5.47 1.38h.01c6.54 0 11.82-5.18 11.82-11.72 0-3.13-1.22-6.08-3.35-8.33zM12.05 21.3c-1.72 0-3.4-.46-4.87-1.33l-.35-.21-3.9 1.1 1.04-3.8-.23-.39a9.51 9.51 0 0 1-1.47-5.15c0-5.28 4.32-9.58 9.62-9.58 2.57 0 4.99 1 6.82 2.8a9.42 9.42 0 0 1 2.81 6.77c-.01 5.27-4.33 9.59-9.47 9.59zm5.28-7.14c-.29-.15-1.72-.85-1.98-.94-.27-.1-.46-.15-.65.15-.19.29-.75.94-.92 1.13-.17.2-.34.22-.63.07-.29-.15-1.22-.45-2.32-1.45-.86-.77-1.44-1.72-1.61-2.01-.17-.29-.02-.45.13-.6.14-.15.29-.34.44-.51.15-.17.2-.29.3-.48.1-.19.05-.36-.02-.51-.08-.15-.65-1.57-.9-2.15-.24-.58-.49-.5-.65-.51h-.56c-.19 0-.5.07-.76.36-.26.29-1 1-1 2.44 0 1.43 1.03 2.81 1.17 3 .14.19 2.02 3.18 4.88 4.46.68.29 1.22.46 1.64.59.69.22 1.32.19 1.82.12.55-.08 1.72-.7 1.97-1.38.24-.67.24-1.25.17-1.38-.07-.12-.26-.2-.55-.35z" />
-              </svg>
-              Share on WhatsApp
-            </Button>
-          </div>
-
-          {/* Quantity + Add to Cart */}
-          <div className="flex flex-col sm:flex-row items-center gap-4 mt-4">
-            <div className="flex items-center gap-3">
-              <Button size="icon" variant="outline" onClick={decreaseQty}>
-                <Minus size={18} />
-              </Button>
-              <span className="text-lg font-semibold">{quantity}</span>
-              <Button size="icon" variant="outline" onClick={increaseQty}>
-                <Plus size={18} />
-              </Button>
+                <Button
+                  onClick={handleViewCart}
+                  className="flex-1 bg-gray-500 text-white hover:bg-gray-600"
+                >
+                  View Cart
+                </Button>
+              </div>
             </div>
+            <Separator className="mt-6" />
 
-            <div className="flex gap-3 w-full sm:w-auto">
+            {/* Wishlist + WhatsApp */}
+            <div className="flex flex-wrap items-center gap-4 mt-8">
               <Button
-                onClick={async () => {
-                  await addToCart(product._id, quantity);
-                  setBuyNowProduct(product._id);
-                  navigate("/cart");
-                }}
-                className="flex-1 bg-orange-600 text-white hover:bg-orange-700"
-              >
-                Buy Now
-              </Button>
-
-              <Button
-                onClick={handleAddToCart}
-                className={`flex-1 bg-blue-600 text-white hover:bg-blue-700 ${
-                  isAddedToCart ? "opacity-80" : ""
+                onClick={handleAddToWishlist}
+                disabled={isWishlistLoading}
+                variant="outline"
+                className={`flex items-center gap-2 ${
+                  isInWishlist
+                    ? "border-red-500 text-red-600 bg-red-50 hover:bg-red-100"
+                    : "border-gray-300 text-gray-700 hover:bg-gray-50"
                 }`}
               >
-                {isAddedToCart ? (
-                  <span className="flex items-center gap-2">
-                    <CheckCircle size={18} /> Added
-                  </span>
-                ) : (
-                  "Add to Cart"
-                )}
+                <Heart
+                  className={`w-5 h-5 ${
+                    isInWishlist
+                      ? "fill-red-500 text-red-500"
+                      : "text-[#02066F]"
+                  }`}
+                />
+                {isInWishlist ? "Wishlisted" : "Add to Wishlist"}
               </Button>
 
+              {/* UPDATED WHATSAPP BUTTON */}
               <Button
-                onClick={handleViewCart}
-                className="flex-1 bg-gray-500 text-white hover:bg-gray-600"
+                onClick={() =>
+                  window.open(
+                    `https://wa.me/9310701078?text=${encodeURIComponent(
+                      `Hi, I'm interested in this product: ${product.title}`
+                    )}`,
+                    "_blank"
+                  )
+                }
+                className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
               >
-                View Cart
+                {/* Real WhatsApp SVG */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="white"
+                >
+                  <path d="M20.52 3.48A11.8 11.8 0 0 0 12.04 0C5.5 0 .32 5.18.32 11.72c0 2.07.54 4.08 1.57 5.86L0 24l6.57-1.85a11.68 11.68 0 0 0 5.47 1.38h.01c6.54 0 11.82-5.18 11.82-11.72 0-3.13-1.22-6.08-3.35-8.33zM12.05 21.3c-1.72 0-3.4-.46-4.87-1.33l-.35-.21-3.9 1.1 1.04-3.8-.23-.39a9.51 9.51 0 0 1-1.47-5.15c0-5.28 4.32-9.58 9.62-9.58 2.57 0 4.99 1 6.82 2.8a9.42 9.42 0 0 1 2.81 6.77c-.01 5.27-4.33 9.59-9.47 9.59zm5.28-7.14c-.29-.15-1.72-.85-1.98-.94-.27-.1-.46-.15-.65.15-.19.29-.75.94-.92 1.13-.17.2-.34.22-.63.07-.29-.15-1.22-.45-2.32-1.45-.86-.77-1.44-1.72-1.61-2.01-.17-.29-.02-.45.13-.6.14-.15.29-.34.44-.51.15-.17.2-.29.3-.48.1-.19.05-.36-.02-.51-.08-.15-.65-1.57-.9-2.15-.24-.58-.49-.5-.65-.51h-.56c-.19 0-.5.07-.76.36-.26.29-1 1-1 2.44 0 1.43 1.03 2.81 1.17 3 .14.19 2.02 3.18 4.88 4.46.68.29 1.22.46 1.64.59.69.22 1.32.19 1.82.12.55-.08 1.72-.7 1.97-1.38.24-.67.24-1.25.17-1.38-.07-.12-.26-.2-.55-.35z" />
+                </svg>
+                Share on WhatsApp
               </Button>
             </div>
           </div>
