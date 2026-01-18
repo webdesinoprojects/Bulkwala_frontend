@@ -41,17 +41,20 @@ export default function OfferManager() {
       const end = new Date(activeOffer.expiresAt).getTime();
       const remaining = Math.max(0, end - now);
 
-      const minutes = Math.floor(remaining / 60000);
+      const days = Math.floor(remaining / 86400000);
+      const hours = Math.floor((remaining % 86400000) / 3600000);
+      const minutes = Math.floor((remaining % 3600000) / 60000);
       const seconds = Math.floor((remaining % 60000) / 1000);
 
       if (remaining <= 0) {
         setCountdown("Expired");
       } else {
-        setCountdown(
-          `${minutes.toString().padStart(2, "0")}:${seconds
-            .toString()
-            .padStart(2, "0")}`
-        );
+        const parts = [];
+        if (days > 0) parts.push(`${days}d`);
+        if (hours > 0) parts.push(`${hours}h`);
+        if (minutes > 0) parts.push(`${minutes}m`);
+        parts.push(`${seconds}s`);
+        setCountdown(parts.join(" "));
       }
     };
 
@@ -63,7 +66,8 @@ export default function OfferManager() {
   const onSubmit = async (data) => {
     const res = await startOffer(data);
     if (res.success) {
-      toast.success("15-minute offer activated!");
+      toast.success("Offer activated successfully!");
+      form.reset();
       fetchActiveOffer();
     } else toast.error(res.message || "Failed to activate offer");
   };
@@ -79,9 +83,9 @@ export default function OfferManager() {
   return (
     <Card className="bg-white border border-gray-200 rounded-xl shadow-sm">
       <CardHeader>
-        <CardTitle className="text-[#02066F]">Flash Offer (15-Min)</CardTitle>
+        <CardTitle className="text-[#02066F]">Custom Time Offer</CardTitle>
         <CardDescription>
-          Start a limited-time 15-minute offer with a global discount.
+          Create a limited-time offer with custom start and end date/time.
         </CardDescription>
       </CardHeader>
 
@@ -89,52 +93,100 @@ export default function OfferManager() {
         {/* Form */}
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="flex flex-col md:flex-row md:items-start gap-4 mb-6"
+          className="space-y-4 mb-6"
         >
-          {/* Discount Field */}
-          <div className="w-full md:w-1/3 flex flex-col">
-            <Input
-              type="number"
-              placeholder="Discount % (e.g. 90)"
-              {...form.register("discountPercent")}
-              className={`w-full ${
-                form.formState.errors.discountPercent ? "border-red-500" : ""
-              }`}
-            />
-            {form.formState.errors.discountPercent && (
-              <p className="text-red-500 text-sm mt-1 animate-fadeIn">
-                {form.formState.errors.discountPercent.message}
-              </p>
-            )}
+          {/* Discount Fields Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Discount Field */}
+            <div className="flex flex-col">
+              <label className="text-sm font-medium text-gray-700 mb-1">
+                Discount Percentage (%)
+              </label>
+              <Input
+                type="number"
+                placeholder="e.g. 90"
+                {...form.register("discountPercent")}
+                className={
+                  form.formState.errors.discountPercent ? "border-red-500" : ""
+                }
+              />
+              {form.formState.errors.discountPercent && (
+                <p className="text-red-500 text-sm mt-1 animate-fadeIn">
+                  {form.formState.errors.discountPercent.message}
+                </p>
+              )}
+            </div>
+
+            {/* Max Discount Field */}
+            <div className="flex flex-col">
+              <label className="text-sm font-medium text-gray-700 mb-1">
+                Max Discount Amount (₹)
+              </label>
+              <Input
+                type="number"
+                placeholder="e.g. 500"
+                {...form.register("maxDiscountAmount")}
+                className={
+                  form.formState.errors.maxDiscountAmount ? "border-red-500" : ""
+                }
+              />
+              {form.formState.errors.maxDiscountAmount && (
+                <p className="text-red-500 text-sm mt-1 animate-fadeIn">
+                  {form.formState.errors.maxDiscountAmount.message}
+                </p>
+              )}
+            </div>
           </div>
 
-          {/* Max Discount Field */}
-          <div className="w-full md:w-1/3 flex flex-col">
-            <Input
-              type="number"
-              placeholder="Max Discount ₹ (e.g. 50)"
-              {...form.register("maxDiscountAmount")}
-              className={`w-full ${
-                form.formState.errors.maxDiscountAmount ? "border-red-500" : ""
-              }`}
-            />
-            {form.formState.errors.maxDiscountAmount && (
-              <p className="text-red-500 text-sm mt-1 animate-fadeIn">
-                {form.formState.errors.maxDiscountAmount.message}
-              </p>
-            )}
+          {/* Date/Time Fields Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Start Date/Time */}
+            <div className="flex flex-col">
+              <label className="text-sm font-medium text-gray-700 mb-1">
+                Start Date & Time
+              </label>
+              <Input
+                type="datetime-local"
+                {...form.register("startDateTime")}
+                className={
+                  form.formState.errors.startDateTime ? "border-red-500" : ""
+                }
+              />
+              {form.formState.errors.startDateTime && (
+                <p className="text-red-500 text-sm mt-1 animate-fadeIn">
+                  {form.formState.errors.startDateTime.message}
+                </p>
+              )}
+            </div>
+
+            {/* End Date/Time */}
+            <div className="flex flex-col">
+              <label className="text-sm font-medium text-gray-700 mb-1">
+                End Date & Time
+              </label>
+              <Input
+                type="datetime-local"
+                {...form.register("endDateTime")}
+                className={
+                  form.formState.errors.endDateTime ? "border-red-500" : ""
+                }
+              />
+              {form.formState.errors.endDateTime && (
+                <p className="text-red-500 text-sm mt-1 animate-fadeIn">
+                  {form.formState.errors.endDateTime.message}
+                </p>
+              )}
+            </div>
           </div>
 
-          {/* Button */}
-          <div className="w-full md:w-auto flex items-center mt-1 md:mt-0">
-            <Button
-              type="submit"
-              className="bg-[#02066F] hover:bg-[#0A1280] text-white w-full md:w-auto"
-              disabled={isLoading}
-            >
-              {isLoading ? "Activating..." : "Start 15-Min Offer"}
-            </Button>
-          </div>
+          {/* Submit Button */}
+          <Button
+            type="submit"
+            className="bg-[#02066F] hover:bg-[#0A1280] text-white w-full"
+            disabled={isLoading}
+          >
+            {isLoading ? "Activating..." : "Start Custom Offer"}
+          </Button>
         </form>
 
         {/* Active Offer Section */}
@@ -152,15 +204,26 @@ export default function OfferManager() {
               </span>
             </p>
 
-            <p className="text-xs text-gray-500 mt-1">
-              Ends at:{" "}
-              {activeOffer.expiresAt
-                ? new Date(activeOffer.expiresAt).toLocaleTimeString("en-IN", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                : "Invalid Date"}
-            </p>
+            <div className="text-xs text-gray-500 mt-2 space-y-1">
+              <p>
+                Started:{" "}
+                {activeOffer.startedAt
+                  ? new Date(activeOffer.startedAt).toLocaleString("en-IN", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })
+                  : "N/A"}
+              </p>
+              <p>
+                Ends:{" "}
+                {activeOffer.expiresAt
+                  ? new Date(activeOffer.expiresAt).toLocaleString("en-IN", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })
+                  : "N/A"}
+              </p>
+            </div>
 
             <Button
               onClick={handleDeleteOffer}
@@ -177,7 +240,7 @@ export default function OfferManager() {
               🚫 No Active Offer
             </h3>
             <p className="text-sm text-gray-600 mt-1">
-              Start a new 15-minute flash sale by setting discount values above.
+              Create a new offer by setting values and date/time range above.
             </p>
           </div>
         )}

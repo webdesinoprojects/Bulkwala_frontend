@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/auth.store";
+import { FaFileExport } from "react-icons/fa";
 
 export default function UsersContent() {
   const allUsers = useAuthStore((s) => s.allUsers);
@@ -32,11 +33,96 @@ export default function UsersContent() {
     }
   };
 
+  const exportToCSV = () => {
+    if (!allUsers || allUsers.length === 0) {
+      toast.error("No users to export");
+      return;
+    }
+
+    // Define CSV headers
+    const headers = [
+      "Name",
+      "Email",
+      "Phone",
+      "Role",
+      "Business Name",
+      "GST Number",
+      "Pickup Address",
+      "Bank Name",
+      "Account Number",
+      "IFSC",
+      "Seller Status",
+      "Is Verified",
+      "Created At",
+    ];
+
+    // Convert users data to CSV rows
+    const rows = allUsers.map((user) => [
+      user.name || "",
+      user.email || "",
+      user.phone || "",
+      user.role || "",
+      user.sellerDetails?.businessName || "",
+      user.sellerDetails?.gstNumber || "",
+      user.sellerDetails?.pickupAddress || "",
+      user.sellerDetails?.bankName || "",
+      user.sellerDetails?.accountNumber || "",
+      user.sellerDetails?.ifsc || "",
+      user.sellerDetails?.approved ? "Approved" : user.sellerDetails?.businessName ? "Pending" : "N/A",
+      user.isVerified ? "Yes" : "No",
+      user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "",
+    ]);
+
+    // Create CSV content
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) =>
+        row
+          .map((cell) => {
+            // Escape quotes and wrap in quotes if contains comma, newline, or quote
+            const cellStr = String(cell).replace(/"/g, '""');
+            return /[",\n]/.test(cellStr) ? `"${cellStr}"` : cellStr;
+          })
+          .join(",")
+      ),
+    ].join("\n");
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `bulkwala_users_${new Date().toISOString().split("T")[0]}.csv`
+    );
+    link.style.visibility = "hidden";
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast.success(`Exported ${allUsers.length} users successfully`);
+  };
+
   return (
     <Card className="bg-white border border-gray-200 rounded-xl shadow-sm">
       <CardHeader>
-        <CardTitle className="text-[#02066F]">All Users</CardTitle>
-        <CardDescription>Manage users and sellers</CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-[#02066F]">All Users</CardTitle>
+            <CardDescription>Manage users and sellers</CardDescription>
+          </div>
+          <Button
+            onClick={exportToCSV}
+            className="bg-[#02066F] hover:bg-[#04127A] text-white"
+            disabled={!allUsers || allUsers.length === 0 || isLoading}
+          >
+            <FaFileExport className="mr-2" />
+            Export to CSV
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="overflow-x-auto p-0">
         {isLoading ? (

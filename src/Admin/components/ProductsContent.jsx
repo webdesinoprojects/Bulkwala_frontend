@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Edit, Trash2 } from "lucide-react";
+import { FaFileExport } from "react-icons/fa";
 import AddProductForm from "./AddProductForm";
 import EditProductDialog from "./EditProductDialog";
 import { useProductStore } from "@/store/product.store";
@@ -57,6 +58,96 @@ export default function ProductsContent() {
     ));
   };
 
+  const exportToCSV = async () => {
+    try {
+      // Use products already loaded in store
+      let allProducts = productList;
+
+      // If current page has products but we want all, fetch without pagination
+      if (allProducts.length === 0 || total > productList.length) {
+        toast.info("Fetching all products...");
+        await fetchProducts({ limit: 10000, page: 1 });
+        // Get updated products from store
+        allProducts = useProductStore.getState().products?.products || 
+                      useProductStore.getState().products || [];
+      }
+
+      if (!allProducts || allProducts.length === 0) {
+        toast.error("No products to export");
+        return;
+      }
+
+      // Define CSV headers
+      const headers = [
+        "Title",
+        "SKU",
+        "Category",
+        "Subcategory",
+        "Price",
+        "Discount Price",
+        "Stock",
+        // "Unit",
+        "Weight",
+        "Brand",
+        "Seller",
+        "Is Featured",
+        "Created At",
+      ];
+
+      // Convert products data to CSV rows
+      const rows = allProducts.map((product) => [
+        product.title || "",
+        product.sku || "",
+        product.category?.name || "",
+        product.subcategory?.name || "",
+        product.price || 0,
+        product.discountPrice || "",
+        product.stock || 0,
+        // product.unit || "",
+        product.weight || "",
+        product.brand || "",
+        product.seller?.name || "",
+        product.isFeatured ? "Yes" : "No",
+        product.createdAt ? new Date(product.createdAt).toLocaleDateString() : "",
+      ]);
+
+      // Create CSV content
+      const csvContent = [
+        headers.join(","),
+        ...rows.map((row) =>
+          row
+            .map((cell) => {
+              // Escape quotes and wrap in quotes if contains comma, newline, or quote
+              const cellStr = String(cell).replace(/"/g, '""');
+              return /[",\n]/.test(cellStr) ? `"${cellStr}"` : cellStr;
+            })
+            .join(",")
+        ),
+      ].join("\n");
+
+      // Create blob and download
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      
+      link.setAttribute("href", url);
+      link.setAttribute(
+        "download",
+        `bulkwala_products_${new Date().toISOString().split("T")[0]}.csv`
+      );
+      link.style.visibility = "hidden";
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast.success(`Exported ${allProducts.length} products successfully`);
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error("Failed to export products");
+    }
+  };
+
   return (
     <>
       {/* Header */}
@@ -64,12 +155,21 @@ export default function ProductsContent() {
         <h2 className="text-2xl font-semibold text-[#02066F]">
           Manage Products
         </h2>
-        <Button
-          onClick={() => setShowAddForm(!showAddForm)}
-          className="rounded-md text-sm font-medium shadow-sm"
-        >
-          {showAddForm ? "Close Form" : "Add New Product"}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={exportToCSV}
+            className="bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-medium shadow-sm"
+          >
+            <FaFileExport className="mr-2" />
+            Export to CSV
+          </Button>
+          <Button
+            onClick={() => setShowAddForm(!showAddForm)}
+            className="rounded-md text-sm font-medium shadow-sm"
+          >
+            {showAddForm ? "Close Form" : "Add New Product"}
+          </Button>
+        </div>
       </div>
 
       {/* Add Product Form */}
