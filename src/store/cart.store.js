@@ -206,7 +206,7 @@ const useCartStore = create((set, get) => ({
       return;
     }
 
-    // ✅ If logged in, fetch from backend
+    // ✅ If logged in, fetch from backend (with proper error handling)
     set({ isLoading: true });
     try {
       const cartData = await fetchCartService();
@@ -260,16 +260,23 @@ const useCartStore = create((set, get) => ({
         return;
       }
 
+      // ✅ Handle 401 as user logged out - switch to guest cart
       if (error.response?.status === 401) {
         // User logged out, switch to guest cart
         const guestCart = getGuestCart();
-        set({ cart: guestCart, isLoading: false });
+        set({ 
+          cart: guestCart, 
+          isLoading: false,
+          cartInitialized: true,
+        });
         return;
       }
+
+      // ✅ For other errors, log only in development
       if (process.env.NODE_ENV === "development") {
         console.error("Error fetching cart:", error);
       }
-      set({ isLoading: false });
+      set({ isLoading: false, cartInitialized: true });
     }
   },
 

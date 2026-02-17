@@ -41,11 +41,14 @@ export default function Navbar() {
   useEffect(() => {
     const cartStore = useCartStore.getState();
     cartStore.loadGuestCart();
-    cartStore.fetchCart();
     
-    // Fetch wishlist only when user is logged in
+    // Only fetch cart if user is logged in, otherwise use guest cart
     if (user && user._id) {
+      cartStore.fetchCart();
       fetchWishlist();
+    } else {
+      // For guests, just load from localStorage
+      cartStore.loadGuestCart();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]); // fetchCart and fetchWishlist are stable from zustand stores

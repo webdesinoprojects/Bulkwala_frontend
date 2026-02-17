@@ -5,8 +5,6 @@ export const axiosInstance = axios.create({
   withCredentials: true, // IMPORTANT: allows sending cookies
 });
 
-// No request interceptor needed (cookies auto included)
-
 // Response interceptor — auto refresh token
 axiosInstance.interceptors.response.use(
   (response) => response,
@@ -28,7 +26,8 @@ axiosInstance.interceptors.response.use(
         // Retry original request
         return axiosInstance(originalRequest);
       } catch (err) {
-        // Refresh failed → logout
+        // Refresh failed → logout (expected for unauthenticated users)
+        // Silently fail - this is normal behavior when user is not logged in
         return Promise.reject(err);
       }
     }

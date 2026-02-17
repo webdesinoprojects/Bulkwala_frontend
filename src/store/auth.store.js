@@ -226,6 +226,10 @@ export const useAuthStore = create((set, get) => ({
         set({ user: null, isLoggedIn: false });
       }
     } catch (error) {
+      // Silently handle errors - this is expected when user is not logged in
+      if (import.meta.env.DEV) {
+        console.debug("Auth check failed (expected for unauthenticated users)");
+      }
       set({ user: null, isLoggedIn: false });
     } finally {
       set({ isLoading: false });
