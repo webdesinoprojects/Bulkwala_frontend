@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { bannerSchema } from "@/schemas/bannerSchema";
@@ -28,8 +28,10 @@ export default function BannerManager() {
   // ✅ React Hook Form setup
   const form = useForm({
     resolver: zodResolver(bannerSchema),
-    defaultValues: { title: "", ctaLink: "", images: [] },
+    defaultValues: { title: "", ctaLink: "", position: "top", images: [] },
   });
+
+  const [activeTab, setActiveTab] = useState("top");
 
   useEffect(() => {
     fetchBanners();
@@ -42,6 +44,7 @@ export default function BannerManager() {
       const formData = new FormData();
       formData.append("title", data.title || "");
       formData.append("ctaLink", data.ctaLink || "");
+      formData.append("position", data.position || "top");
       Array.from(data.images || []).forEach((file) =>
         formData.append("images", file)
       );
@@ -84,6 +87,12 @@ export default function BannerManager() {
     }
   };
 
+  const topBanners = banners?.filter((b) => (b.position || "top") === "top") || [];
+  const bottomBanners = banners?.filter((b) => b.position === "bottom") || [];
+  const currentBanners = activeTab === "top" ? topBanners : bottomBanners;
+  const bannerLimit = 20;
+  const canAddMore = currentBanners.length < bannerLimit;
+
   return (
     <Card className="bg-white border border-gray-200 rounded-xl shadow-sm w-full ">
       <CardHeader>
@@ -91,84 +100,125 @@ export default function BannerManager() {
           Manage Banners
         </CardTitle>
         <CardDescription>
-          Upload up to <strong>3 banner images</strong> that appear on the
-          homepage.
+          Upload and manage banners for top and bottom sections. Up to <strong>{bannerLimit} banners</strong> per position.
         </CardDescription>
       </CardHeader>
 
       <CardContent>
+        {/* ✅ Banner Position Tabs */}
+        <div className="flex gap-4 mb-6 border-b">
+          <button
+            onClick={() => {
+              setActiveTab("top");
+              form.reset();
+            }}
+            className={`px-4 py-2 font-medium transition-all ${
+              activeTab === "top"
+                ? "text-[#02066F] border-b-2 border-[#02066F]"
+                : "text-gray-600 hover:text-gray-800"
+            }`}
+          >
+            Top Banners ({topBanners.length}/{bannerLimit})
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab("bottom");
+              form.reset();
+            }}
+            className={`px-4 py-2 font-medium transition-all ${
+              activeTab === "bottom"
+                ? "text-[#02066F] border-b-2 border-[#02066F]"
+                : "text-gray-600 hover:text-gray-800"
+            }`}
+          >
+            Bottom Banners ({bottomBanners.length}/{bannerLimit})
+          </button>
+        </div>
+
         {/* Upload Form */}
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
-        >
-          {/* Title */}
-          <div className="flex flex-col space-y-1">
-            <Label>Title</Label>
-            <Input
-              type="text"
-              placeholder="Banner title"
-              {...form.register("title")}
-            />
-            {form.formState.errors.title && (
-              <p className="text-red-500 text-xs">
-                {form.formState.errors.title.message}
-              </p>
-            )}
-          </div>
+        {canAddMore && (
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200"
+          >
+            <input type="hidden" {...form.register("position")} value={activeTab} />
+            
+            {/* Title */}
+            <div className="flex flex-col space-y-1">
+              <Label>Title</Label>
+              <Input
+                type="text"
+                placeholder="Banner title"
+                {...form.register("title")}
+              />
+              {form.formState.errors.title && (
+                <p className="text-red-500 text-xs">
+                  {form.formState.errors.title.message}
+                </p>
+              )}
+            </div>
 
-          {/* CTA Link */}
-          <div className="flex flex-col space-y-1">
-            <Label>CTA Link</Label>
-            <Input
-              type="url"
-              placeholder="https://example.com"
-              {...form.register("ctaLink")}
-            />
-            {form.formState.errors.ctaLink && (
-              <p className="text-red-500 text-xs">
-                {form.formState.errors.ctaLink.message}
-              </p>
-            )}
-          </div>
+            {/* CTA Link */}
+            <div className="flex flex-col space-y-1">
+              <Label>CTA Link</Label>
+              <Input
+                type="url"
+                placeholder="https://example.com"
+                {...form.register("ctaLink")}
+              />
+              {form.formState.errors.ctaLink && (
+                <p className="text-red-500 text-xs">
+                  {form.formState.errors.ctaLink.message}
+                </p>
+              )}
+            </div>
 
-          {/* Images */}
-          <div className="flex flex-col space-y-1">
-            <Label>Banner Images (1–3)</Label>
-            <Input
-              type="file"
-              multiple
-              accept="image/*"
-              {...form.register("images", {
-                validate: (files) =>
-                  files.length > 0 || "Please upload at least one image",
-              })}
-            />
-            {form.formState.errors.images && (
-              <p className="text-red-500 text-xs">
-                {form.formState.errors.images.message}
-              </p>
-            )}
-          </div>
+            {/* Images */}
+            <div className="flex flex-col space-y-1">
+              <Label>Banner Images (1–3)</Label>
+              <Input
+                type="file"
+                multiple
+                accept="image/*"
+                {...form.register("images", {
+                  validate: (files) =>
+                    files.length > 0 || "Please upload at least one image",
+                })}
+              />
+              {form.formState.errors.images && (
+                <p className="text-red-500 text-xs">
+                  {form.formState.errors.images.message}
+                </p>
+              )}
+            </div>
 
-          {/* Submit Button */}
-          <div className="col-span-full flex justify-end">
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className={`bg-[#02066F] hover:bg-[#0A1280] text-white ${
-                isLoading && "opacity-70 cursor-not-allowed"
-              }`}
-            >
-              {isLoading ? "Uploading..." : "Upload Banner"}
-            </Button>
+            {/* Submit Button */}
+            <div className="col-span-full flex justify-end">
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className={`bg-[#02066F] hover:bg-[#0A1280] text-white ${
+                  isLoading && "opacity-70 cursor-not-allowed"
+                }`}
+              >
+                {isLoading ? "Uploading..." : "Upload Banner"}
+              </Button>
+            </div>
+          </form>
+        )}
+
+        {!canAddMore && (
+          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-yellow-800 font-medium">
+              ⚠️ You've reached the maximum limit of {bannerLimit} banners for {activeTab} position. Delete some to add more.
+            </p>
           </div>
-        </form>
+        )}
 
         {/* Uploaded Banners */}
-        {banners?.length ? (
+        {currentBanners?.length ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-5">
-            {banners.map((banner) => (
+            {currentBanners.map((banner) => (
               <div
                 key={banner._id}
                 className="relative border border-gray-200 rounded-xl p-3 bg-gray-50 hover:shadow-lg transition-all duration-200"
@@ -228,7 +278,7 @@ export default function BannerManager() {
           </div>
         ) : (
           <p className="text-center text-gray-500 py-4">
-            No banners uploaded yet.
+            No banners uploaded for {activeTab} position yet.
           </p>
         )}
       </CardContent>

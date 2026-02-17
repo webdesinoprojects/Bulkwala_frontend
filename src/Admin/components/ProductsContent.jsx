@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, Search, X } from "lucide-react";
 import { FaFileExport } from "react-icons/fa";
 import AddProductForm from "./AddProductForm";
 import EditProductDialog from "./EditProductDialog";
@@ -12,6 +13,8 @@ export default function ProductsContent() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editSlug, setEditSlug] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const { fetchProducts, products, deleteProduct, total } = useProductStore();
 
@@ -20,6 +23,24 @@ export default function ProductsContent() {
   useEffect(() => {
     fetchProducts(filters);
   }, [filters, fetchProducts]);
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Fetch products when search changes
+  useEffect(() => {
+    const searchFilters = { ...filters, page: 1 };
+    if (debouncedSearch.trim()) {
+      searchFilters.search = debouncedSearch.trim();
+    }
+    fetchProducts(searchFilters);
+  }, [debouncedSearch]);
 
   const productList = Array.isArray(products)
     ? products
@@ -170,6 +191,33 @@ export default function ProductsContent() {
             {showAddForm ? "Close Form" : "Add New Product"}
           </Button>
         </div>
+      </div>
+
+      {/* Search Bar */}
+      <div className="mb-5 flex gap-2">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+          <Input
+            type="text"
+            placeholder="Search products by title, SKU, or category..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#02066F]"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <X size={18} />
+            </button>
+          )}
+        </div>
+        {searchQuery && (
+          <span className="text-sm text-gray-600 py-2">
+            Searching for: <strong>{searchQuery}</strong>
+          </span>
+        )}
       </div>
 
       {/* Add Product Form */}

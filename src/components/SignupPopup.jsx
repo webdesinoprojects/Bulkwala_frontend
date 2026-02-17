@@ -25,16 +25,27 @@ import { toast } from "sonner";
 
 export default function SignupPopup() {
   const [open, setOpen] = useState(false);
+  const [popupCount, setPopupCount] = useState(() => {
+    // Initialize popup count from sessionStorage (resets on page refresh/new session)
+    const stored = sessionStorage.getItem("popupShowCount");
+    return stored ? parseInt(stored, 10) : 0;
+  });
   const { user, signup } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
   const firstTimerRef = useRef(null);
   const repeatTimerRef = useRef(null);
+  const MAX_POPUP_SHOWS = 2; // Maximum 2 times per session
 
   const form = useForm({
     resolver: zodResolver(SignupSchema),
     defaultValues: { name: "", email: "", phone: "", password: "" },
   });
+
+  // Update sessionStorage whenever popupCount changes
+  useEffect(() => {
+    sessionStorage.setItem("popupShowCount", popupCount.toString());
+  }, [popupCount]);
 
   useEffect(() => {
     if (firstTimerRef.current) clearTimeout(firstTimerRef.current);
@@ -53,14 +64,23 @@ export default function SignupPopup() {
       return;
     }
 
+    // Don't show popup if max shows reached
+    if (popupCount >= MAX_POPUP_SHOWS) {
+      if (import.meta.NODE_ENV === "development") {
+        console.log(`Popup limit reached (${popupCount}/${MAX_POPUP_SHOWS})`);
+      }
+      return;
+    }
+
     if (import.meta.NODE_ENV === "development") {
-      console.log("Popup scheduled to open in 15 seconds...");
+      console.log(`Popup scheduled to open in 15 seconds... (${popupCount}/${MAX_POPUP_SHOWS})`);
     }
     firstTimerRef.current = setTimeout(() => {
       if (import.meta.NODE_ENV === "development") {
         console.log("Popup opened (15s delay)");
       }
       setOpen(true);
+      setPopupCount((prev) => prev + 1);
 
       if (import.meta.NODE_ENV === "development") {
         console.log("Setting repeat popup every 2 minutes...");
@@ -72,14 +92,15 @@ export default function SignupPopup() {
             location.pathname.includes("/login") ||
             location.pathname.includes("/signup")
           );
-        if (stillValid) {
+        if (stillValid && popupCount + 1 < MAX_POPUP_SHOWS) {
           if (import.meta.NODE_ENV === "development") {
             console.log("Popup reopened (2-minute repeat)");
           }
           setOpen(true);
+          setPopupCount((prev) => prev + 1);
         } else {
           if (import.meta.NODE_ENV === "development") {
-            console.log("Skipping popup (user logged in or on auth page)");
+            console.log("Skipping popup (user logged in, on auth page, or limit reached)");
           }
         }
       }, 120000);
@@ -92,7 +113,7 @@ export default function SignupPopup() {
         console.log("Popup timers cleared");
       }
     };
-  }, [location, user]);
+  }, [location, user, popupCount]);
 
   const onSubmit = async (values) => {
     const res = await signup(values);
