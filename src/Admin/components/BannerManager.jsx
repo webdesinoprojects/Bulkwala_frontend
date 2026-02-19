@@ -38,13 +38,18 @@ export default function BannerManager() {
     console.log("Fetching banners for admin", banners);
   }, []);
 
+  // ✅ Update position in form when tab changes
+  useEffect(() => {
+    form.setValue("position", activeTab);
+  }, [activeTab, form]);
+
   // ✅ Handle submit
   const onSubmit = async (data) => {
     try {
       const formData = new FormData();
       formData.append("title", data.title || "");
       formData.append("ctaLink", data.ctaLink || "");
-      formData.append("position", data.position || "top");
+      formData.append("position", activeTab); // Use activeTab directly
       Array.from(data.images || []).forEach((file) =>
         formData.append("images", file)
       );
@@ -53,6 +58,8 @@ export default function BannerManager() {
       if (res.success) {
         toast.success("Banner uploaded successfully!");
         form.reset();
+        // Refresh banners to show the newly uploaded banner
+        await fetchBanners();
       } else {
         toast.error(res.message || "Upload failed");
       }
@@ -88,8 +95,9 @@ export default function BannerManager() {
   };
 
   const topBanners = banners?.filter((b) => (b.position || "top") === "top") || [];
+  const midBanners = banners?.filter((b) => b.position === "mid") || [];
   const bottomBanners = banners?.filter((b) => b.position === "bottom") || [];
-  const currentBanners = activeTab === "top" ? topBanners : bottomBanners;
+  const currentBanners = activeTab === "top" ? topBanners : activeTab === "mid" ? midBanners : bottomBanners;
   const bannerLimit = 20;
   const canAddMore = currentBanners.length < bannerLimit;
 
@@ -100,19 +108,19 @@ export default function BannerManager() {
           Manage Banners
         </CardTitle>
         <CardDescription>
-          Upload and manage banners for top and bottom sections. Up to <strong>{bannerLimit} banners</strong> per position.
+          Upload and manage banners for top, middle, and bottom sections. Up to <strong>{bannerLimit} banners</strong> per position.
         </CardDescription>
       </CardHeader>
 
       <CardContent>
         {/* ✅ Banner Position Tabs */}
-        <div className="flex gap-4 mb-6 border-b">
+        <div className="flex gap-4 mb-6 border-b overflow-x-auto">
           <button
             onClick={() => {
               setActiveTab("top");
-              form.reset();
+              form.reset({ title: "", ctaLink: "", position: "top", images: [] });
             }}
-            className={`px-4 py-2 font-medium transition-all ${
+            className={`px-4 py-2 font-medium transition-all whitespace-nowrap ${
               activeTab === "top"
                 ? "text-[#02066F] border-b-2 border-[#02066F]"
                 : "text-gray-600 hover:text-gray-800"
@@ -122,10 +130,23 @@ export default function BannerManager() {
           </button>
           <button
             onClick={() => {
-              setActiveTab("bottom");
-              form.reset();
+              setActiveTab("mid");
+              form.reset({ title: "", ctaLink: "", position: "mid", images: [] });
             }}
-            className={`px-4 py-2 font-medium transition-all ${
+            className={`px-4 py-2 font-medium transition-all whitespace-nowrap ${
+              activeTab === "mid"
+                ? "text-[#02066F] border-b-2 border-[#02066F]"
+                : "text-gray-600 hover:text-gray-800"
+            }`}
+          >
+            Mid Banners ({midBanners.length}/{bannerLimit})
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab("bottom");
+              form.reset({ title: "", ctaLink: "", position: "bottom", images: [] });
+            }}
+            className={`px-4 py-2 font-medium transition-all whitespace-nowrap ${
               activeTab === "bottom"
                 ? "text-[#02066F] border-b-2 border-[#02066F]"
                 : "text-gray-600 hover:text-gray-800"
@@ -139,61 +160,61 @@ export default function BannerManager() {
         {canAddMore && (
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200"
+            className="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200"
           >
-            <input type="hidden" {...form.register("position")} value={activeTab} />
-            
-            {/* Title */}
-            <div className="flex flex-col space-y-1">
-              <Label>Title</Label>
-              <Input
-                type="text"
-                placeholder="Banner title"
-                {...form.register("title")}
-              />
-              {form.formState.errors.title && (
-                <p className="text-red-500 text-xs">
-                  {form.formState.errors.title.message}
-                </p>
-              )}
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Title */}
+              <div className="flex flex-col space-y-1">
+                <Label>Title</Label>
+                <Input
+                  type="text"
+                  placeholder="Banner title"
+                  {...form.register("title")}
+                />
+                {form.formState.errors.title && (
+                  <p className="text-red-500 text-xs">
+                    {form.formState.errors.title.message}
+                  </p>
+                )}
+              </div>
 
-            {/* CTA Link */}
-            <div className="flex flex-col space-y-1">
-              <Label>CTA Link</Label>
-              <Input
-                type="url"
-                placeholder="https://example.com"
-                {...form.register("ctaLink")}
-              />
-              {form.formState.errors.ctaLink && (
-                <p className="text-red-500 text-xs">
-                  {form.formState.errors.ctaLink.message}
-                </p>
-              )}
-            </div>
+              {/* CTA Link */}
+              <div className="flex flex-col space-y-1">
+                <Label>CTA Link</Label>
+                <Input
+                  type="url"
+                  placeholder="https://example.com"
+                  {...form.register("ctaLink")}
+                />
+                {form.formState.errors.ctaLink && (
+                  <p className="text-red-500 text-xs">
+                    {form.formState.errors.ctaLink.message}
+                  </p>
+                )}
+              </div>
 
-            {/* Images */}
-            <div className="flex flex-col space-y-1">
-              <Label>Banner Images (1–3)</Label>
-              <Input
-                type="file"
-                multiple
-                accept="image/*"
-                {...form.register("images", {
-                  validate: (files) =>
-                    files.length > 0 || "Please upload at least one image",
-                })}
-              />
-              {form.formState.errors.images && (
-                <p className="text-red-500 text-xs">
-                  {form.formState.errors.images.message}
-                </p>
-              )}
+              {/* Images */}
+              <div className="flex flex-col space-y-1">
+                <Label>Banner Images (1–3)</Label>
+                <Input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  {...form.register("images", {
+                    validate: (files) =>
+                      files.length > 0 || "Please upload at least one image",
+                  })}
+                />
+                {form.formState.errors.images && (
+                  <p className="text-red-500 text-xs">
+                    {form.formState.errors.images.message}
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Submit Button */}
-            <div className="col-span-full flex justify-end">
+            <div className="flex justify-end mt-4">
               <Button
                 type="submit"
                 disabled={isLoading}

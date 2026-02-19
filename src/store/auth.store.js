@@ -72,6 +72,14 @@ export const useAuthStore = create((set, get) => ({
     try {
       const userData = await loginService(credentials);
 
+      // ✅ Save tokens to localStorage for cross-domain requests
+      if (userData.accessToken) {
+        localStorage.setItem("accessToken", userData.accessToken);
+      }
+      if (userData.refreshToken) {
+        localStorage.setItem("refreshToken", userData.refreshToken);
+      }
+
       set({
         user: userData,
         isLoggedIn: true,
@@ -130,6 +138,15 @@ export const useAuthStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const user = await verifyOtpService(data);
+      
+      // ✅ Save tokens to localStorage for cross-domain requests
+      if (user.accessToken) {
+        localStorage.setItem("accessToken", user.accessToken);
+      }
+      if (user.refreshToken) {
+        localStorage.setItem("refreshToken", user.refreshToken);
+      }
+      
       set({ user, isLoggedIn: true, isLoading: false });
 
       // ✅ Merge guest cart with backend cart after OTP login
@@ -151,6 +168,10 @@ export const useAuthStore = create((set, get) => ({
       const { clearCartOnLogout } = useCartStore.getState();
       clearCartOnLogout();
 
+      // ✅ Clear tokens from localStorage
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+
       set({ user: null, isLoggedIn: false, isLoading: false, error: null });
 
       return { success: true };
@@ -158,9 +179,12 @@ export const useAuthStore = create((set, get) => ({
       const errorMessage =
         apiError.message || "Logout failed. Please try again.";
 
-      // Still clear cart even if backend fails, for safety
+      // Still clear cart and tokens even if backend fails, for safety
       const { clearCartOnLogout } = useCartStore.getState();
       clearCartOnLogout();
+      
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
 
       set({
         user: null,

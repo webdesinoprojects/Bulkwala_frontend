@@ -3,9 +3,9 @@ import { z } from "zod";
 export const bannerSchema = z.object({
   title: z.string().trim().min(1, "Title is required"),
   ctaLink: z.string().trim().url("CTA link must be a valid URL").optional(),
-  position: z.enum(["top", "bottom"], {
+  position: z.enum(["top", "mid", "bottom"], {
     errorMap: () => ({
-      message: "Banner position must be either 'top' or 'bottom'",
+      message: "Banner position must be either 'top', 'mid', or 'bottom'",
     }),
   }).default("top"),
   images: z

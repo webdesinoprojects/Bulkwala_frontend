@@ -50,6 +50,13 @@ export default function HomePage() {
         <RecentProductsCarousel />
       </section>
 
+      {/* 🔹 Mid Banner Slider - Only show if no category selected */}
+      {!selectedCategory && (
+        <section className="max-w-7xl mx-auto px-4 py-4">
+          <BannerSlider position="mid" />
+        </section>
+      )}
+
       {/* 🔹 Promo Section */}
       <section className="max-w-7xl mx-auto">
         <PromoSection />

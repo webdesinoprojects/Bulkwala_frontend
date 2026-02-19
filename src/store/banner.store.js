@@ -28,7 +28,9 @@ export const useBannerStore = create((set, get) => ({
     set({ isLoading: true });
     try {
       const data = await uploadBannerService(formData);
-      set({ banners: [data, ...get().banners], isLoading: false });
+      // Refresh all banners from backend to ensure correct position
+      const allBanners = await getAllBannersService();
+      set({ banners: allBanners, isLoading: false });
       return { success: true };
     } catch (err) {
       set({ isLoading: false });
