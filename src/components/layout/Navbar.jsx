@@ -122,9 +122,10 @@ export default function Navbar() {
   const performSearch = (queryInput) => {
     const query =
       typeof queryInput === "function" ? queryInput(searchQuery) : queryInput;
-    if (!query.trim()) return;
+    const trimmedQuery = query?.trim() || "";
+    if (!trimmedQuery) return;
 
-    const keyword = query.toLowerCase().replace(/\s+/g, "");
+    const keyword = trimmedQuery.toLowerCase().replace(/\s+/g, "");
     const filtered = products.filter((p) => {
       const normalize = (str) => (str || "").toLowerCase().replace(/\s+/g, "");
       return (
@@ -138,7 +139,10 @@ export default function Navbar() {
     if (filtered.length > 0) toast.success(`Found ${filtered.length} results`);
     else toast.info("No matches found");
 
-    const updated = [query, ...recentSearches.filter((i) => i !== query)].slice(
+    const updated = [
+      trimmedQuery,
+      ...recentSearches.filter((i) => i !== trimmedQuery),
+    ].slice(
       0,
       5
     );
@@ -146,7 +150,8 @@ export default function Navbar() {
     localStorage.setItem("recentSearches", JSON.stringify(updated));
 
     setSuggestions([]); // ✅ close dropdown
-    navigate(`/products?search=${encodeURIComponent(query)}`);
+    setSearchQuery(trimmedQuery);
+    navigate(`/products?search=${encodeURIComponent(trimmedQuery)}`);
   };
 
   const handleSearchSubmit = (e) => {
@@ -225,10 +230,13 @@ export default function Navbar() {
               onSubmit={handleSearchSubmit}
               className="flex items-center bg-gray-100 rounded-md px-4 py-2"
             >
-              <ion-icon
-                name="search-outline"
-                class="text-xl text-gray-500 mr-2"
-              ></ion-icon>
+              <button
+                type="submit"
+                className="mr-2 text-gray-500 hover:text-gray-700"
+                aria-label="Search"
+              >
+                <ion-icon name="search-outline" class="text-xl"></ion-icon>
+              </button>
               <input
                 ref={searchRef}
                 type="text"
@@ -411,10 +419,13 @@ export default function Navbar() {
             onSubmit={handleSearchSubmit}
             className="flex items-center bg-gray-100 rounded-md px-4 py-2"
           >
-            <ion-icon
-              name="search-outline"
-              class="text-xl text-gray-500 mr-2"
-            ></ion-icon>
+            <button
+              type="submit"
+              className="mr-2 text-gray-500 hover:text-gray-700"
+              aria-label="Search"
+            >
+              <ion-icon name="search-outline" class="text-xl"></ion-icon>
+            </button>
 
             <input
               type="text"
@@ -486,7 +497,7 @@ export default function Navbar() {
               Products
             </NavLink>
             <NavLink
-              to="/contact"
+              to="/contact-us"
               className={({ isActive }) =>
                 `text-base font-medium ${
                   isActive ? "underline" : "text-[#02066F] hover:underline"
@@ -496,7 +507,7 @@ export default function Navbar() {
               Contact Us
             </NavLink>
             <NavLink
-              to="/about"
+              to="/about-us"
               className={({ isActive }) =>
                 `text-base font-medium ${
                   isActive ? "underline" : "text-[#02066F] hover:underline"

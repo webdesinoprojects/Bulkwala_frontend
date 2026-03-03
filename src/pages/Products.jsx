@@ -11,18 +11,19 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Menu } from "lucide-react"; // for mobile sidebar toggle icon
 
 const Products = () => {
-  const { products, fetchProducts, loading, error, total, limit } =
+  const { products, fetchProducts, loading, error, total } =
     useProductStore();
   const { categories, fetchCategories } = useCategoryStore();
   const navigate = useNavigate();
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const subcategoryFromURL = params.get("subcategory");
+  const searchFromURL = params.get("search") || "";
 
   const [filters, setFilters] = useState({
     category: "",
     subcategory: subcategoryFromURL || "",
-    search: "",
+    search: searchFromURL,
     minPrice: 0,
     maxPrice: 10000,
     page: 1,
@@ -44,6 +45,14 @@ const Products = () => {
     }
   }, [subcategoryFromURL]);
 
+  // ✅ Sync navbar search query (?search=) with products filters
+  useEffect(() => {
+    setFilters((prev) => {
+      if (prev.search === searchFromURL) return prev;
+      return { ...prev, search: searchFromURL, page: 1 };
+    });
+  }, [searchFromURL]);
+
   // Fetch products when filters change
   useEffect(() => {
     const delay = setTimeout(() => {
@@ -58,7 +67,7 @@ const Products = () => {
     setFilters((prev) => ({ ...prev, [key]: value, page: 1 }));
   };
 
-  const totalPages = Math.ceil(total / limit) || 1;
+  const totalPages = Math.ceil(total / filters.limit) || 1;
   const productList = Array.isArray(products) ? products : [];
 
   return (
@@ -235,7 +244,7 @@ const Products = () => {
           )}
 
           {/* Pagination */}
-          {total > limit && (
+          {total > filters.limit && (
             <div className="flex justify-center items-center gap-4 mt-8 sm:mt-10">
               <Button
                 variant="outline"

@@ -8,6 +8,7 @@ import { FaFileExport } from "react-icons/fa";
 import AddProductForm from "./AddProductForm";
 import EditProductDialog from "./EditProductDialog";
 import { useProductStore } from "@/store/product.store";
+import { getProducts } from "@/services/product.service";
 
 export default function ProductsContent() {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -81,16 +82,12 @@ export default function ProductsContent() {
 
   const exportToCSV = async () => {
     try {
-      // Use products already loaded in store
+      // Use products already loaded in table if complete; otherwise fetch all without mutating store
       let allProducts = productList;
-
-      // If current page has products but we want all, fetch without pagination
       if (allProducts.length === 0 || total > productList.length) {
         toast.info("Fetching all products...");
-        await fetchProducts({ limit: 10000, page: 1 });
-        // Get updated products from store
-        allProducts = useProductStore.getState().products?.products || 
-                      useProductStore.getState().products || [];
+        const data = await getProducts({ limit: 10000, page: 1 });
+        allProducts = data?.products || [];
       }
 
       if (!allProducts || allProducts.length === 0) {
