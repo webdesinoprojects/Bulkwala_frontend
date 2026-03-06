@@ -19,6 +19,7 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [listening, setListening] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
+  const [activeIndex, setActiveIndex] = useState(-1);
   const [recentSearches, setRecentSearches] = useState(
     JSON.parse(localStorage.getItem("recentSearches") || "[]")
   );
@@ -156,14 +157,31 @@ export default function Navbar() {
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    performSearch(searchQuery);
+    if (activeIndex >= 0 && suggestions[activeIndex]) {
+      handleSuggestionClick(suggestions[activeIndex]);
+    } else {
+      performSearch(searchQuery);
+      setSuggestions([]);
+      setActiveIndex(-1);
+    }
+  };
+
+  const handleSuggestionClick = (product) => {
+    setSearchQuery("");
     setSuggestions([]);
+    setActiveIndex(-1);
+    if (product.slug) {
+      navigate(`/product/${product.slug}`);
+    } else {
+      navigate(`/product/${product._id}`);
+    }
   };
 
   // ✅ Smart suggestions logic
   useEffect(() => {
     if (!searchQuery.trim()) {
       setSuggestions([]);
+      setActiveIndex(-1);
       return;
     }
     const keyword = searchQuery.toLowerCase().replace(/\s+/g, "");
@@ -176,9 +194,10 @@ export default function Navbar() {
           normalize(p.subcategory?.name).includes(keyword)
         );
       })
-      .slice(0, 5)
-      .map((p) => p.title);
-    setSuggestions([...new Set([...matched, ...recentSearches])].slice(0, 5));
+      .slice(0, 6)
+      .map((p) => ({ _id: p._id, title: p.title, slug: p.slug }));
+    setSuggestions(matched);
+    setActiveIndex(-1);
   }, [searchQuery, products]);
 
   // ✅ Logout
@@ -243,14 +262,21 @@ export default function Navbar() {
                 placeholder="Search Your Products Here"
                 className="bg-transparent flex-1 outline-none text-sm md:text-base"
                 value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  if (e.target.value.trim()) setSuggestions(recentSearches);
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onBlur={() => setTimeout(() => { setSuggestions([]); setActiveIndex(-1); }, 150)}
+                onKeyDown={(e) => {
+                  if (suggestions.length === 0) return;
+                  if (e.key === "ArrowDown") {
+                    e.preventDefault();
+                    setActiveIndex((prev) => Math.min(prev + 1, suggestions.length - 1));
+                  } else if (e.key === "ArrowUp") {
+                    e.preventDefault();
+                    setActiveIndex((prev) => Math.max(prev - 1, -1));
+                  } else if (e.key === "Escape") {
+                    setSuggestions([]);
+                    setActiveIndex(-1);
+                  }
                 }}
-                onFocus={() => {
-                  if (searchQuery.trim()) setSuggestions(recentSearches);
-                }}
-                onBlur={() => setTimeout(() => setSuggestions([]), 150)}
               />
               <ion-icon
                 name={listening ? "mic" : "mic-outline"}
@@ -262,24 +288,29 @@ export default function Navbar() {
             </form>
 
             {/* 🔽 Suggestion Dropdown */}
-            {suggestions.length > 0 && (
+            {searchQuery.trim() && (
               <div
                 ref={suggestionRef}
                 className="absolute bg-white shadow-md rounded-md mt-1 w-[450px] border border-gray-200 z-50"
               >
-                {suggestions.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm text-gray-700"
-                    onClick={() => {
-                      setSearchQuery(item);
-                      performSearch(item);
-                      setSuggestions([]);
-                    }}
-                  >
-                    {item}
-                  </div>
-                ))}
+                {suggestions.length > 0 ? (
+                  suggestions.map((product, idx) => (
+                    <div
+                      key={product._id}
+                      className={`px-4 py-2 cursor-pointer text-sm text-gray-700 ${
+                        idx === activeIndex ? "bg-gray-200" : "hover:bg-gray-100"
+                      }`}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleSuggestionClick(product);
+                      }}
+                    >
+                      {product.title}
+                    </div>
+                  ))
+                ) : (
+                  <div className="px-4 py-2 text-sm text-gray-400">No products found</div>
+                )}
               </div>
             )}
           </div>
@@ -450,21 +481,24 @@ export default function Navbar() {
             ></ion-icon>
           </form>
 
-          {suggestions.length > 0 && (
+          {searchQuery.trim() && (
             <div className="bg-white shadow-md rounded-md mt-1 border border-gray-200 z-50">
-              {suggestions.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm text-gray-700"
-                  onClick={() => {
-                    setSearchQuery(item);
-                    performSearch(item);
-                    setSuggestions([]);
-                  }}
-                >
-                  {item}
-                </div>
-              ))}
+              {suggestions.length > 0 ? (
+                suggestions.map((product) => (
+                  <div
+                    key={product._id}
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm text-gray-700"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      handleSuggestionClick(product);
+                    }}
+                  >
+                    {product.title}
+                  </div>
+                ))
+              ) : (
+                <div className="px-4 py-2 text-sm text-gray-400">No products found</div>
+              )}
             </div>
           )}
         </div>

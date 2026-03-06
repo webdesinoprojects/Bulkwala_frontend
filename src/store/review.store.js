@@ -36,7 +36,8 @@ export const useReviewStore = create((set) => ({
     if (!productId) return;
     set({ isLoading: true, error: null });
     try {
-      const newReview = await addReviewService(productId, formData);
+      const response = await addReviewService(productId, formData);
+      const newReview = response?.review || response;
       set((state) => ({
         reviews: [newReview, ...state.reviews],
         isLoading: false,
@@ -75,7 +76,8 @@ export const useReviewStore = create((set) => ({
 
     set({ isLoading: true, error: null });
     try {
-      const updated = await updateReviewService(productId, reviewId, formData);
+      const response = await updateReviewService(productId, reviewId, formData);
+      const updated = response?.review || response;
       set((state) => ({
         reviews: state.reviews.map((r) => (r._id === reviewId ? updated : r)),
         isLoading: false,

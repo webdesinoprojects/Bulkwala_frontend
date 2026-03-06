@@ -5,13 +5,12 @@ import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import { useNavigate } from "react-router-dom";
 
 export default function TopProductsCarousel() {
-  const { products, fetchProducts, loading, error } = useProductStore();
+  const { topProducts, fetchTopProducts, loading, error } = useProductStore();
   const navigate = useNavigate();
 
-  // ✅ Fetch featured products
   useEffect(() => {
-    fetchProducts({ isFeatured: true, limit: 10 });
-  }, [fetchProducts]);
+    fetchTopProducts();
+  }, [fetchTopProducts]);
 
   if (loading)
     return (
@@ -27,7 +26,7 @@ export default function TopProductsCarousel() {
       </div>
     );
 
-  if (!products || products.length === 0)
+  if (!topProducts || topProducts.length === 0)
     return (
       <div className="flex justify-center py-12 sm:py-16 text-gray-500 text-sm sm:text-base">
         No top products found.
@@ -61,7 +60,7 @@ export default function TopProductsCarousel() {
         loop={true}
         className="pb-10 sm:pb-12"
       >
-        {products.map((product) => (
+        {topProducts.map((product) => (
           <SwiperSlide key={product._id}>
             <div
               className="
@@ -71,6 +70,7 @@ export default function TopProductsCarousel() {
                 border border-gray-100 flex flex-col 
                 h-[300px] sm:h-[340px] md:h-[380px]
               "
+              onClick={() => navigate(`/product/${product.slug}`)}
             >
               {/* 🔹 Product Image */}
               <div

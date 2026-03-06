@@ -25,7 +25,7 @@ const Mainlayout = () => {
 
       <Outlet />
 
-      <Toaster position="top-right" richColors />
+      <Toaster position="top-right" richColors closeButton />
       <Footer />
 
       <SignupPopup />

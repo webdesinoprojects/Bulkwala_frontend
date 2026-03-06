@@ -310,11 +310,14 @@ const ProductDetail = () => {
                   <Star
                     key={i}
                     size={18}
-                    className={`${
+                    className={`cursor-pointer transition-colors ${
                       i < Math.round(product.averageRating || 0)
                         ? "text-yellow-400 fill-yellow-400"
-                        : "text-gray-300"
+                        : "text-gray-300 hover:text-yellow-300"
                     }`}
+                    onClick={() =>
+                      formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+                    }
                   />
                 ))}
                 <span className="ml-1 text-sm text-gray-600">
@@ -437,62 +440,78 @@ const ProductDetail = () => {
           }}
           className="mb-8 space-y-4 bg-white p-4 sm:p-6 rounded-lg shadow"
         >
-          <div className="flex gap-2">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <Star
-                key={star}
-                size={28}
-                className={`cursor-pointer ${
-                  star <= selectedRating
-                    ? "text-yellow-400 fill-yellow-400"
-                    : "text-gray-300"
-                }`}
-                onClick={() => {
-                  setSelectedRating(star);
-                  setValue("rating", star, { shouldValidate: true });
-                }}
-              />
-            ))}
-          </div>
-          {errors.rating && (
-            <p className="text-red-500 text-sm">{errors.rating.message}</p>
-          )}
-
-          <textarea
-            {...register("text")}
-            placeholder="Write your review..."
-            className="w-full border rounded-md p-2 text-sm focus:ring-1 focus:ring-[#02066F]"
-          />
-          {errors.text && (
-            <p className="text-red-500 text-sm">{errors.text.message}</p>
-          )}
-
-          <Input
-            type="file"
-            accept="image/*"
-            multiple
-            {...register("images")}
-            className="border border-gray-300 rounded-md p-2"
-          />
-
-          <div className="flex flex-wrap gap-3">
-            <Button
-              type="submit"
-              className="bg-[#02066F] text-white hover:bg-[#01054f]"
-            >
-              {isEditing ? "Update Review" : "Submit Review"}
-            </Button>
-
-            {isEditing && (
-              <Button
+          {!user ? (
+            <p className="text-sm text-gray-600 text-center py-2">
+              Please{" "}
+              <button
                 type="button"
-                variant="outline"
-                onClick={handleCancelEdit}
+                onClick={() => navigate("/login")}
+                className="text-[#02066F] font-semibold underline"
               >
-                Cancel Edit
-              </Button>
-            )}
-          </div>
+                log in
+              </button>{" "}
+              to leave a review.
+            </p>
+          ) : (
+            <>
+              <div className="flex gap-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    size={28}
+                    className={`cursor-pointer ${
+                      star <= selectedRating
+                        ? "text-yellow-400 fill-yellow-400"
+                        : "text-gray-300"
+                    }`}
+                    onClick={() => {
+                      setSelectedRating(star);
+                      setValue("rating", star, { shouldValidate: true });
+                    }}
+                  />
+                ))}
+              </div>
+              {errors.rating && (
+                <p className="text-red-500 text-sm">{errors.rating.message}</p>
+              )}
+
+              <textarea
+                {...register("text")}
+                placeholder="Write your review..."
+                className="w-full border rounded-md p-2 text-sm focus:ring-1 focus:ring-[#02066F]"
+              />
+              {errors.text && (
+                <p className="text-red-500 text-sm">{errors.text.message}</p>
+              )}
+
+              <Input
+                type="file"
+                accept="image/*"
+                multiple
+                {...register("images")}
+                className="border border-gray-300 rounded-md p-2"
+              />
+
+              <div className="flex flex-wrap gap-3">
+                <Button
+                  type="submit"
+                  className="bg-[#02066F] text-white hover:bg-[#01054f]"
+                >
+                  {isEditing ? "Update Review" : "Submit Review"}
+                </Button>
+
+                {isEditing && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleCancelEdit}
+                  >
+                    Cancel Edit
+                  </Button>
+                )}
+              </div>
+            </>
+          )}
         </form>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -2,6 +2,7 @@ import {
   createProduct,
   getProducts,
   deleteProduct,
+  restoreProduct,
   updateProduct,
   getProduct,
 } from "@/services/product.service";
@@ -10,6 +11,8 @@ import { create } from "zustand";
 export const useProductStore = create((set) => ({
   singleProduct: null,
   products: [],
+  topProducts: [],
+  newlyLaunchedProducts: [],
   loading: false,
   error: null,
   total: 0,
@@ -33,6 +36,24 @@ export const useProductStore = create((set) => ({
     }
   },
 
+  fetchTopProducts: async () => {
+    try {
+      const data = await getProducts({ isTopMenu: true, limit: 10 });
+      set({ topProducts: data.products });
+    } catch (error) {
+      set({ error: error.message });
+    }
+  },
+
+  fetchNewlyLaunchedProducts: async () => {
+    try {
+      const data = await getProducts({ isNewlyLaunched: true, limit: 10 });
+      set({ newlyLaunchedProducts: data.products });
+    } catch (error) {
+      set({ error: error.message });
+    }
+  },
+
   addProduct: async (productData) => {
     set({ loading: true, error: null });
     try {
@@ -45,6 +66,7 @@ export const useProductStore = create((set) => ({
       }));
     } catch (error) {
       set({ error: error.message, loading: false });
+      throw error;
     }
   },
 
@@ -110,6 +132,27 @@ export const useProductStore = create((set) => ({
         console.error("Delete failed:", error);
       }
       set({ error: error.message, loading: false });
+      throw error;
+    }
+  },
+
+  restoreProduct: async (slug) => {
+    set({ loading: true, error: null });
+    try {
+      const restored = await restoreProduct(slug);
+      set((state) => {
+        const list = Array.isArray(state.products)
+          ? state.products
+          : (state.products?.products || []);
+        const updatedList = list.map((p) =>
+          p.slug === slug ? { ...p, isDeleted: false } : p
+        );
+        return { products: updatedList, loading: false };
+      });
+      return restored;
+    } catch (error) {
+      set({ error: error.message, loading: false });
+      throw error;
     }
   },
 

@@ -27,6 +27,14 @@ export const createProduct = async (productData) => {
   // booleans
   formData.append("isActive", productData.isActive);
   formData.append("isFeatured", productData.isFeatured);
+  formData.append("isTopMenu", productData.isTopMenu ?? false);
+  formData.append("isNewlyLaunched", productData.isNewlyLaunched ?? false);
+
+  // optional number fields
+  if (productData.discountPrice !== undefined && productData.discountPrice !== "")
+    formData.append("discountPrice", productData.discountPrice);
+  if (productData.gstSlab !== undefined && productData.gstSlab !== "")
+    formData.append("gstSlab", productData.gstSlab);
 
   // multiple images
   if (productData.images && productData.images.length > 0) {
@@ -35,7 +43,7 @@ export const createProduct = async (productData) => {
     });
   }
 
-  //  single video
+  // single video
   if (productData.video) {
     formData.append("video", productData.video);
   }
@@ -60,15 +68,39 @@ export const createProduct = async (productData) => {
     productData.color.forEach((c) => formData.append("color", c));
   }
 
-  const res = await axiosInstance.post("/api/product", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
-  return res.data.data;
+  try {
+    const res = await axiosInstance.post("/api/product", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return res.data.data;
+  } catch (err) {
+    const message =
+      err.response?.data?.message ||
+      err.response?.data?.errors?.[0]?.message ||
+      err.message ||
+      "Failed to add product";
+    throw new Error(message);
+  }
 };
 
 export const deleteProduct = async (slug) => {
-  const res = await axiosInstance.delete(`/api/product/${slug}`);
-  return res.data.data;
+  try {
+    const res = await axiosInstance.delete(`/api/product/${slug}`);
+    return res.data.data;
+  } catch (err) {
+    const message = err.response?.data?.message || err.response?.data?.errors?.[0]?.message || err.message;
+    throw new Error(message);
+  }
+};
+
+export const restoreProduct = async (slug) => {
+  try {
+    const res = await axiosInstance.patch(`/api/product/${slug}/restore`);
+    return res.data.data;
+  } catch (err) {
+    const message = err.response?.data?.message || err.response?.data?.errors?.[0]?.message || err.message;
+    throw new Error(message);
+  }
 };
 
 export const updateProduct = async (slug, productData) => {

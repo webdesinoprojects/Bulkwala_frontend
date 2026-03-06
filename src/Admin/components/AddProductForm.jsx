@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -25,6 +25,9 @@ const AddProductForm = ({ onSuccess }) => {
   const { subcategories, fetchSubcategories } = useSubcategoryStore();
 
   const [previewUrls, setPreviewUrls] = useState([]);
+  const [imageFiles, setImageFiles] = useState([]);
+  const [videoFile, setVideoFile] = useState(null);
+  const imageInputRef = useRef(null);
 
   const {
     register,
@@ -48,6 +51,8 @@ const AddProductForm = ({ onSuccess }) => {
       tags: [],
       isActive: true,
       isFeatured: false,
+      isTopMenu: false,
+      isNewlyLaunched: false,
       sku: "",
       color: [],
       genericName: "",
@@ -82,6 +87,38 @@ const AddProductForm = ({ onSuccess }) => {
         (sc) => String(sc.category?._id) === String(categoryValue)
       )
     : [];
+
+  const handleAddImages = (e) => {
+    const newFiles = Array.from(e.target.files);
+    if (!newFiles.length) return;
+    const updatedFiles = [...imageFiles, ...newFiles];
+    const updatedUrls = [...previewUrls, ...newFiles.map((f) => URL.createObjectURL(f))];
+    setImageFiles(updatedFiles);
+    setPreviewUrls(updatedUrls);
+    setValue("images", updatedFiles, { shouldValidate: true });
+    e.target.value = "";
+  };
+
+  const handleRemoveImage = (idx) => {
+    const updatedFiles = imageFiles.filter((_, i) => i !== idx);
+    const updatedUrls = previewUrls.filter((_, i) => i !== idx);
+    setImageFiles(updatedFiles);
+    setPreviewUrls(updatedUrls);
+    setValue("images", updatedFiles, { shouldValidate: true });
+  };
+
+  const handleVideoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setVideoFile(file);
+      setValue("video", file, { shouldValidate: true });
+    }
+  };
+
+  const handleRemoveVideo = () => {
+    setVideoFile(null);
+    setValue("video", null, { shouldValidate: true });
+  };
 
   return (
     <Card className="mb-6">
@@ -211,14 +248,20 @@ const AddProductForm = ({ onSuccess }) => {
             <label className="block mb-1 text-sm text-gray-600">
               Product Video (Single)
             </label>
-            <Input
-              type="file"
-              accept="video/*"
-              onChange={(e) => {
-                const file = e.target.files[0];
-                if (file) setValue("video", file, { shouldValidate: true });
-              }}
-            />
+            {!videoFile ? (
+              <Input type="file" accept="video/*" onChange={handleVideoChange} />
+            ) : (
+              <div className="flex items-center gap-2 mt-1 p-2 border rounded-md bg-gray-50">
+                <span className="text-sm text-gray-700 flex-1 truncate">{videoFile.name}</span>
+                <button
+                  type="button"
+                  onClick={handleRemoveVideo}
+                  className="bg-red-500 hover:bg-red-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold flex-shrink-0"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
             {errors.video && (
               <p className="text-red-500">{errors.video.message}</p>
             )}
@@ -228,28 +271,43 @@ const AddProductForm = ({ onSuccess }) => {
             <label className="block mb-1 text-sm text-gray-600">
               Product Images
             </label>
-            <Input
+            {/* Hidden native input */}
+            <input
+              ref={imageInputRef}
               type="file"
               accept="image/*"
               multiple
-              onChange={(e) => {
-                const files = Array.from(e.target.files);
-                setValue("images", files, { shouldValidate: true });
-                setPreviewUrls(files.map((file) => URL.createObjectURL(file)));
-              }}
+              className="hidden"
+              onChange={handleAddImages}
             />
+            {/* Styled trigger button */}
+            <button
+              type="button"
+              onClick={() => imageInputRef.current?.click()}
+              className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-md text-sm text-gray-600 hover:border-blue-400 hover:text-blue-500 transition-colors w-full justify-center"
+            >
+              <span className="text-lg leading-none">＋</span>
+              {imageFiles.length > 0 ? `Add More Images (${imageFiles.length} added)` : "Add Images"}
+            </button>
             {errors.images && (
               <p className="text-red-500">{errors.images.message}</p>
             )}
-
             <div className="mt-2 flex gap-2 flex-wrap">
               {previewUrls.map((url, idx) => (
-                <img
-                  key={idx}
-                  src={url}
-                  alt="Preview"
-                  className="h-20 object-cover rounded-md border"
-                />
+                <div key={idx} className="relative">
+                  <img
+                    src={url}
+                    alt="Preview"
+                    className="h-20 object-cover rounded-md border"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveImage(idx)}
+                    className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold"
+                  >
+                    ✕
+                  </button>
+                </div>
               ))}
             </div>
           </div>
@@ -307,8 +365,8 @@ const AddProductForm = ({ onSuccess }) => {
               <p className="text-red-500">{errors.subcategory.message}</p>
             )}
           </div>
-          {/* Active / Featured checkboxes */}
-          <div className="flex items-center gap-4">
+          {/* Active / Featured / Section checkboxes */}
+          <div className="flex flex-wrap items-center gap-4">
             <label className="flex items-center gap-2">
               <input type="checkbox" {...register("isActive")} defaultChecked />
               Active
@@ -316,6 +374,14 @@ const AddProductForm = ({ onSuccess }) => {
             <label className="flex items-center gap-2">
               <input type="checkbox" {...register("isFeatured")} />
               Featured
+            </label>
+            <label className="flex items-center gap-2">
+              <input type="checkbox" {...register("isTopMenu")} />
+              Top Products
+            </label>
+            <label className="flex items-center gap-2">
+              <input type="checkbox" {...register("isNewlyLaunched")} />
+              Newly Launched
             </label>
           </div>
           <Button type="submit" disabled={loading}>

@@ -19,12 +19,16 @@ export default function EditProductDialog({ open, onClose, slug, onSuccess }) {
     title: "",
     price: "",
     discountPrice: "",
-    gstSlab: "18", // ✅ default GST Slab
+    gstSlab: "18",
     sku: "",
     stock: "",
     description: "",
     category: "",
     subcategory: "",
+    isActive: true,
+    isFeatured: false,
+    isTopMenu: false,
+    isNewlyLaunched: false,
     newImages: [],
   });
 
@@ -52,12 +56,16 @@ export default function EditProductDialog({ open, onClose, slug, onSuccess }) {
         title: product.title || "",
         price: product.price || "",
         discountPrice: product.discountPrice || "",
-        gstSlab: String(product.gstSlab ?? 18), // ✅ default to 18 if undefined
+        gstSlab: String(product.gstSlab ?? 18),
         sku: product.sku || "",
         stock: product.stock || "",
         description: product.description || "",
         category: product.category?._id || "",
         subcategory: product.subcategory?._id || "",
+        isActive: product.isActive ?? true,
+        isFeatured: product.isFeatured ?? false,
+        isTopMenu: product.isTopMenu ?? false,
+        isNewlyLaunched: product.isNewlyLaunched ?? false,
         newImages: [],
       });
       setExistingImages(product.images || []);
@@ -67,6 +75,9 @@ export default function EditProductDialog({ open, onClose, slug, onSuccess }) {
 
   const handleChange = (e) =>
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+
+  const handleCheckboxChange = (e) =>
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.checked }));
 
   const handleImageChange = (e) => {
     setFormData((prev) => ({ ...prev, newImages: e.target.files }));
@@ -92,6 +103,10 @@ export default function EditProductDialog({ open, onClose, slug, onSuccess }) {
       uploadData.append("stock", formData.stock);
       uploadData.append("description", formData.description);
       uploadData.append("slug", slug);
+      uploadData.append("isActive", formData.isActive);
+      uploadData.append("isFeatured", formData.isFeatured);
+      uploadData.append("isTopMenu", formData.isTopMenu);
+      uploadData.append("isNewlyLaunched", formData.isNewlyLaunched);
 
       if (formData.category) uploadData.append("category", formData.category);
       if (formData.subcategory)
@@ -336,6 +351,35 @@ export default function EditProductDialog({ open, onClose, slug, onSuccess }) {
                     onChange={handleImageChange}
                     className="w-full border-gray-300 focus:border-[#02066F] focus:ring-[#02066F]"
                   />
+                </div>
+
+                {/* Checkboxes */}
+                <div className="col-span-1 sm:col-span-2">
+                  <Label className="text-sm text-gray-700 mb-2 block font-medium">
+                    Product Flags
+                  </Label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {[
+                      { name: "isActive", label: "Active" },
+                      { name: "isFeatured", label: "Featured" },
+                      { name: "isTopMenu", label: "Top Products" },
+                      { name: "isNewlyLaunched", label: "Newly Launched" },
+                    ].map(({ name, label }) => (
+                      <label
+                        key={name}
+                        className="flex items-center gap-2 cursor-pointer border border-gray-200 rounded-lg px-3 py-2 hover:bg-gray-50"
+                      >
+                        <input
+                          type="checkbox"
+                          name={name}
+                          checked={!!formData[name]}
+                          onChange={handleCheckboxChange}
+                          className="w-4 h-4 accent-[#02066F]"
+                        />
+                        <span className="text-sm text-gray-700">{label}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
               </form>
             )}

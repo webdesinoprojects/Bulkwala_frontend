@@ -70,6 +70,8 @@ export const productSchema = z.object({
 
   isActive: z.boolean().default(true),
   isFeatured: z.boolean().default(false),
+  isTopMenu: z.boolean().default(false),
+  isNewlyLaunched: z.boolean().default(false),
 
   sku: z.string().trim().optional(),
   genericName: z.string().optional(),

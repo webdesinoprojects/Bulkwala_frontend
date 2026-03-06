@@ -19,7 +19,7 @@ export default function ProductsContent() {
 
   const { fetchProducts, products, deleteProduct, total } = useProductStore();
 
-  const [filters, setFilters] = useState({ page: 1, limit: 15 });
+  const [filters, setFilters] = useState({ page: 1, limit: 15, showDeleted: true });
 
   useEffect(() => {
     fetchProducts(filters);
@@ -36,7 +36,7 @@ export default function ProductsContent() {
 
   // Fetch products when search changes
   useEffect(() => {
-    const searchFilters = { ...filters, page: 1 };
+    const searchFilters = { ...filters, page: 1, showDeleted: true };
     if (debouncedSearch.trim()) {
       searchFilters.search = debouncedSearch.trim();
     }
@@ -54,20 +54,22 @@ export default function ProductsContent() {
   };
 
   const handleDelete = (slug) => {
-    toast((t) => (
-      <div className="flex flex-col gap-2">
-        <p>Are you sure you want to delete this product?</p>
-        <div className="flex gap-2">
+    toast.custom((t) => (
+      <div className="flex flex-col gap-2 bg-white border border-gray-200 shadow-lg rounded-lg p-4 min-w-[280px]">
+        <p className="text-sm font-medium text-gray-800">Are you sure you want to delete this product?</p>
+        <div className="flex gap-2 justify-end">
           <Button
             size="sm"
             variant="destructive"
             onClick={async () => {
-              await deleteProduct(slug);
               toast.dismiss(t);
-              toast.success("Product deleted!");
-
-              // ✅ Maintain current page after delete
-              fetchProducts(filters);
+              try {
+                await deleteProduct(slug);
+                toast.success("Product deleted!");
+                fetchProducts(filters);
+              } catch (err) {
+                toast.error(err.message || "Failed to delete product");
+              }
             }}
           >
             Yes, Delete

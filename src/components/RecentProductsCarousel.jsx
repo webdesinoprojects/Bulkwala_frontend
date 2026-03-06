@@ -5,12 +5,12 @@ import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import { useNavigate } from "react-router-dom";
 
 export default function RecentProductsCarousel() {
-  const { products, fetchProducts, loading, error } = useProductStore();
+  const { newlyLaunchedProducts, fetchNewlyLaunchedProducts, loading, error } = useProductStore();
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchProducts({ limit: 10, sort: "-createdAt" });
-  }, [fetchProducts]);
+    fetchNewlyLaunchedProducts();
+  }, [fetchNewlyLaunchedProducts]);
 
   if (loading)
     return (
@@ -26,10 +26,10 @@ export default function RecentProductsCarousel() {
       </div>
     );
 
-  if (!products || products.length === 0)
+  if (!newlyLaunchedProducts || newlyLaunchedProducts.length === 0)
     return (
       <div className="flex justify-center py-12 sm:py-16 text-gray-500 text-sm sm:text-base">
-        No products found.
+        No newly launched products found.
       </div>
     );
 
@@ -61,7 +61,7 @@ export default function RecentProductsCarousel() {
           loop={true}
           className="pb-10 sm:pb-12"
         >
-          {products.slice(0, 10).map((product) => (
+          {newlyLaunchedProducts.map((product) => (
             <SwiperSlide key={product._id}>
               <div
                 className="
@@ -71,6 +71,7 @@ export default function RecentProductsCarousel() {
                   border border-gray-100 flex flex-col 
                   h-[300px] sm:h-[340px] md:h-[380px]
                 "
+                onClick={() => navigate(`/product/${product.slug}`)}
               >
                 {/* 🔹 Image Section */}
                 <div
