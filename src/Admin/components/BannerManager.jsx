@@ -14,6 +14,105 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { GripVertical, Eye, EyeOff } from "lucide-react";
+
+function SortableBannerCard({ banner, onToggle, onDelete }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: banner._id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="relative border border-gray-200 rounded-xl p-3 bg-gray-50 hover:shadow-lg transition-all duration-200"
+    >
+      {banner.isActive && (
+        <span className="absolute top-2 right-2 bg-green-600 text-white text-xs px-2 py-1 rounded-full z-10">
+          Active
+        </span>
+      )}
+
+      <div className="flex items-start gap-3">
+        <div
+          {...attributes}
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing p-2 hover:bg-gray-200 rounded-md transition-colors mt-2"
+        >
+          <GripVertical className="w-5 h-5 text-gray-500" />
+        </div>
+
+        <div className="flex-1">
+          <div className="flex gap-2 justify-start flex-wrap mb-3">
+            {banner.images.slice(0, 3).map((img, idx) => (
+              <img
+                key={idx}
+                src={img}
+                alt={banner.title || "Banner"}
+                className="w-28 h-28 object-cover rounded-md border"
+              />
+            ))}
+          </div>
+
+          <p className="text-sm font-semibold text-gray-800 mb-2">
+            {banner.title || "Untitled"}
+          </p>
+
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className={`${
+                banner.isActive
+                  ? "bg-gray-300 hover:bg-gray-400 text-black"
+                  : "bg-green-500 hover:bg-green-600 text-white"
+              }`}
+              onClick={() => onToggle(banner._id)}
+            >
+              {banner.isActive ? "Deactivate" : "Activate"}
+            </Button>
+
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => onDelete(banner._id)}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function BannerManager() {
   const {
@@ -22,6 +121,7 @@ export default function BannerManager() {
     uploadBanner,
     toggleBanner,
     deleteBanner,
+    updateBannerPriorities,
     isLoading,
   } = useBannerStore();
 
@@ -32,11 +132,26 @@ export default function BannerManager() {
   });
 
   const [activeTab, setActiveTab] = useState("top");
+  const [localBanners, setLocalBanners] = useState([]);
+  const [showPreview, setShowPreview] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     fetchBanners();
-    console.log("Fetching banners for admin", banners);
   }, []);
+
+  useEffect(() => {
+    if (banners) {
+      const sorted = [...banners].sort((a, b) => (a.priority || 0) - (b.priority || 0));
+      setLocalBanners(sorted);
+    }
+  }, [banners]);
 
   // ✅ Update position in form when tab changes
   useEffect(() => {
@@ -94,9 +209,39 @@ export default function BannerManager() {
     }
   };
 
-  const topBanners = banners?.filter((b) => (b.position || "top") === "top") || [];
-  const midBanners = banners?.filter((b) => b.position === "mid") || [];
-  const bottomBanners = banners?.filter((b) => b.position === "bottom") || [];
+  const handleDragEnd = async (event) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = currentBanners.findIndex((b) => b._id === active.id);
+    const newIndex = currentBanners.findIndex((b) => b._id === over.id);
+
+    const reordered = arrayMove(currentBanners, oldIndex, newIndex);
+    const updates = reordered.map((banner, idx) => ({
+      id: banner._id,
+      priority: idx,
+    }));
+
+    const updatedLocalBanners = localBanners.map((banner) => {
+      const update = updates.find((u) => u.id === banner._id);
+      return update ? { ...banner, priority: update.priority } : banner;
+    });
+
+    setLocalBanners(updatedLocalBanners);
+
+    const res = await updateBannerPriorities(updates);
+    if (res.success) {
+      toast.success("Banner order updated");
+    } else {
+      toast.error("Failed to update order");
+      setLocalBanners(localBanners);
+    }
+  };
+
+  const topBanners = localBanners?.filter((b) => (b.position || "top") === "top") || [];
+  const midBanners = localBanners?.filter((b) => b.position === "mid") || [];
+  const bottomBanners = localBanners?.filter((b) => b.position === "bottom") || [];
   const currentBanners = activeTab === "top" ? topBanners : activeTab === "mid" ? midBanners : bottomBanners;
   const bannerLimit = 20;
   const canAddMore = currentBanners.length < bannerLimit;
@@ -114,46 +259,60 @@ export default function BannerManager() {
 
       <CardContent>
         {/* ✅ Banner Position Tabs */}
-        <div className="flex gap-4 mb-6 border-b overflow-x-auto">
-          <button
-            onClick={() => {
-              setActiveTab("top");
-              form.reset({ title: "", ctaLink: "", position: "top", images: [] });
-            }}
-            className={`px-4 py-2 font-medium transition-all whitespace-nowrap ${
-              activeTab === "top"
-                ? "text-[#02066F] border-b-2 border-[#02066F]"
-                : "text-gray-600 hover:text-gray-800"
-            }`}
-          >
-            Top Banners ({topBanners.length}/{bannerLimit})
-          </button>
-          <button
-            onClick={() => {
-              setActiveTab("mid");
-              form.reset({ title: "", ctaLink: "", position: "mid", images: [] });
-            }}
-            className={`px-4 py-2 font-medium transition-all whitespace-nowrap ${
-              activeTab === "mid"
-                ? "text-[#02066F] border-b-2 border-[#02066F]"
-                : "text-gray-600 hover:text-gray-800"
-            }`}
-          >
-            Mid Banners ({midBanners.length}/{bannerLimit})
-          </button>
-          <button
-            onClick={() => {
-              setActiveTab("bottom");
-              form.reset({ title: "", ctaLink: "", position: "bottom", images: [] });
-            }}
-            className={`px-4 py-2 font-medium transition-all whitespace-nowrap ${
-              activeTab === "bottom"
-                ? "text-[#02066F] border-b-2 border-[#02066F]"
-                : "text-gray-600 hover:text-gray-800"
-            }`}
-          >
-            Bottom Banners ({bottomBanners.length}/{bannerLimit})
-          </button>
+        <div className="flex justify-between items-center mb-6 border-b">
+          <div className="flex gap-4 overflow-x-auto">
+            <button
+              onClick={() => {
+                setActiveTab("top");
+                form.reset({ title: "", ctaLink: "", position: "top", images: [] });
+              }}
+              className={`px-4 py-2 font-medium transition-all whitespace-nowrap ${
+                activeTab === "top"
+                  ? "text-[#02066F] border-b-2 border-[#02066F]"
+                  : "text-gray-600 hover:text-gray-800"
+              }`}
+            >
+              Top Banners ({topBanners.length}/{bannerLimit})
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab("mid");
+                form.reset({ title: "", ctaLink: "", position: "mid", images: [] });
+              }}
+              className={`px-4 py-2 font-medium transition-all whitespace-nowrap ${
+                activeTab === "mid"
+                  ? "text-[#02066F] border-b-2 border-[#02066F]"
+                  : "text-gray-600 hover:text-gray-800"
+              }`}
+            >
+              Mid Banners ({midBanners.length}/{bannerLimit})
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab("bottom");
+                form.reset({ title: "", ctaLink: "", position: "bottom", images: [] });
+              }}
+              className={`px-4 py-2 font-medium transition-all whitespace-nowrap ${
+                activeTab === "bottom"
+                  ? "text-[#02066F] border-b-2 border-[#02066F]"
+                  : "text-gray-600 hover:text-gray-800"
+              }`}
+            >
+              Bottom Banners ({bottomBanners.length}/{bannerLimit})
+            </button>
+          </div>
+
+          {currentBanners?.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowPreview(!showPreview)}
+              className="flex items-center gap-2 border-[#02066F] text-[#02066F] hover:bg-[#02066F] hover:text-white"
+            >
+              {showPreview ? <EyeOff size={16} /> : <Eye size={16} />}
+              {showPreview ? "Hide" : "Show"} Preview
+            </Button>
+          )}
         </div>
 
         {/* Upload Form */}
@@ -236,67 +395,111 @@ export default function BannerManager() {
           </div>
         )}
 
-        {/* Uploaded Banners */}
-        {currentBanners?.length ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-5">
-            {currentBanners.map((banner) => (
-              <div
-                key={banner._id}
-                className="relative border border-gray-200 rounded-xl p-3 bg-gray-50 hover:shadow-lg transition-all duration-200"
-              >
-                {/* Active Badge */}
-                {banner.isActive && (
-                  <span className="absolute top-2 right-2 bg-green-600 text-white text-xs px-2 py-1 rounded-full">
-                    Active
-                  </span>
-                )}
+        {/* Preview Section - All Positions */}
+        {showPreview && currentBanners?.length > 0 && (
+          <div className="mb-8 p-6 bg-blue-50 border-2 border-blue-200 rounded-xl">
+            <h3 className="text-lg font-semibold text-[#02066F] mb-4">
+              📱 Homepage Preview ({activeTab === "top" ? "Top" : activeTab === "mid" ? "Mid" : "Bottom"} Section Layout)
+            </h3>
+            <div className="bg-white p-4 rounded-lg shadow-sm">
+              {activeTab === "mid" ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="md:col-span-2">
+                    {currentBanners[0] && (
+                      <div>
+                        <img
+                          src={currentBanners[0].images[0]}
+                          alt={currentBanners[0].title}
+                          className="w-full h-auto rounded-2xl object-cover shadow-md"
+                        />
+                        <div className="flex justify-between items-center mt-3">
+                          <h2 className="text-xl md:text-2xl font-bold text-[#02066F]">
+                            {currentBanners[0].title || "Shop Now"}
+                          </h2>
+                          <span className="px-4 py-2 bg-[#FFD700] text-[#02066F] font-semibold rounded-md text-sm">
+                            SHOP NOW
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
-                <div className="flex flex-col items-center">
-                  {/* Show images */}
-                  <div className="flex gap-2 justify-center flex-wrap mb-3">
-                    {banner.images.slice(0, 3).map((img, idx) => (
-                      <img
-                        key={idx}
-                        src={img}
-                        alt={banner.title || "Banner"}
-                        className="w-28 h-28 object-cover rounded-md border"
-                      />
+                  <div className="flex flex-col gap-4">
+                    {currentBanners.slice(1).map((banner) => (
+                      <div key={banner._id} className="text-center">
+                        <img
+                          src={banner.images[0]}
+                          alt={banner.title}
+                          className="w-full h-[150px] md:h-[180px] rounded-2xl object-contain shadow-sm"
+                        />
+                        <h3 className="text-base md:text-lg font-semibold text-[#02066F] mt-2">
+                          {banner.title || "Featured"}
+                        </h3>
+                      </div>
                     ))}
                   </div>
-
-                  <p className="text-sm font-semibold text-gray-800 mb-2">
-                    {banner.title || "Untitled"}
-                  </p>
-
-                  <div className="flex gap-4 justify-center items-center  p-2 w-full ">
-                    {/* Deactivate Button */}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className={`${
-                        banner.isActive
-                          ? "bg-gray-300 hover:bg-gray-400 text-black"
-                          : "bg-green-500 hover:bg-green-600 text-white"
-                      } w-1/2`}
-                      onClick={() => handleDeactivate(banner._id)}
-                    >
-                      {banner.isActive ? "Deactivate" : "Activate"}
-                    </Button>
-
-                    {/* Delete Button */}
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleDelete(banner._id)}
-                      className="w-1/2 bg-red-600 hover:bg-red-700"
-                    >
-                      Delete
-                    </Button>
-                  </div>
                 </div>
-              </div>
-            ))}
+              ) : (
+                <div className="relative">
+                  <div className="overflow-hidden rounded-lg">
+                    {currentBanners[0] && (
+                      <img
+                        src={currentBanners[0].images[0]}
+                        alt={currentBanners[0].title}
+                        className="w-full h-[250px] md:h-[400px] object-cover rounded-lg"
+                      />
+                    )}
+                  </div>
+                  {currentBanners.length > 1 && (
+                    <div className="flex gap-2 justify-center mt-3">
+                      {currentBanners.map((_, idx) => (
+                        <span
+                          key={idx}
+                          className={`w-2 h-2 rounded-full ${idx === 0 ? "bg-[#02066F]" : "bg-gray-300"}`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-center text-sm text-gray-500 mt-2">
+                    Slider view - showing banner {currentBanners.length > 1 ? "1 of " + currentBanners.length : "1"}
+                  </p>
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-gray-600 mt-3">
+              💡 Drag banners below to reorder. Preview updates automatically.
+            </p>
           </div>
+        )}
+
+        {/* Uploaded Banners */}
+        {currentBanners?.length ? (
+          <>
+            <h3 className="text-md font-semibold text-gray-700 mb-3">
+              Manage Banners (Drag to reorder)
+            </h3>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={currentBanners.map((b) => b._id)}
+                strategy={rectSortingStrategy}
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {currentBanners.map((banner) => (
+                    <SortableBannerCard
+                      key={banner._id}
+                      banner={banner}
+                      onToggle={handleDeactivate}
+                      onDelete={handleDelete}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+          </>
         ) : (
           <p className="text-center text-gray-500 py-4">
             No banners uploaded for {activeTab} position yet.

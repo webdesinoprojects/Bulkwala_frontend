@@ -5,6 +5,7 @@ import {
   getActiveBannersService,
   getAllBannersService,
   deleteBannerService,
+  updateBannerPrioritiesService,
 } from "@/services/banner.service";
 
 export const useBannerStore = create((set, get) => ({
@@ -78,6 +79,23 @@ export const useBannerStore = create((set, get) => ({
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
         console.error("Delete failed:", err);
+      }
+      return { success: false };
+    }
+  },
+
+  updateBannerPriorities: async (bannerUpdates) => {
+    try {
+      await updateBannerPrioritiesService(bannerUpdates);
+      const updatedBanners = get().banners.map((banner) => {
+        const update = bannerUpdates.find((u) => u.id === banner._id);
+        return update ? { ...banner, priority: update.priority } : banner;
+      });
+      set({ banners: updatedBanners });
+      return { success: true };
+    } catch (err) {
+      if (process.env.NODE_ENV === "development") {
+        console.error("Priority update failed:", err);
       }
       return { success: false };
     }

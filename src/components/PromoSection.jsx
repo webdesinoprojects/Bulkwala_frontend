@@ -56,24 +56,7 @@ export default function PromoSection() {
 
     const midOnly = rawBanners.filter((banner) => banner?.position === "mid");
 
-    const hasOrderingField = midOnly.some(
-      (banner) =>
-        typeof (banner?.priority ?? banner?.order ?? banner?.sortOrder ?? banner?.displayOrder) ===
-        "number"
-    );
-
-    const sorted = hasOrderingField
-      ? [...midOnly].sort((a, b) => {
-          const aOrder = a?.priority ?? a?.order ?? a?.sortOrder ?? a?.displayOrder;
-          const bOrder = b?.priority ?? b?.order ?? b?.sortOrder ?? b?.displayOrder;
-
-          if (typeof aOrder === "number" && typeof bOrder === "number") {
-            return aOrder - bOrder;
-          }
-
-          return 0;
-        })
-      : midOnly;
+    const sorted = [...midOnly].sort((a, b) => (a.priority || 0) - (b.priority || 0));
 
     const flattened = sorted
       .flatMap((banner) =>
@@ -84,24 +67,26 @@ export default function PromoSection() {
           ctaLink: banner?.ctaLink,
         }))
       )
-      .filter((banner) => Boolean(banner.image))
-      .slice(0, 3);
+      .filter((banner) => Boolean(banner.image));
 
     return flattened;
   }, [banners]);
 
   if (usableBanners.length === 0) return null;
 
+  const [firstBanner, ...restBanners] = usableBanners;
+
   return (
     <section className="max-w-7xl mx-auto py-10 px-4 md:px-0">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="md:col-span-2">
-          {usableBanners[0] && <BannerCard banner={usableBanners[0]} large />}
+          {firstBanner && <BannerCard banner={firstBanner} large />}
         </div>
 
         <div className="flex flex-col gap-4">
-          {usableBanners[1] && <BannerCard banner={usableBanners[1]} />}
-          {usableBanners[2] && <BannerCard banner={usableBanners[2]} />}
+          {restBanners.map((banner) => (
+            <BannerCard key={banner.id} banner={banner} />
+          ))}
         </div>
       </div>
     </section>

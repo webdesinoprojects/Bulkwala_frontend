@@ -26,3 +26,8 @@ export const deleteBannerService = async (id) => {
   const res = await axiosInstance.delete(`/api/banners/${id}`);
   return res.data.data;
 };
+
+export const updateBannerPrioritiesService = async (banners) => {
+  const res = await axiosInstance.patch("/api/banners/priorities", { banners });
+  return res.data.data;
+};
