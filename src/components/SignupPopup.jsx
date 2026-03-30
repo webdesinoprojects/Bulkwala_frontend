@@ -35,7 +35,7 @@ export default function SignupPopup() {
   const location = useLocation();
   const firstTimerRef = useRef(null);
   const repeatTimerRef = useRef(null);
-  const MAX_POPUP_SHOWS = 2; // Maximum 2 times per session
+  const MAX_POPUP_SHOWS = 100; // Allow popup to show frequently throughout session
 
   const form = useForm({
     resolver: zodResolver(SignupSchema),
@@ -83,7 +83,7 @@ export default function SignupPopup() {
       setPopupCount((prev) => prev + 1);
 
       if (import.meta.NODE_ENV === "development") {
-        console.log("Setting repeat popup every 2 minutes...");
+        console.log("Setting repeat popup every 3 minutes...");
       }
       repeatTimerRef.current = setInterval(() => {
         const stillValid =
@@ -94,7 +94,7 @@ export default function SignupPopup() {
           );
         if (stillValid && popupCount + 1 < MAX_POPUP_SHOWS) {
           if (import.meta.NODE_ENV === "development") {
-            console.log("Popup reopened (2-minute repeat)");
+            console.log("Popup reopened (3-minute repeat)");
           }
           setOpen(true);
           setPopupCount((prev) => prev + 1);
@@ -103,7 +103,7 @@ export default function SignupPopup() {
             console.log("Skipping popup (user logged in, on auth page, or limit reached)");
           }
         }
-      }, 120000);
+      }, 180000);
     }, 15000);
 
     return () => {
