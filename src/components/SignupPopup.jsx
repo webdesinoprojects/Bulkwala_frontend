@@ -35,7 +35,9 @@ export default function SignupPopup() {
   const location = useLocation();
   const firstTimerRef = useRef(null);
   const repeatTimerRef = useRef(null);
+  const popupCountRef = useRef(popupCount);
   const MAX_POPUP_SHOWS = 100; // Allow popup to show frequently throughout session
+  const POPUP_DELAY_MS = 180000; // 3 minutes
 
   const form = useForm({
     resolver: zodResolver(SignupSchema),
@@ -45,6 +47,7 @@ export default function SignupPopup() {
   // Update sessionStorage whenever popupCount changes
   useEffect(() => {
     sessionStorage.setItem("popupShowCount", popupCount.toString());
+    popupCountRef.current = popupCount;
   }, [popupCount]);
 
   useEffect(() => {
@@ -73,11 +76,13 @@ export default function SignupPopup() {
     }
 
     if (import.meta.NODE_ENV === "development") {
-      console.log(`Popup scheduled to open in 15 seconds... (${popupCount}/${MAX_POPUP_SHOWS})`);
+      console.log(`Popup scheduled to open in 3 minutes... (${popupCountRef.current}/${MAX_POPUP_SHOWS})`);
     }
     firstTimerRef.current = setTimeout(() => {
+      if (popupCountRef.current >= MAX_POPUP_SHOWS) return;
+
       if (import.meta.NODE_ENV === "development") {
-        console.log("Popup opened (15s delay)");
+        console.log("Popup opened (3-minute delay)");
       }
       setOpen(true);
       setPopupCount((prev) => prev + 1);
@@ -92,7 +97,7 @@ export default function SignupPopup() {
             location.pathname.includes("/login") ||
             location.pathname.includes("/signup")
           );
-        if (stillValid && popupCount + 1 < MAX_POPUP_SHOWS) {
+        if (stillValid && popupCountRef.current < MAX_POPUP_SHOWS) {
           if (import.meta.NODE_ENV === "development") {
             console.log("Popup reopened (3-minute repeat)");
           }
@@ -103,8 +108,8 @@ export default function SignupPopup() {
             console.log("Skipping popup (user logged in, on auth page, or limit reached)");
           }
         }
-      }, 180000);
-    }, 15000);
+      }, POPUP_DELAY_MS);
+    }, POPUP_DELAY_MS);
 
     return () => {
       if (firstTimerRef.current) clearTimeout(firstTimerRef.current);
@@ -113,7 +118,7 @@ export default function SignupPopup() {
         console.log("Popup timers cleared");
       }
     };
-  }, [location, user, popupCount]);
+  }, [location.pathname, user?._id]);
 
   const onSubmit = async (values) => {
     const res = await signup(values);
