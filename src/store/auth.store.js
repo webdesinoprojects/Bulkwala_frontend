@@ -18,7 +18,7 @@ import {
   verifyOtpService,
   sendOtpService,
   deleteAddressService,
-} from "@/services/auth.service";
+} from "@/services/auth.service.js"
 import { create } from "zustand";
 import useCartStore from "./cart.store";
 

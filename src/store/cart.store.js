@@ -8,8 +8,8 @@ import {
   removeCouponService,
   removeReferralService,
   updateCartItemService,
-} from "@/services/cart.service";
-import { getProducts } from "@/services/product.service";
+} from "@/services/cart.service.js"
+import { getProducts } from "@/services/product.service.js";
 import { create } from "zustand";
 import useAuthStore from "./auth.store";
 
