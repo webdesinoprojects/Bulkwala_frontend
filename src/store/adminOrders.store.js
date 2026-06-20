@@ -66,7 +66,7 @@ export const useAdminOrdersStore = create((set, get) => ({
       });
       return { success: true };
     } catch (e) {
-      if (process.env.NODE_ENV === "development") {
+      if (import.meta.env.DEV) {
         console.error("Error fetching orders:", e);
       }
       set({
@@ -99,7 +99,7 @@ export const useAdminOrdersStore = create((set, get) => ({
       }));
       return { success: true };
     } catch (e) {
-      if (process.env.NODE_ENV === "development") {
+      if (import.meta.env.DEV) {
         console.error("Error updating order status:", e);
       }
       return {
@@ -120,7 +120,7 @@ export const useAdminOrdersStore = create((set, get) => ({
       }));
       return { success: true };
     } catch (e) {
-      if (process.env.NODE_ENV === "development") {
+      if (import.meta.env.DEV) {
         console.error("Error updating payment status:", e);
       }
       return {
@@ -155,7 +155,7 @@ export const useAdminOrdersStore = create((set, get) => ({
       }));
       return { success: true };
     } catch (e) {
-      if (process.env.NODE_ENV === "development") {
+      if (import.meta.env.DEV) {
         console.error("Error retrying shipment:", e);
       }
       return {

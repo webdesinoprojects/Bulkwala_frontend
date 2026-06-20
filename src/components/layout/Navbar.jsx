@@ -233,8 +233,7 @@ export default function Navbar() {
         </div>
       )}
 
-      <header className="w-full border-b border-gray-300 bg-white relative z-50">
-        <div className="max-w-7xl mx-auto w-full flex items-center justify-between p-4">
+<header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/90 backdrop-blur-xl">        <div className="max-w-7xl mx-auto w-full flex items-center justify-between p-4">
           {/* 🧩 Logo - Left */}
           <img
             src="https://ik.imagekit.io/bulkwala/demo/bulkwalalogo.jpg?updatedAt=1762145179195"
@@ -504,52 +503,33 @@ export default function Navbar() {
         </div>
 
         {/* 🧭 NAV LINKS (desktop + mobile responsive) */}
-        <nav className="w-full bg-[#AFC2D5] shadow-sm">
-          <div
-            className={`max-w-7xl mx-auto flex-col md:flex-row md:flex gap-8 px-6 py-4 md:py-5 transition-all duration-300 ${
-              mobileMenuOpen ? "flex" : "hidden md:flex"
-            }`}
-          >
-            <NavLink
-              to="/"
-              className={({ isActive }) =>
-                `text-base font-medium ${
-                  isActive ? "underline" : "text-[#02066F] hover:underline"
-                }`
-              }
-            >
-              Home
-            </NavLink>
-            <NavLink
-              to="/products"
-              className={({ isActive }) =>
-                `text-base font-medium ${
-                  isActive ? "underline" : "text-[#02066F] hover:underline"
-                }`
-              }
-            >
-              Products
-            </NavLink>
-            <NavLink
-              to="/contact-us"
-              className={({ isActive }) =>
-                `text-base font-medium ${
-                  isActive ? "underline" : "text-[#02066F] hover:underline"
-                }`
-              }
-            >
-              Contact Us
-            </NavLink>
-            <NavLink
-              to="/about-us"
-              className={({ isActive }) =>
-                `text-base font-medium ${
-                  isActive ? "underline" : "text-[#02066F] hover:underline"
-                }`
-              }
-            >
-              About Us
-            </NavLink>
+<nav className="w-full bg-gradient-to-r py-4">
+  <div
+    className={`mx-auto max-w-3xl rounded-full bg-[#02066F] px-4 py-3 shadow-[0_10px_30px_rgba(2,6,111,0.25)] flex-col md:flex-row md:flex md:items-center md:justify-center gap-2 transition-all duration-300 ${
+      mobileMenuOpen ? "flex" : "hidden md:flex"
+    }`}
+  >
+    {[
+      { to: "/", label: "Home" },
+      { to: "/products", label: "Products" },
+      { to: "/contact-us", label: "Contact Us" },
+      { to: "/about-us", label: "About Us" },
+    ].map((item) => (
+      <NavLink
+        key={item.to}
+        to={item.to}
+        className={({ isActive }) =>
+          `relative rounded-full px-6 py-3 text-xs font-bold uppercase tracking-wide transition-all duration-300 ${
+            isActive
+              ? "bg-[#C9E0EF] text-[#02066F] shadow-lg after:absolute after:left-1/2 after:-bottom-1 after:h-1 after:w-8 after:-translate-x-1/2 after:rounded-full after:bg-white"
+              : "text-white/75 hover:text-white hover:bg-white/10"
+          }`
+        }
+      >
+        {item.label}
+      </NavLink>
+    ))}
+
             {/* ---- MOBILE MENU EXTRA OPTIONS ---- */}
             <div className="flex flex-col gap-4 mt-5 md:hidden">
               {/* ❤️ Wishlist */}

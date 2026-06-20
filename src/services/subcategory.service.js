@@ -1,37 +1,32 @@
+
+
 import { axiosInstance } from "@/lib/axios";
 
-export const getSubcategories = async () => {
-  const res = await axiosInstance.get("/api/subcategory");
+export const getSubcategories = async (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  const res = await axiosInstance.get(`/api/subcategory?${query}`);
   return res.data.data;
 };
 
-export const createSubcategory = async (subcategoryData) => {
+export const createSubcategory = async (data) => {
   const formData = new FormData();
-  formData.append("name", subcategoryData.name);
-  formData.append("slug", subcategoryData.slug);
-  formData.append("description", subcategoryData.description || "");
-  formData.append("category", subcategoryData.category);
-
-  if (subcategoryData.image) {
-    formData.append("image", subcategoryData.image);
-  }
+  formData.append("name", data.name);
+  formData.append("category", data.category);
+  if (data.slug) formData.append("slug", data.slug);
+  if (data.image) formData.append("image", data.image);
 
   const res = await axiosInstance.post("/api/subcategory", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
-
   return res.data.data;
 };
-
-// ✅ UPDATE
-export const updateSubcategory = async (slug, subcategoryData) => {
+export const updateSubcategory = async (slug, data) => {
   const formData = new FormData();
-  if (subcategoryData.name) formData.append("name", subcategoryData.name);
-  if (subcategoryData.slug) formData.append("slug", subcategoryData.slug);
-  if (subcategoryData.category)
-    formData.append("category", subcategoryData.category);
-  if (subcategoryData.image)
-    formData.append("image", subcategoryData.image);
+
+  if (data.name) formData.append("name", data.name);
+  if (data.category) formData.append("category", data.category);
+  if (data.slug) formData.append("slug", data.slug);
+  if (data.image) formData.append("image", data.image);
 
   const res = await axiosInstance.put(`/api/subcategory/${slug}`, formData, {
     headers: { "Content-Type": "multipart/form-data" },
@@ -40,8 +35,7 @@ export const updateSubcategory = async (slug, subcategoryData) => {
   return res.data.data;
 };
 
-// ✅ DELETE
 export const deleteSubcategory = async (slug) => {
   const res = await axiosInstance.delete(`/api/subcategory/${slug}`);
-  return res.data;
+  return res.data.data;
 };

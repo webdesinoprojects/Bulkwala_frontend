@@ -39,19 +39,22 @@ const Products = () => {
   }, []); // fetchCategories is stable from zustand store
 
   // ✅ Update filter when user navigates with ?subcategory=Name
-  useEffect(() => {
-    if (subcategoryFromURL) {
-      setFilters((prev) => ({ ...prev, subcategory: subcategoryFromURL }));
-    }
-  }, [subcategoryFromURL]);
+useEffect(() => {
+  setFilters((prev) => ({
+    ...prev,
+    search: searchFromURL || "",
+    page: 1,
+  }));
+}, [searchFromURL]);
 
   // ✅ Sync navbar search query (?search=) with products filters
-  useEffect(() => {
-    setFilters((prev) => {
-      if (prev.search === searchFromURL) return prev;
-      return { ...prev, search: searchFromURL, page: 1 };
-    });
-  }, [searchFromURL]);
+useEffect(() => {
+  setFilters((prev) => ({
+    ...prev,
+    search: searchFromURL || "",
+    page: 1,
+  }));
+}, [searchFromURL]);
 
   // Fetch products when filters change
   useEffect(() => {
@@ -63,9 +66,23 @@ const Products = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]); // fetchProducts is stable from zustand store
 
-  const handleFilterChange = (key, value) => {
-    setFilters((prev) => ({ ...prev, [key]: value, page: 1 }));
-  };
+const handleFilterChange = (key, value) => {
+  setFilters((prev) => {
+    const updated = {
+      ...prev,
+      [key]: value,
+      page: 1,
+    };
+
+    if (key === "category") {
+      updated.subcategory = "";
+    }
+
+    return updated;
+  });
+
+  navigate("/products", { replace: true });
+};
 
   const totalPages = Math.ceil(total / filters.limit) || 1;
   const productList = Array.isArray(products) ? products : [];
@@ -144,35 +161,40 @@ const Products = () => {
             <Slider
               min={0}
               max={10000}
-              step={200}
+             step={1}
               value={[filters.minPrice, filters.maxPrice]}
-              onValueChange={(val) =>
-                setFilters((prev) => ({
-                  ...prev,
-                  minPrice: val[0],
-                  maxPrice: val[1],
-                  page: 1,
-                }))
-              }
+onValueChange={(val) => {
+  setFilters((prev) => ({
+    ...prev,
+    minPrice: val[0],
+    maxPrice: val[1],
+    page: 1,
+  }));
+
+  navigate("/products", { replace: true });
+}}
             />
           </div>
 
-          <Button
-            variant="outline"
-            className="w-full mt-4 text-sm sm:text-base"
-            onClick={() =>
-              setFilters({
-                category: "",
-                search: "",
-                minPrice: 0,
-                maxPrice: 10000,
-                page: 1,
-                limit: 20,
-              })
-            }
-          >
-            Clear Filters
-          </Button>
+<Button
+  variant="outline"
+  className="w-full mt-4 text-sm sm:text-base"
+  onClick={() => {
+    setFilters({
+      category: "",
+      subcategory: "",
+      search: "",
+      minPrice: 0,
+      maxPrice: 10000,
+      page: 1,
+      limit: 20,
+    });
+
+    navigate("/products");
+  }}
+>
+  Clear Filters
+</Button>
         </aside>
 
         {/* 🔹 Overlay for Mobile */}

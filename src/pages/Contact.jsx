@@ -40,18 +40,55 @@ export default function Contact() {
   return (
     <section className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-[#02066F] to-[#1E3A8A] text-white py-20 mb-16 overflow-hidden">
-        <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/white-wall.png')]"></div>
-        <div className="relative z-10 max-w-6xl mx-auto px-6 text-center">
-          <h1 className="text-5xl font-bold mb-3 tracking-tight">
-            Contact <span className="text-[#C9E0EF]">Bulkwala.com</span>
-          </h1>
-          <p className="text-gray-200 text-lg max-w-2xl mx-auto leading-relaxed">
-            We’re here to help! Get in touch with our team for support,
-            partnerships, or product inquiries.
-          </p>
-        </div>
-      </div>
+<div className="relative mb-16 overflow-hidden bg-[#071B4D] py-24 text-white">
+
+  {/* Background Image */}
+  <div
+    className="absolute inset-0 bg-cover bg-center opacity-60"
+    style={{
+      backgroundImage:
+        "url('https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=1600&q=80')",
+    }}
+  />
+
+  {/* Light Overlay */}
+  <div className="absolute inset-0 bg-gradient-to-r from-[#02066F]/75 via-[#0B4EA2]/50 to-[#38BDF8]/25" />
+
+  {/* Glow */}
+  <div className="absolute left-1/2 top-10 h-48 w-48 -translate-x-1/2 rounded-full bg-sky-300/30 blur-3xl" />
+
+  {/* Content */}
+  <div className="relative z-10 mx-auto max-w-6xl px-6 text-center">
+    <p className="mb-4 text-sm font-bold uppercase tracking-[0.35em] text-sky-200">
+      Contact Us
+    </p>
+
+    <h1 className="text-4xl font-black tracking-tight md:text-6xl">
+      Need help with your order?
+    </h1>
+
+    <div className="mx-auto my-5 h-1 w-20 rounded-full bg-sky-300" />
+
+    <p className="mx-auto max-w-2xl text-base leading-7 text-white/90 md:text-lg">
+      Our team is here for support, product inquiries, partnerships, and seller
+      assistance. Send us a message and we'll get back to you shortly.
+    </p>
+  </div>
+
+  {/* Convex Curved Bottom */}
+  <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-none">
+    <svg
+      viewBox="0 0 1440 120"
+      className="relative block w-full h-[100px]"
+      preserveAspectRatio="none"
+    >
+      <path
+        fill="#f8fafc"
+        d="M0,40 C360,140 1080,140 1440,40 L1440,120 L0,120 Z"
+      />
+    </svg>
+  </div>
+</div>
 
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 mb-16">

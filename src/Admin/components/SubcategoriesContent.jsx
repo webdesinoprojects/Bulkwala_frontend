@@ -112,14 +112,14 @@ export default function SubcategoriesContent() {
                         >
                           <Edit size={16} />
                         </Button>
-                        {/* <Button
+                         <Button
                           size="sm"
                           variant="outline"
                           className="text-red-600 border-red-200 hover:bg-red-50"
                           onClick={() => handleDelete(sub.slug)}
                         >
                           <Trash2 size={16} />
-                        </Button> */}
+                        </Button> 
                       </div>
                     </td>
                   </tr>

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Edit } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import AddCategoryForm from "./AddCategoryForm";
 import EditCategoryDialog from "./EditCategoryDialog";
 import { useCategoryStore } from "@/store/category.store";
@@ -78,16 +78,43 @@ export default function CategoriesContent() {
                     </td>
                     <td className="p-3 text-sm font-medium">{cat.name}</td>
                     <td className="p-3 text-sm text-gray-700">{cat.slug}</td>
-                    <td className="p-3 text-center">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-blue-600 border-blue-200 hover:bg-blue-50"
-                        onClick={() => handleEdit(cat)}
-                      >
-                        <Edit size={16} />
-                      </Button>
-                    </td>
+<td className="p-3 text-center">
+  <div className="flex items-center justify-center gap-2">
+
+    <Button
+      size="sm"
+      variant="outline"
+      className="text-blue-600 border-blue-200 hover:bg-blue-50"
+      onClick={() => handleEdit(cat)}
+    >
+      <Edit size={16} />
+    </Button>
+
+    <Button
+  size="sm"
+  variant="outline"
+  className="h-9 w-9 p-0 text-red-600 border-red-200 hover:bg-red-50"
+      onClick={async () => {
+        const confirmDelete = window.confirm(
+          `Delete category "${cat.name}" ?`
+        );
+
+        if (!confirmDelete) return;
+
+        try {
+          await removeCategory(cat.slug);
+          toast.success("Category deleted successfully");
+          fetchCategories();
+        } catch (err) {
+          toast.error(err.message || "Failed to delete category");
+        }
+      }}
+    >
+       <Trash2 size={16} />
+</Button>
+
+  </div>
+</td>
                   </tr>
                 ))
               ) : (
