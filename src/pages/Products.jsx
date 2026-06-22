@@ -18,13 +18,13 @@ const Products = () => {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const subcategoryFromURL = params.get("subcategory");
-  const searchFromURL = params.get("search") || "";
+  const navbarSearchFromURL = params.get("search") || "";
 
   const [filters, setFilters] = useState({
     category: "",
     subcategory: subcategoryFromURL || "",
-    search: searchFromURL,
-    minPrice: 0,
+search: "",   
+ minPrice: 0,
     maxPrice: 10000,
     page: 1,
     limit: 20,
@@ -38,33 +38,29 @@ const Products = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // fetchCategories is stable from zustand store
 
-  // ✅ Update filter when user navigates with ?subcategory=Name
-useEffect(() => {
-  setFilters((prev) => ({
-    ...prev,
-    search: searchFromURL || "",
-    page: 1,
-  }));
-}, [searchFromURL]);
 
-  // ✅ Sync navbar search query (?search=) with products filters
-useEffect(() => {
+
+ useEffect(() => {
   setFilters((prev) => ({
     ...prev,
-    search: searchFromURL || "",
+    subcategory: subcategoryFromURL || "",
     page: 1,
   }));
-}, [searchFromURL]);
+}, [subcategoryFromURL]);
 
   // Fetch products when filters change
-  useEffect(() => {
-    const delay = setTimeout(() => {
-      fetchProducts(filters);
-    }, 300); // wait 300ms after typing stops
+useEffect(() => {
+  const delay = setTimeout(() => {
+    fetchProducts({
+      ...filters,
+      search: filters.search || navbarSearchFromURL,
+      minPrice: Number(filters.minPrice),
+      maxPrice: Number(filters.maxPrice),
+    });
+  }, 300);
 
-    return () => clearTimeout(delay);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters]); // fetchProducts is stable from zustand store
+  return () => clearTimeout(delay);
+}, [filters, navbarSearchFromURL]);
 
 const handleFilterChange = (key, value) => {
   setFilters((prev) => {
@@ -158,22 +154,22 @@ const handleFilterChange = (key, value) => {
             <Label className="text-sm sm:text-base">
               Price Range: ₹{filters.minPrice} - ₹{filters.maxPrice}
             </Label>
-            <Slider
-              min={0}
-              max={10000}
-             step={1}
-              value={[filters.minPrice, filters.maxPrice]}
-onValueChange={(val) => {
-  setFilters((prev) => ({
-    ...prev,
-    minPrice: val[0],
-    maxPrice: val[1],
-    page: 1,
-  }));
+<Slider
+  min={0}
+  max={10000}
+  step={50}
+  value={[Number(filters.minPrice), Number(filters.maxPrice)]}
+  onValueChange={(val) => {
+    setFilters((prev) => ({
+      ...prev,
+      minPrice: Number(val[0]),
+      maxPrice: Number(val[1]),
+      page: 1,
+    }));
 
-  navigate("/products", { replace: true });
-}}
-            />
+    navigate("/products", { replace: true });
+  }}
+/>
           </div>
 
 <Button

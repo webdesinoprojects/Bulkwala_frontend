@@ -9,8 +9,8 @@ import { useOfferStore } from "@/store/offer.store";
 import { toast } from "sonner";
 
 export default function Navbar() {
-  const { user, logout, checkauthstatus } = useAuthStore();
-  const { totalItems, fetchCart } = useCartStore();
+  const { user, logout } = useAuthStore();
+  const { totalItems } = useCartStore();
   const { wishlist, fetchWishlist } = useWishlistStore();
   const { products, fetchProducts } = useProductStore();
   const { activeOffer, fetchActiveOffer, timeLeft } = useOfferStore();
@@ -60,13 +60,13 @@ export default function Navbar() {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(false);
       }
-      if (
-        suggestionRef.current &&
-        !suggestionRef.current.contains(event.target) &&
-        !searchRef.current.contains(event.target)
-      ) {
-        setSuggestions([]);
-      }
+if (
+  suggestionRef.current &&
+  !suggestionRef.current.contains(event.target) &&
+  (!searchRef.current || !searchRef.current.contains(event.target))
+) {
+  setSuggestions([]);
+}
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -118,87 +118,67 @@ export default function Navbar() {
       setListening(false);
     }
   };
+// ✅ Search logic
+const performSearch = (queryInput) => {
+  const trimmedQuery = String(queryInput || searchQuery).trim();
+  if (!trimmedQuery) return;
 
-  // ✅ Search logic
-  const performSearch = (queryInput) => {
-    const query =
-      typeof queryInput === "function" ? queryInput(searchQuery) : queryInput;
-    const trimmedQuery = query?.trim() || "";
-    if (!trimmedQuery) return;
+  setSuggestions([]);
+  setActiveIndex(-1);
+setSearchQuery("");
+  navigate(`/products?search=${encodeURIComponent(trimmedQuery)}`);
+};
 
-    const keyword = trimmedQuery.toLowerCase().replace(/\s+/g, "");
-    const filtered = products.filter((p) => {
-      const normalize = (str) => (str || "").toLowerCase().replace(/\s+/g, "");
+const handleSearchSubmit = (e) => {
+  e.preventDefault();
+
+  setSuggestions([]);
+  setActiveIndex(-1);
+
+  if (document.activeElement) {
+    document.activeElement.blur();
+  }
+
+  performSearch(searchQuery);
+};
+
+const handleSuggestionClick = (product) => {
+  setSuggestions([]);
+  setActiveIndex(-1);
+  setSearchQuery("");
+
+  if (document.activeElement) {
+    document.activeElement.blur();
+  }
+
+  navigate(product.slug ? `/product/${product.slug}` : `/product/${product._id}`);
+};
+
+// ✅ Smart suggestions logic
+useEffect(() => {
+  const keyword = searchQuery.trim().toLowerCase().replace(/\s+/g, "");
+
+  if (!keyword) {
+    setSuggestions([]);
+    setActiveIndex(-1);
+    return;
+  }
+
+  const matched = products
+    .filter((p) => {
+      const normalize = (s) => (s || "").toLowerCase().replace(/\s+/g, "");
       return (
         normalize(p.title).includes(keyword) ||
-        normalize(p.description).includes(keyword) ||
         normalize(p.category?.name).includes(keyword) ||
         normalize(p.subcategory?.name).includes(keyword)
       );
-    });
+    })
+    .slice(0, 6)
+    .map((p) => ({ _id: p._id, title: p.title, slug: p.slug }));
 
-    if (filtered.length > 0) toast.success(`Found ${filtered.length} results`);
-    else toast.info("No matches found");
-
-    const updated = [
-      trimmedQuery,
-      ...recentSearches.filter((i) => i !== trimmedQuery),
-    ].slice(
-      0,
-      5
-    );
-    setRecentSearches(updated);
-    localStorage.setItem("recentSearches", JSON.stringify(updated));
-
-    setSuggestions([]); // ✅ close dropdown
-    setSearchQuery(trimmedQuery);
-    navigate(`/products?search=${encodeURIComponent(trimmedQuery)}`);
-  };
-
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    if (activeIndex >= 0 && suggestions[activeIndex]) {
-      handleSuggestionClick(suggestions[activeIndex]);
-    } else {
-      performSearch(searchQuery);
-      setSuggestions([]);
-      setActiveIndex(-1);
-    }
-  };
-
-  const handleSuggestionClick = (product) => {
-    setSearchQuery("");
-    setSuggestions([]);
-    setActiveIndex(-1);
-    if (product.slug) {
-      navigate(`/product/${product.slug}`);
-    } else {
-      navigate(`/product/${product._id}`);
-    }
-  };
-
-  // ✅ Smart suggestions logic
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setSuggestions([]);
-      setActiveIndex(-1);
-      return;
-    }
-    const keyword = searchQuery.toLowerCase().replace(/\s+/g, "");
-    const matched = products
-      .filter((p) => {
-        const normalize = (s) => (s || "").toLowerCase().replace(/\s+/g, "");
-        return (
-          normalize(p.title).includes(keyword) ||
-          normalize(p.category?.name).includes(keyword) ||
-          normalize(p.subcategory?.name).includes(keyword)
-        );
-      })
-      .slice(0, 6)
-      .map((p) => ({ _id: p._id, title: p.title, slug: p.slug }));
-    setSuggestions(matched);
-    setActiveIndex(-1);
-  }, [searchQuery, products]);
+  setSuggestions(matched);
+  setActiveIndex(-1);
+}, [searchQuery, products]);
 
   // ✅ Logout
   const handleLogout = async () => {
@@ -235,12 +215,12 @@ export default function Navbar() {
 
 <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/90 backdrop-blur-xl">        <div className="max-w-7xl mx-auto w-full flex items-center justify-between p-4">
           {/* 🧩 Logo - Left */}
-          <img
-            src="https://ik.imagekit.io/bulkwala/demo/bulkwalalogo.jpg?updatedAt=1762145179195"
-            alt="Bulkwala Logo"
-            className="w-20 h-20 cursor-pointer"
-            onClick={() => navigate("/")}
-          />
+<img
+  src="/bulkwala-logo.jpeg"
+  alt="Bulkwala Logo"
+  className="h-20 w-20 cursor-pointer object-contain"
+  onClick={() => navigate("/")}
+/>
 
           {/* 🔍 Search Bar (Hidden on Mobile) */}
           <div className="hidden md:block w-[450px]">
@@ -263,19 +243,20 @@ export default function Navbar() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onBlur={() => setTimeout(() => { setSuggestions([]); setActiveIndex(-1); }, 150)}
-                onKeyDown={(e) => {
-                  if (suggestions.length === 0) return;
-                  if (e.key === "ArrowDown") {
-                    e.preventDefault();
-                    setActiveIndex((prev) => Math.min(prev + 1, suggestions.length - 1));
-                  } else if (e.key === "ArrowUp") {
-                    e.preventDefault();
-                    setActiveIndex((prev) => Math.max(prev - 1, -1));
-                  } else if (e.key === "Escape") {
-                    setSuggestions([]);
-                    setActiveIndex(-1);
-                  }
-                }}
+onKeyDown={(e) => {
+  if (e.key === "ArrowDown") {
+    e.preventDefault();
+    setActiveIndex((prev) =>
+      Math.min(prev + 1, suggestions.length - 1)
+    );
+  } else if (e.key === "ArrowUp") {
+    e.preventDefault();
+    setActiveIndex((prev) => Math.max(prev - 1, -1));
+  } else if (e.key === "Escape") {
+    setSuggestions([]);
+    setActiveIndex(-1);
+  }
+}}
               />
               <ion-icon
                 name={listening ? "mic" : "mic-outline"}
@@ -464,8 +445,7 @@ export default function Navbar() {
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
-                if (e.target.value.trim()) setSuggestions(recentSearches);
-              }}
+                            }}
               onFocus={() => {
                 if (searchQuery.trim()) setSuggestions(recentSearches);
               }}

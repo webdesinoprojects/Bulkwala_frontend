@@ -37,7 +37,7 @@ export default function About() {
   <img
     src="/about/premium-cases.png"
     alt="Premium mobile covers"
-    className="h-80 w-full rounded-2xl object-cover block"
+    className="h-80 w-69 rounded-2xl object-cover block"
   />
 </div>
 
