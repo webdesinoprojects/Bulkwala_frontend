@@ -27,59 +27,57 @@ export default function About() {
     <section className="min-h-screen bg-[#f5f8fc] text-[#111827]">
       <div className="mx-auto max-w-7xl px-6 py-16">
         {/* Hero */}
-        <div className="grid items-center gap-12 lg:grid-cols-2">
-  <div className="relative">
-  <div className="absolute -left-8 -top-8 h-44 w-44 rounded-full bg-[#90caf9]/50 blur-3xl" />
-  <div className="absolute bottom-4 right-2 h-40 w-40 rounded-full bg-[#02066F]/20 blur-3xl" />
+        <div className="grid items-center gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:gap-14">
+   <div className="mx-auto w-full max-w-2xl">
 
-  <div className=" grid grid-cols-2 gap-5">
-<div className="overflow-hidden rounded-3xl bg-[#bbdefb] p-3 shadow-xl self-start">
-  <img
-    src="/about/premium-cases.png"
-    alt="Premium mobile covers"
-    className="h-80 w-69 rounded-2xl object-cover block"
-  />
-</div>
+   <div className="grid gap-4 sm:grid-cols-[1.08fr_0.92fr] sm:items-end">
+     <div className="overflow-hidden rounded-3xl bg-white shadow-xl ring-1 ring-slate-200/70 lg:-translate-y-48">
+   <img
+     src="/about/premium-cases.png"
+     alt="Premium mobile covers"
+     className="aspect-[1.08/1] w-full object-cover"
+   />
+     </div>
 
-    <div className="mt-12 space-y-5">
-      <div className="rounded-3xl bg-[#90caf9] p-6 shadow-xl">
-        <p className="text-4xl font-black text-[#02066F]">3000+</p>
-        <p className="mt-2 text-sm font-medium text-[#02066F]/80">
-          Products listed for everyday mobile needs
-        </p>
-      </div>
+     <div className="grid gap-4 sm:pb-6">
+       <div className="rounded-3xl bg-[#C9E0EF] p-5 shadow-lg ring-1 ring-white/80 sm:p-6">
+         <p className="text-4xl font-black text-[#02066F] sm:text-5xl">3000+</p>
+         <p className="mt-2 max-w-xs text-sm font-semibold leading-6 text-[#02066F]/80">
+           Products listed for everyday mobile needs
+         </p>
+       </div>
 
-      <div className="relative overflow-hidden rounded-3xl bg-white p-5 shadow-xl">
-        <div className="absolute right-4 top-4 rounded-full bg-[#02066F] px-3 py-1 text-xs font-bold text-white">
-          Trending
-        </div>
+       <div className="relative overflow-hidden rounded-3xl bg-white p-4 shadow-xl ring-1 ring-slate-200/70 sm:p-5">
+         <div className="absolute right-4 top-4 rounded-full bg-[#02066F] px-3 py-1 text-xs font-bold text-white">
+           Trending
+         </div>
 
-        <img
-          src="/about/bear-case.png"
-          alt="Cute phone case"
-          className="h-56 w-full object-contain"
-        />
+         <img
+           src="/about/bear-case.png"
+           alt="Cute phone case"
+           className="mx-auto h-44 w-full object-contain sm:h-52 lg:h-56"
+         />
 
-        <p className="mt-3 text-center text-sm font-bold text-[#02066F]">
-          Designer Phone Cases
-        </p>
-      </div>
-    </div>
-  </div>
-</div>
+         <p className="mt-3 text-center text-sm font-bold text-[#02066F]">
+           Designer Phone Cases
+         </p>
+       </div>
+     </div>
+   </div>
+ </div>
 
-          <div>
-            <p className="mb-3 text-xl font-bold uppercase tracking-[0.35em] text-black">
+          <div className="text-center lg:text-left">
+            <p className="mb-3 text-sm font-bold uppercase tracking-[0.35em] text-[#02066F]/70 sm:text-base">
               About Us
             </p>
-            <h1 className="max-w-xl text-4xl font-black leading-tight text-[#02066F] md:text-6xl">
+            <h1 className="mx-auto max-w-2xl text-4xl font-black leading-tight text-[#02066F] sm:text-5xl lg:mx-0 xl:text-6xl">
               Built for India’s mobile accessories market.
             </h1>
-            <p className="mt-6 max-w-xl text-lg leading-8 text-gray-600">
+            <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-gray-600 sm:text-lg lg:mx-0">
               Bulkwala.com is a digital marketplace created to make mobile accessories easier to discover and buy . From mobile covers and tempered glass to daily-use accessories, we bring reliable products closer to customers, retailers, and local sellers.
             </p>
 
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
               <span className="rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#02066F] shadow-sm">
                 Since 2017
               </span>

@@ -27,6 +27,7 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false); // ✅ New state for hamburger
   const dropdownRef = useRef();
   const searchRef = useRef();
+  const searchMobileRef = useRef();
   const suggestionRef = useRef();
   const navigate = useNavigate();
   const location = useLocation();
@@ -63,7 +64,8 @@ export default function Navbar() {
 if (
   suggestionRef.current &&
   !suggestionRef.current.contains(event.target) &&
-  (!searchRef.current || !searchRef.current.contains(event.target))
+  (!searchRef.current || !searchRef.current.contains(event.target)) &&
+  (!searchMobileRef.current || !searchMobileRef.current.contains(event.target))
 ) {
   setSuggestions([]);
 }
@@ -213,14 +215,72 @@ useEffect(() => {
         </div>
       )}
 
-<header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/90 backdrop-blur-xl">        <div className="max-w-7xl mx-auto w-full flex items-center justify-between p-4">
+<header className="sticky top-0 z-50 w-full border-b-2 border-b-slate-500 md:border-b md:border-slate-200 bg-white/90 backdrop-blur-xl">        <div className="max-w-7xl mx-auto w-full flex items-center justify-between p-3 md:p-4">
           {/* 🧩 Logo - Left */}
 <img
   src="/bulkwala-logo.jpeg"
   alt="Bulkwala Logo"
-  className="h-20 w-20 cursor-pointer object-contain"
+  className="h-16 w-16 md:h-20 md:w-20 cursor-pointer object-contain"
   onClick={() => navigate("/")}
-/>
+        />
+
+          {/* 📱 MOBILE SEARCH BAR */}
+          <div className="flex-1 mx-2 md:hidden">
+            <form
+              onSubmit={handleSearchSubmit}
+              className="flex items-center bg-gray-100 rounded-md px-3 py-1.5"
+            >
+              <button
+                type="submit"
+                className="mr-2 text-gray-500 hover:text-gray-700"
+                aria-label="Search"
+              >
+                <ion-icon name="search-outline" class="text-xl"></ion-icon>
+              </button>
+              <input
+                ref={searchMobileRef}
+                type="text"
+                placeholder="Search Your Products"
+                className="bg-transparent flex-1 outline-none text-sm"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                }}
+              />
+              <ion-icon
+                name={listening ? "mic" : "mic-outline"}
+                class={`text-xl ml-2 cursor-pointer transition-all ${
+                  listening ? "text-red-500 animate-pulse" : "text-gray-500"
+                }`}
+                onClick={handleVoiceSearch}
+              ></ion-icon>
+            </form>
+            {searchQuery.trim() && (
+              <div
+                ref={suggestionRef}
+                className="bg-white shadow-md rounded-md mt-1 border border-gray-200 z-50 w-full"
+              >
+                {suggestions.length > 0 ? (
+                  suggestions.map((product, idx) => (
+                    <div
+                      key={product._id}
+                      className={`px-3 py-2 cursor-pointer text-sm text-gray-700 ${
+                        idx === activeIndex ? "bg-gray-200" : "hover:bg-gray-100"
+                      }`}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleSuggestionClick(product);
+                      }}
+                    >
+                      {product.title}
+                    </div>
+                  ))
+                ) : (
+                  <div className="px-3 py-2 text-sm text-gray-400">No products found</div>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* 🔍 Search Bar (Hidden on Mobile) */}
           <div className="hidden md:block w-[450px]">
@@ -299,7 +359,7 @@ onKeyDown={(e) => {
           <div className="flex items-center space-x-4">
             {/* Hamburger only on mobile */}
             <button
-              className="md:hidden flex items-center justify-center w-10 h-10 rounded-md border border-gray-300"
+              className="md:hidden flex items-center justify-center w-9 h-9 rounded-md border border-gray-300"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               <ion-icon
@@ -309,7 +369,7 @@ onKeyDown={(e) => {
             </button>
 
             {/* Desktop Icons */}
-            <div className="hidden md:flex items-center space-x-6 relative">
+            <div className="hidden md:flex items-center space-x-4 md:space-x-6 relative">
               <Link
                 to="/wishlist"
                 className="relative flex items-center space-x-1"
@@ -328,7 +388,16 @@ onKeyDown={(e) => {
                 )}
               </Link>
 
-              <Link to="/cart" className="relative flex items-center space-x-1">
+              <Link
+                to={user ? "/cart" : "/login"}
+                className="relative flex items-center space-x-1"
+                onClick={(e) => {
+                  if (!user) {
+                    e.preventDefault();
+                    navigate("/login");
+                  }
+                }}
+              >
                 <ion-icon
                   name="cart-outline"
                   className="text-xl text-[#02066F]"
@@ -347,7 +416,7 @@ onKeyDown={(e) => {
                 <div ref={dropdownRef} className="relative">
                   <button
                     onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className="flex items-center space-x-2 px-3 py-1 bg-gray-100 rounded-md hover:bg-gray-200 transition"
+                    className="flex items-center space-x-2 px-2 py-1 md:px-3 md:py-1 bg-gray-100 rounded-md hover:bg-gray-200 transition"
                   >
                     <ion-icon
                       name="person-circle-outline"
@@ -424,68 +493,10 @@ onKeyDown={(e) => {
           </div>
         </div>
 
-        {/* 📱 ALWAYS VISIBLE MOBILE SEARCH BAR */}
-        <div className="md:hidden w-full px-4 pb-3">
-          <form
-            onSubmit={handleSearchSubmit}
-            className="flex items-center bg-gray-100 rounded-md px-4 py-2"
-          >
-            <button
-              type="submit"
-              className="mr-2 text-gray-500 hover:text-gray-700"
-              aria-label="Search"
-            >
-              <ion-icon name="search-outline" class="text-xl"></ion-icon>
-            </button>
-
-            <input
-              type="text"
-              placeholder="Search Your Products"
-              className="bg-transparent flex-1 outline-none text-base"
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                            }}
-              onFocus={() => {
-                if (searchQuery.trim()) setSuggestions(recentSearches);
-              }}
-            />
-
-            <ion-icon
-              name={listening ? "mic" : "mic-outline"}
-              class={`text-xl ml-2 cursor-pointer transition-all ${
-                listening ? "text-red-500 animate-pulse" : "text-gray-500"
-              }`}
-              onClick={handleVoiceSearch}
-            ></ion-icon>
-          </form>
-
-          {searchQuery.trim() && (
-            <div className="bg-white shadow-md rounded-md mt-1 border border-gray-200 z-50">
-              {suggestions.length > 0 ? (
-                suggestions.map((product) => (
-                  <div
-                    key={product._id}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm text-gray-700"
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      handleSuggestionClick(product);
-                    }}
-                  >
-                    {product.title}
-                  </div>
-                ))
-              ) : (
-                <div className="px-4 py-2 text-sm text-gray-400">No products found</div>
-              )}
-            </div>
-          )}
-        </div>
-
         {/* 🧭 NAV LINKS (desktop + mobile responsive) */}
-<nav className="w-full bg-gradient-to-r py-4">
+<nav className="w-full px-3 pb-3 md:px-0 md:py-4">
   <div
-    className={`mx-auto max-w-3xl rounded-full bg-[#02066F] px-4 py-3 shadow-[0_10px_30px_rgba(2,6,111,0.25)] flex-col md:flex-row md:flex md:items-center md:justify-center gap-2 transition-all duration-300 ${
+    className={`mx-auto w-full max-w-md flex-col gap-1.5 rounded-2xl border border-slate-200 bg-white p-2 md:p-3 shadow-[0_16px_40px_rgba(15,23,42,0.12)] transition-all duration-300 md:max-w-3xl md:flex-row md:items-center md:justify-center md:rounded-full md:border-0 md:bg-[#02066F] md:px-4 md:py-3 md:shadow-[0_10px_30px_rgba(2,6,111,0.25)] ${
       mobileMenuOpen ? "flex" : "hidden md:flex"
     }`}
   >
@@ -499,10 +510,10 @@ onKeyDown={(e) => {
         key={item.to}
         to={item.to}
         className={({ isActive }) =>
-          `relative rounded-full px-6 py-3 text-xs font-bold uppercase tracking-wide transition-all duration-300 ${
+          `relative rounded-xl px-3 py-2 text-sm font-bold uppercase tracking-wide transition-all duration-300 md:rounded-full md:px-6 md:text-xs ${
             isActive
-              ? "bg-[#C9E0EF] text-[#02066F] shadow-lg after:absolute after:left-1/2 after:-bottom-1 after:h-1 after:w-8 after:-translate-x-1/2 after:rounded-full after:bg-white"
-              : "text-white/75 hover:text-white hover:bg-white/10"
+              ? "bg-[#C9E0EF] text-[#02066F] shadow-sm md:shadow-lg md:after:absolute md:after:left-1/2 md:after:-bottom-1 md:after:h-1 md:after:w-8 md:after:-translate-x-1/2 md:after:rounded-full md:after:bg-white"
+              : "text-[#02066F] hover:bg-slate-100 md:text-white/75 md:hover:bg-white/10 md:hover:text-white"
           }`
         }
       >
@@ -511,9 +522,9 @@ onKeyDown={(e) => {
     ))}
 
             {/* ---- MOBILE MENU EXTRA OPTIONS ---- */}
-            <div className="flex flex-col gap-4 mt-5 md:hidden">
+            <div className="mt-2 flex flex-col gap-2 border-t border-slate-200 pt-2 md:hidden">
               {/* ❤️ Wishlist */}
-              <Link to="/wishlist" className="flex items-center gap-3">
+               <Link to="/wishlist" className="flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-slate-100">
                 <ion-icon
                   name="heart-outline"
                   class="text-2xl text-[#02066F]"
@@ -529,7 +540,16 @@ onKeyDown={(e) => {
               </Link>
 
               {/* 🛒 Cart */}
-              <Link to="/cart" className="flex items-center gap-3">
+              <Link
+                to={user ? "/cart" : "/login"}
+                className="flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-slate-100"
+                onClick={(e) => {
+                  if (!user) {
+                    e.preventDefault();
+                    navigate("/login");
+                  }
+                }}
+              >
                 <ion-icon
                   name="cart-outline"
                   class="text-2xl text-[#02066F]"
@@ -544,10 +564,10 @@ onKeyDown={(e) => {
 
               {/* 👤 Login / Signup OR Profile */}
               {user ? (
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-2">
                   <Link
                     to="/profile"
-                    className="flex items-center gap-3 text-[#02066F] text-lg font-medium"
+                    className="flex items-center gap-3 rounded-xl px-3 py-2 text-[#02066F] text-lg font-medium hover:bg-slate-100"
                   >
                     <ion-icon
                       name="person-circle-outline"
@@ -559,7 +579,7 @@ onKeyDown={(e) => {
                   {user.role === "customer" && (
                     <Link
                       to="/my-orders"
-                      className="flex items-center gap-3 text-[#02066F] text-lg font-medium"
+                      className="flex items-center gap-3 rounded-xl px-3 py-2 text-[#02066F] text-lg font-medium hover:bg-slate-100"
                     >
                       <ion-icon name="bag-outline" class="text-2xl"></ion-icon>
                       My Orders
@@ -569,7 +589,7 @@ onKeyDown={(e) => {
                   {(user.role === "admin" || user.role === "seller") && (
                     <Link
                       to={`/${user.role}`}
-                      className="flex items-center gap-3 text-[#02066F] text-lg font-medium"
+                      className="flex items-center gap-3 rounded-xl px-3 py-2 text-[#02066F] text-lg font-medium hover:bg-slate-100"
                     >
                       <ion-icon name="grid-outline" class="text-2xl"></ion-icon>
                       Manage Dashboard
@@ -578,7 +598,7 @@ onKeyDown={(e) => {
 
                   <button
                     onClick={handleLogout}
-                    className="flex items-center gap-3 text-red-600 text-lg font-medium mt-2"
+                    className="flex items-center gap-3 rounded-xl px-3 py-2 text-red-600 text-lg font-medium hover:bg-red-50"
                   >
                     <ion-icon
                       name="log-out-outline"
@@ -588,7 +608,7 @@ onKeyDown={(e) => {
                   </button>
                 </div>
               ) : (
-                <div className="flex items-center gap-2 mt-2">
+                <div className="flex items-center gap-2 rounded-xl px-3 py-2">
                   <Link
                     to="/login"
                     className="text-[#02066F] text-lg font-medium hover:underline"
