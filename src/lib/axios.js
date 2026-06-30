@@ -1,7 +1,11 @@
 import axios from "axios";
 
+const apiBaseURL =
+  import.meta.env.VITE_BACKEND_URL ||
+  (import.meta.env.DEV ? "http://localhost:5000" : window.location.origin);
+
 export const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_URL || "http://localhost:5000",
+  baseURL: apiBaseURL,
   withCredentials: true, // IMPORTANT: allows sending cookies
 });
 
@@ -40,7 +44,7 @@ axiosInstance.interceptors.response.use(
         // Try to refresh token
         const refreshToken = localStorage.getItem("refreshToken");
         const response = await axios.post(
-          `${import.meta.env.VITE_BACKEND_URL}/api/users/refresh-token`,
+          `${apiBaseURL}/api/users/refresh-token`,
           {},
           { 
             withCredentials: true,
