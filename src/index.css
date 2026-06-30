@@ -267,4 +267,24 @@
   }
 }
 
+@media (max-width: 767px) {
+  .swiper-pagination-bullet {
+    width: 6px !important;
+    height: 6px !important;
+  }
+
+  .swiper-pagination-bullet-active {
+    background-color: #02066f !important;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 

@@ -16,16 +16,18 @@ export default function CategoryNav({ selectedCategory, onSelect }) {
       className="
         flex 
         items-center
-        gap-3 
+        gap-4 
         md:gap-5 
         overflow-x-auto 
-        px-3 
-        py-2 
+        px-4 
+        py-3 
         md:px-6 md:py-3 
         bg-white 
-        border-b border-gray-200
+        border-y border-gray-100
+        md:border-b md:border-t-0 md:border-gray-200
         scrollbar-hide 
-        sticky top-0 z-30
+        md:sticky md:top-0 md:z-30
+        snap-x snap-mandatory
       "
     >
       {categories.map((cat) => {
@@ -36,23 +38,26 @@ export default function CategoryNav({ selectedCategory, onSelect }) {
             key={cat._id}
             className="
               flex flex-col items-center 
-              min-w-[60px] 
+              min-w-[72px] 
               md:min-w-[80px] 
               cursor-pointer 
               transition-all 
               duration-200 
               active:scale-95
+              snap-start
             "
             onClick={() => onSelect(cat)}
           >
             <div
               className={`
-                w-12 h-12 
+                w-14 h-14 
                 md:w-16 md:h-16 
-                rounded-md 
+                rounded-lg 
                 overflow-hidden 
                 flex items-center justify-center 
                 border-2 
+                bg-white
+                shadow-sm
                 transition-all duration-200 
                 ${
                   isSelected
@@ -70,10 +75,10 @@ export default function CategoryNav({ selectedCategory, onSelect }) {
 
             <p
               className={`
-                text-[10px] md:text-sm mt-1 md:mt-2 
+                text-[11px] md:text-sm mt-1.5 md:mt-2 
                 font-medium text-center leading-tight
                 ${isSelected ? "text-blue-600" : "text-gray-700"}
-                truncate max-w-[60px] md:max-w-[90px]
+                truncate max-w-[72px] md:max-w-[90px]
               `}
             >
               {cat.name}

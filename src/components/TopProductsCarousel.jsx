@@ -34,10 +34,10 @@ export default function TopProductsCarousel() {
     );
 
   return (
-    <section className="relative max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-10">
+    <section className="relative max-w-7xl mx-auto px-4 sm:px-4 lg:px-6 py-4 sm:py-10">
       {/* ✅ Header */}
-      <div className="flex justify-between items-center mb-4 sm:mb-8">
-        <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800">
+      <div className="flex justify-between items-center mb-3 sm:mb-8">
+        <h2 className="text-[21px] sm:text-xl md:text-2xl font-semibold text-gray-800 leading-tight">
           Top Products
         </h2>
         <div className="hidden sm:block h-[2px] w-16 sm:w-24 bg-[#02066F]" />
@@ -46,8 +46,8 @@ export default function TopProductsCarousel() {
       {/* ✅ Carousel */}
       <Swiper
         modules={[Navigation, Pagination, Autoplay]}
-        spaceBetween={15}
-        slidesPerView={1}
+        spaceBetween={12}
+        slidesPerView={1.12}
         breakpoints={{
           480: { slidesPerView: 2, spaceBetween: 20 },
           768: { slidesPerView: 3, spaceBetween: 25 },
@@ -58,7 +58,7 @@ export default function TopProductsCarousel() {
         pagination={{ clickable: true, dynamicBullets: true }}
         // navigation
         loop={true}
-        className="pb-10 sm:pb-12"
+        className="pb-8 sm:pb-12"
       >
         {topProducts.map((product) => (
           <SwiperSlide key={product._id}>
@@ -68,7 +68,7 @@ export default function TopProductsCarousel() {
                 transition-all duration-300 
                 overflow-hidden group cursor-pointer 
                 border border-gray-100 flex flex-col 
-                h-[300px] sm:h-[340px] md:h-[380px]
+                h-[265px] sm:h-[340px] md:h-[380px]
               "
               onClick={() => navigate(`/product/${product.slug}`)}
             >
@@ -76,7 +76,7 @@ export default function TopProductsCarousel() {
               <div
                 className="
                   relative w-full 
-                  h-[150px] sm:h-[170px] md:h-[200px] 
+                  h-[132px] sm:h-[170px] md:h-[200px] 
                   bg-gray-50 
                   overflow-hidden 
                   flex items-center justify-center
@@ -117,7 +117,7 @@ export default function TopProductsCarousel() {
                   {product.description?.slice(0, 60) || "No description"}
                 </p>
 
-                <div className="flex justify-between items-center mt-2 sm:mt-3">
+                <div className="flex justify-between items-center gap-2 mt-2 sm:mt-3">
                   <span className="text-sm sm:text-lg font-bold text-[#02066F]">
                     ₹
                     {product.discountPrice && product.discountPrice > 0
@@ -126,9 +126,12 @@ export default function TopProductsCarousel() {
                   </span>
 
                   <button
-                    onClick={() => navigate(`/product/${product.slug}`)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/product/${product.slug}`);
+                    }}
                     className="
-                      text-xs sm:text-sm font-semibold text-yellow-500 
+                      shrink-0 text-xs sm:text-sm font-semibold text-yellow-500 
                       hover:text-yellow-400 transition-colors
                     "
                   >

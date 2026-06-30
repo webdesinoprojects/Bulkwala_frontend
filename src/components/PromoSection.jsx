@@ -18,25 +18,25 @@ function BannerCard({ banner, large = false }) {
         alt={banner.title || "Banner"}
         className={
           large
-            ? "w-full h-auto rounded-2xl object-cover shadow-md hover:shadow-lg transition-all duration-300"
-            : "w-full h-[180px] md:h-[200px] rounded-2xl object-contain shadow-sm hover:shadow-md transition-all duration-300"
+            ? "aspect-[16/9] w-full rounded-lg bg-gray-50 object-contain shadow-md transition-all duration-300 hover:shadow-lg md:aspect-auto md:h-auto md:rounded-2xl md:object-cover"
+            : "w-full h-[150px] md:h-[200px] rounded-lg md:rounded-2xl object-contain shadow-sm hover:shadow-md transition-all duration-300"
         }
       />
 
       {large ? (
-        <div className="flex justify-between items-center mt-4">
-          <h2 className="text-2xl md:text-3xl font-bold text-[#02066F]">
+        <div className="flex justify-between items-center gap-3 mt-3 md:mt-4">
+          <h2 className="text-lg md:text-3xl font-bold text-[#02066F] line-clamp-1">
             {banner.title || "Shop Now"}
           </h2>
           <Button
             onClick={handleCtaClick}
-            className="bg-[#FFD700] text-[#02066F] font-semibold hover:bg-[#E5C870]"
+            className="shrink-0 bg-[#FFD700] text-[#02066F] font-semibold hover:bg-[#E5C870]"
           >
             SHOP NOW
           </Button>
         </div>
       ) : (
-        <h3 className="text-lg md:text-xl font-semibold text-[#02066F] mt-2">
+        <h3 className="text-base md:text-xl font-semibold text-[#02066F] mt-2 line-clamp-1">
           {banner.title || "Featured"}
         </h3>
       )}
@@ -77,8 +77,8 @@ export default function PromoSection() {
   const [firstBanner, ...restBanners] = usableBanners;
 
   return (
-    <section className="max-w-7xl mx-auto py-10 px-4 md:px-0">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <section className="max-w-7xl mx-auto py-4 px-4 md:py-10 md:px-0">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
         <div className="md:col-span-2">
           {firstBanner && <BannerCard banner={firstBanner} large />}
         </div>

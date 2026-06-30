@@ -69,7 +69,7 @@ export default function BannerSlider({ position = 'top' }) {
         effect="fade"
         fadeEffect={{ crossFade: true }}
         loop={validImages.length > 1}
-        className="w-full rounded-lg overflow-hidden"
+        className="w-full overflow-hidden rounded-lg md:rounded-lg"
       >
         {validImages.map((banner, idx) => (
           <SwiperSlide key={idx} className="!h-auto">
@@ -81,7 +81,7 @@ export default function BannerSlider({ position = 'top' }) {
                 src={banner.url}
                 alt={banner.title || `banner-${idx}`}
                 onError={() => handleImageError(banner.url)}
-                className="w-full h-auto min-h-[200px] sm:min-h-[250px] md:min-h-[350px] lg:min-h-[450px] object-cover rounded-lg"
+                className="aspect-[16/9] w-full rounded-lg bg-gray-50 object-contain md:aspect-auto md:h-auto md:min-h-[350px] md:object-cover lg:min-h-[450px]"
               />
             </div>
           </SwiperSlide>
