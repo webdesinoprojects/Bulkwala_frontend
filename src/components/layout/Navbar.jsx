@@ -215,24 +215,24 @@ useEffect(() => {
         </div>
       )}
 
-<header className="sticky top-0 z-50 w-full border-b-2 border-b-slate-500 md:border-b md:border-slate-200 bg-white/90 backdrop-blur-xl">        <div className="max-w-7xl mx-auto w-full flex items-center justify-between p-3 md:p-4">
+<header className="sticky top-0 z-50 w-full max-w-full overflow-x-hidden border-b-2 border-b-slate-500 md:border-b md:border-slate-200 bg-white/90 backdrop-blur-xl">        <div className="max-w-7xl mx-auto w-full min-w-0 flex items-center justify-between p-3 md:p-4">
           {/* 🧩 Logo - Left */}
 <img
   src="/bulkwala-logo.jpeg"
   alt="Bulkwala Logo"
-  className="h-16 w-16 md:h-20 md:w-20 cursor-pointer object-contain"
+  className="h-16 w-16 shrink-0 md:h-20 md:w-20 cursor-pointer object-contain"
   onClick={() => navigate("/")}
         />
 
           {/* 📱 MOBILE SEARCH BAR */}
-          <div className="flex-1 mx-2 md:hidden">
+          <div className="min-w-0 flex-1 mx-2 md:hidden">
             <form
               onSubmit={handleSearchSubmit}
-              className="flex items-center bg-gray-100 rounded-md px-3 py-1.5"
+              className="flex min-w-0 items-center bg-gray-100 rounded-md px-3 py-1.5"
             >
               <button
                 type="submit"
-                className="mr-2 text-gray-500 hover:text-gray-700"
+                className="mr-2 shrink-0 text-gray-500 hover:text-gray-700"
                 aria-label="Search"
               >
                 <ion-icon name="search-outline" class="text-xl"></ion-icon>
@@ -241,7 +241,7 @@ useEffect(() => {
                 ref={searchMobileRef}
                 type="text"
                 placeholder="Search Your Products"
-                className="bg-transparent flex-1 outline-none text-sm"
+                className="min-w-0 bg-transparent flex-1 outline-none text-base"
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -356,7 +356,7 @@ onKeyDown={(e) => {
           </div>
 
           {/* ❤️ 🛒 👤 + Hamburger */}
-          <div className="flex items-center space-x-4">
+          <div className="flex shrink-0 items-center space-x-4">
             {/* Hamburger only on mobile */}
             <button
               className="md:hidden flex items-center justify-center w-9 h-9 rounded-md border border-gray-300"
