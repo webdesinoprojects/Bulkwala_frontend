@@ -163,7 +163,8 @@ export default function OrdersContent() {
             <p className="text-center py-8 text-gray-500">No orders found.</p>
           ) : (
             <>
-              <table className="w-full border-collapse table-auto">
+              <div className="w-full overflow-x-auto pb-2">
+                <table className="min-w-[1080px] w-full border-collapse table-auto">
                 <thead className="bg-gray-100 text-gray-700 text-sm">
                   <tr>
                     <th className="p-3 text-left">Order</th>
@@ -302,7 +303,8 @@ export default function OrdersContent() {
                       );
                     })}
                 </tbody>
-              </table>
+                </table>
+              </div>
               <OrderDetailDialog
                 open={isDialogOpen}
                 onOpenChange={setIsDialogOpen}
