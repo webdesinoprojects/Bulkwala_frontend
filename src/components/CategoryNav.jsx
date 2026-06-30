@@ -15,11 +15,14 @@ export default function CategoryNav({ selectedCategory, onSelect }) {
     <div
       className="
         flex 
+        w-full
+        max-w-[100vw]
+        min-w-0
         items-center
         gap-4 
         md:gap-5 
         overflow-x-auto 
-        px-4 
+        px-3 
         py-3 
         md:px-6 md:py-3 
         bg-white 
@@ -38,7 +41,7 @@ export default function CategoryNav({ selectedCategory, onSelect }) {
             key={cat._id}
             className="
               flex flex-col items-center 
-              min-w-[72px] 
+              min-w-[70px] 
               md:min-w-[80px] 
               cursor-pointer 
               transition-all 
@@ -50,7 +53,7 @@ export default function CategoryNav({ selectedCategory, onSelect }) {
           >
             <div
               className={`
-                w-14 h-14 
+                w-[52px] h-[52px] 
                 md:w-16 md:h-16 
                 rounded-lg 
                 overflow-hidden 
@@ -78,7 +81,7 @@ export default function CategoryNav({ selectedCategory, onSelect }) {
                 text-[11px] md:text-sm mt-1.5 md:mt-2 
                 font-medium text-center leading-tight
                 ${isSelected ? "text-blue-600" : "text-gray-700"}
-                truncate max-w-[72px] md:max-w-[90px]
+                truncate max-w-[70px] md:max-w-[90px]
               `}
             >
               {cat.name}

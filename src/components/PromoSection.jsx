@@ -77,7 +77,7 @@ export default function PromoSection() {
   const [firstBanner, ...restBanners] = usableBanners;
 
   return (
-    <section className="max-w-7xl mx-auto py-4 px-4 md:py-10 md:px-0">
+    <section className="w-full max-w-[100vw] mx-auto py-4 px-4 md:max-w-7xl md:py-10 md:px-0">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
         <div className="md:col-span-2">
           {firstBanner && <BannerCard banner={firstBanner} large />}

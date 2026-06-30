@@ -50,7 +50,7 @@ export default function BannerSlider({ position = 'top' }) {
   };
 
   return (
-    <div className="relative w-full group">
+    <div className="relative w-full max-w-full min-w-0 overflow-hidden group">
       <Swiper
         modules={[Navigation, Pagination, Autoplay, EffectFade]}
         navigation={{

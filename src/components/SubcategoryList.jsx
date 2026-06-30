@@ -47,7 +47,7 @@ export default function SubcategoryList({ category }) {
 
   // ✅ Responsive Subcategory List
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-4 lg:px-6 py-3 md:py-4">
+    <section className="w-full max-w-[100vw] mx-auto px-4 sm:px-4 lg:px-6 py-3 md:max-w-7xl md:py-4">
       {/* Heading */}
       <div className="flex justify-between items-center mb-3 sm:mb-6">
         <h2 className="text-[21px] sm:text-xl md:text-2xl font-semibold text-gray-800 leading-tight">
@@ -60,6 +60,9 @@ export default function SubcategoryList({ category }) {
       <div
         className="
           flex 
+          w-full
+          max-w-full
+          min-w-0
           gap-4 sm:gap-5 md:gap-6 
           overflow-x-auto 
           py-2 sm:py-3 

@@ -215,20 +215,20 @@ useEffect(() => {
         </div>
       )}
 
-<header className="sticky top-0 z-50 w-full max-w-full overflow-x-hidden border-b-2 border-b-slate-500 md:border-b md:border-slate-200 bg-white/90 backdrop-blur-xl">        <div className="max-w-7xl mx-auto w-full min-w-0 flex items-center justify-between p-3 md:p-4">
+<header className="sticky top-0 z-50 w-full max-w-[100vw] overflow-x-hidden border-b-2 border-b-slate-500 md:border-b md:border-slate-200 bg-white/90 backdrop-blur-xl">        <div className="mx-auto flex w-full max-w-[100vw] min-w-0 items-center justify-between gap-2 px-3 py-3 md:max-w-7xl md:gap-4 md:p-4">
           {/* 🧩 Logo - Left */}
 <img
   src="/bulkwala-logo.jpeg"
   alt="Bulkwala Logo"
-  className="h-16 w-16 shrink-0 md:h-20 md:w-20 cursor-pointer object-contain"
+  className="h-14 w-14 shrink-0 md:h-20 md:w-20 cursor-pointer object-contain"
   onClick={() => navigate("/")}
         />
 
           {/* 📱 MOBILE SEARCH BAR */}
-          <div className="min-w-0 flex-1 mx-2 md:hidden">
+          <div className="min-w-0 flex-1 md:hidden">
             <form
               onSubmit={handleSearchSubmit}
-              className="flex min-w-0 items-center bg-gray-100 rounded-md px-3 py-1.5"
+              className="flex min-w-0 items-center bg-gray-100 rounded-md px-2.5 py-1.5"
             >
               <button
                 type="submit"
@@ -249,7 +249,7 @@ useEffect(() => {
               />
               <ion-icon
                 name={listening ? "mic" : "mic-outline"}
-                class={`text-xl ml-2 cursor-pointer transition-all ${
+                class={`text-xl ml-1.5 shrink-0 cursor-pointer transition-all ${
                   listening ? "text-red-500 animate-pulse" : "text-gray-500"
                 }`}
                 onClick={handleVoiceSearch}
@@ -356,7 +356,7 @@ onKeyDown={(e) => {
           </div>
 
           {/* ❤️ 🛒 👤 + Hamburger */}
-          <div className="flex shrink-0 items-center space-x-4">
+          <div className="flex shrink-0 items-center">
             {/* Hamburger only on mobile */}
             <button
               className="md:hidden flex items-center justify-center w-9 h-9 rounded-md border border-gray-300"

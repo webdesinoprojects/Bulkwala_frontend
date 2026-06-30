@@ -34,7 +34,7 @@ export default function RecentProductsCarousel() {
     );
 
   return (
-    <section className="relative max-w-7xl mx-auto px-4 sm:px-4 lg:px-6 py-4 sm:py-10">
+    <section className="relative w-full max-w-[100vw] mx-auto px-4 sm:px-4 lg:px-6 py-4 sm:py-10 md:max-w-7xl">
       {/* ✅ Header */}
       <div className="flex justify-between items-center mb-3 sm:mb-8">
         <h2 className="text-[21px] sm:text-xl md:text-2xl font-semibold text-gray-800 leading-tight">
@@ -44,7 +44,7 @@ export default function RecentProductsCarousel() {
       </div>
 
       {/* ✅ Carousel */}
-      <div className="relative overflow-visible">
+      <div className="relative w-full max-w-full min-w-0 overflow-hidden">
         <Swiper
           modules={[Navigation, Pagination, Autoplay]}
           spaceBetween={12}

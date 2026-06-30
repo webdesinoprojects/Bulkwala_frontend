@@ -17,9 +17,9 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="bg-white">
+    <div className="w-full max-w-[100vw] overflow-x-hidden bg-white">
       {/* 🔹 Category Navigation */}
-      <section className="max-w-7xl mx-auto px-0 pt-3 pb-2 md:px-4 md:py-8">
+      <section className="w-full max-w-[100vw] mx-auto px-0 pt-3 pb-2 md:max-w-7xl md:px-4 md:py-8">
         <CategoryNav
           selectedCategory={selectedCategory}
           onSelect={setSelectedCategory}
@@ -28,41 +28,41 @@ export default function HomePage() {
 
       {/* 🔹 Top Banner Slider - Only show if no category selected */}
       {!selectedCategory && (
-        <section className="max-w-7xl mx-auto px-3 py-3 md:px-4 md:py-4">
+        <section className="w-full max-w-[100vw] mx-auto px-3 py-3 md:max-w-7xl md:px-4 md:py-4">
           <BannerSlider position="top" />
         </section>
       )}
 
       {/* 🔹 Category Slider - Only show if category is selected */}
       {selectedCategory && (
-        <section className="max-w-7xl mx-auto px-3 md:px-4">
+        <section className="w-full max-w-[100vw] mx-auto px-3 md:max-w-7xl md:px-4">
           <CategorySlider category={selectedCategory} defaultBanners={banners} />
         </section>
       )}
 
       {/* 🔹 Subcategories */}
-      <section className="max-w-7xl mx-auto px-0 py-3 md:px-4 md:py-5">
+      <section className="w-full max-w-[100vw] mx-auto px-0 py-3 md:max-w-7xl md:px-4 md:py-5">
         <SubcategoryList category={selectedCategory} />
       </section>
 
       {/* 🔹 Recent Products */}
-      <section className="max-w-7xl mx-auto px-0 py-3 md:px-4 md:py-5">
+      <section className="w-full max-w-[100vw] mx-auto px-0 py-3 md:max-w-7xl md:px-4 md:py-5">
         <RecentProductsCarousel />
       </section>
 
       {/* 🔹 Promo Section (Mid Banners) */}
-      <section className="max-w-7xl mx-auto">
+      <section className="w-full max-w-[100vw] mx-auto md:max-w-7xl">
         <PromoSection />
       </section>
 
       {/* 🔹 Top Products */}
-      <section className="max-w-7xl mx-auto px-0 py-3 md:px-4 md:py-5">
+      <section className="w-full max-w-[100vw] mx-auto px-0 py-3 md:max-w-7xl md:px-4 md:py-5">
         <TopProductsCarousel />
       </section>
 
       {/* 🔹 Bottom Banner Slider - Only show if no category selected */}
       {!selectedCategory && (
-        <section className="max-w-7xl mx-auto px-3 py-3 md:px-4 md:py-4">
+        <section className="w-full max-w-[100vw] mx-auto px-3 py-3 md:max-w-7xl md:px-4 md:py-4">
           <BannerSlider position="bottom" />
         </section>
       )}

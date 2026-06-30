@@ -19,7 +19,7 @@ const Mainlayout = () => {
     user && !hideFor.includes(location.pathname.toLowerCase());
 
   return (
-    <>
+    <div className="w-full max-w-[100vw] overflow-x-hidden">
       <ScrollToTop />
       <Navbar />
 
@@ -32,7 +32,7 @@ const Mainlayout = () => {
 
       {/* ✅ Show floating WhatsApp icon only after login and NOT on login/signup */}
       {shouldShowWhatsApp && <WhatsAppFloatingButton />}
-    </>
+    </div>
   );
 };
 
