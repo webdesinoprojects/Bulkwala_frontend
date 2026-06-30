@@ -83,24 +83,18 @@ export default function OrdersContent() {
     return badge(up || "-", "bg-gray-100 text-gray-700");
   };
 
-  const totalOrders = filtered.length;
+  const totalOrders = stats.totalOrders || filtered.length;
   const totalPages = Math.ceil(totalOrders / pagination.limit) || 1;
-  const visibleOrders = filtered.slice(
-    (pagination.page - 1) * pagination.limit,
-    pagination.page * pagination.limit
-  );
 
   return (
     <>
       {/* Stats */}
-      <Card className="mb-4 rounded-xl border border-gray-200 bg-white shadow-sm sm:mb-6">
-        <CardHeader className="p-4 sm:p-6">
-          <CardTitle className="text-lg text-[#02066F] sm:text-xl">
-            Orders Overview
-          </CardTitle>
+      <Card className="mb-6 bg-white border border-gray-200 rounded-xl shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-[#02066F]">Orders Overview</CardTitle>
           <CardDescription>Quick business metrics</CardDescription>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 gap-3 p-4 pt-0 sm:gap-4 sm:p-6 sm:pt-0 md:grid-cols-3 lg:grid-cols-6">
+        <CardContent className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
           {[
             ["Total Orders", stats.totalOrders],
             ["Revenue", `₹${stats.totalRevenue?.toFixed(2)}`],
@@ -109,25 +103,25 @@ export default function OrdersContent() {
             ["Cancelled", stats.cancelled],
             ["Paid (Success)", stats.successPayments],
           ].map(([label, val]) => (
-            <div key={label} className="rounded-lg bg-gray-50 p-3">
-              <p className="text-xs text-gray-500 sm:text-sm">{label}</p>
-              <p className="text-lg font-semibold sm:text-xl">{val}</p>
+            <div key={label} className="p-3 rounded-lg bg-gray-50">
+              <p className="text-sm text-gray-500">{label}</p>
+              <p className="text-xl font-semibold">{val}</p>
             </div>
           ))}
         </CardContent>
       </Card>
 
       {/* Filters */}
-      <Card className="mb-4 rounded-xl border border-gray-200 bg-white shadow-sm">
-        <CardContent className="flex flex-col gap-3 p-4 md:flex-row md:items-center">
+      <Card className="mb-4 bg-white border border-gray-200 rounded-xl shadow-sm">
+        <CardContent className="flex flex-col md:flex-row gap-3 md:items-center py-4">
           <input
-            className="w-full rounded-md border px-3 py-2 text-base outline-none focus:border-[#02066F] md:text-sm"
+            className="border rounded-md px-3 py-2 w-full"
             placeholder="Search by order id / email / name"
             value={filters.q}
             onChange={(e) => setFilters({ q: e.target.value })}
           />
           <select
-            className="w-full rounded-md border px-3 py-2 text-base outline-none focus:border-[#02066F] md:w-auto md:text-sm"
+            className="border rounded-md px-3 py-2"
             value={filters.status}
             onChange={(e) => setFilters({ status: e.target.value })}
           >
@@ -138,7 +132,7 @@ export default function OrdersContent() {
             <option value="Cancelled">Cancelled</option>
           </select>
           <select
-            className="w-full rounded-md border px-3 py-2 text-base outline-none focus:border-[#02066F] md:w-auto md:text-sm"
+            className="border rounded-md px-3 py-2"
             value={filters.paymentStatus}
             onChange={(e) => setFilters({ paymentStatus: e.target.value })}
           >
@@ -147,15 +141,11 @@ export default function OrdersContent() {
             <option value="SUCCESS">SUCCESS</option>
             <option value="FAILED">FAILED</option>
           </select>
-          <Button
-            variant="outline"
-            className="w-full md:w-auto"
-            onClick={() => fetchOrders(pagination)}
-          >
+          <Button variant="outline" onClick={() => fetchOrders(pagination)}>
             Refresh
           </Button>
           {lastRefreshed && (
-            <p className="text-xs text-gray-500 md:ml-2">
+            <p className="text-xs text-gray-500 ml-2">
               Last updated: {new Date(lastRefreshed).toLocaleTimeString()}
             </p>
           )}
@@ -163,42 +153,17 @@ export default function OrdersContent() {
       </Card>
 
       {/* Table */}
-      <Card className="rounded-xl border border-gray-200 bg-white shadow-sm">
+      <Card className="bg-white border border-gray-200 rounded-xl shadow-sm">
         <CardContent className="p-0 overflow-hidden">
           {loading ? (
-            <p className="py-10 text-center text-gray-500">Loading orders...</p>
+            <p className="text-center py-8 text-gray-500">Loading orders...</p>
           ) : error ? (
-            <div className="flex flex-col items-center justify-center gap-3 px-4 py-10 text-center">
-              <p className="font-medium text-red-500">{error}</p>
-              <p className="max-w-md text-sm text-gray-500">
-                Please check that the backend is running and that your admin
-                login session is active.
-              </p>
-              <Button variant="outline" onClick={() => fetchOrders(pagination)}>
-                Try Again
-              </Button>
-            </div>
+            <p className="text-center py-8 text-red-500">{error}</p>
           ) : filtered.length === 0 ? (
             <p className="text-center py-8 text-gray-500">No orders found.</p>
           ) : (
             <>
-              <div className="space-y-3 p-3 md:hidden">
-                {visibleOrders.map((o) => (
-                  <OrderMobileCard
-                    key={o._id}
-                    order={o}
-                    statusBadge={statusBadge}
-                    payBadge={payBadge}
-                    fetchOrders={fetchOrders}
-                    onOpen={() => {
-                      setSelectedOrder(o);
-                      setIsDialogOpen(true);
-                    }}
-                  />
-                ))}
-              </div>
-
-              <table className="hidden w-full border-collapse table-auto md:table">
+              <table className="w-full border-collapse table-auto">
                 <thead className="bg-gray-100 text-gray-700 text-sm">
                   <tr>
                     <th className="p-3 text-left">Order</th>
@@ -211,7 +176,12 @@ export default function OrdersContent() {
                   </tr>
                 </thead>
                 <tbody className="text-sm">
-                  {visibleOrders.map((o, idx) => {
+                  {filtered
+                    .slice(
+                      (pagination.page - 1) * pagination.limit,
+                      pagination.page * pagination.limit
+                    )
+                    .map((o, idx) => {
                       const shortId = o._id?.slice(-6)?.toUpperCase();
                       return (
                         <tr
@@ -373,75 +343,13 @@ export default function OrdersContent() {
   );
 }
 
-function OrderMobileCard({ order, statusBadge, payBadge, fetchOrders, onOpen }) {
-  const shortId = order._id?.slice(-6)?.toUpperCase();
-  const firstProduct = order.products?.[0];
-  const extraCount = Math.max((order.products?.length || 0) - 1, 0);
-
-  return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-      <button type="button" className="w-full text-left" onClick={onOpen}>
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p className="font-mono text-sm font-semibold text-[#02066F]">
-              #{shortId}
-            </p>
-            <p className="mt-1 text-xs text-gray-500">
-              {new Date(order.createdAt).toLocaleString()}
-            </p>
-          </div>
-          <div className="shrink-0 text-right">
-            <p className="text-base font-bold text-gray-900">
-              â‚¹{(order.totalPrice || 0).toFixed(2)}
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-3 flex flex-wrap gap-2">
-          {statusBadge(order.status)}
-          {payBadge(order.paymentStatus)}
-          <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-semibold uppercase text-gray-600">
-            {order.paymentMode || "-"}
-          </span>
-        </div>
-
-        <div className="mt-4 rounded-lg bg-gray-50 p-3">
-          <p className="truncate text-sm font-medium text-gray-800">
-            {firstProduct?.product?.title || "Unnamed Product"}
-            {firstProduct?.quantity ? ` x ${firstProduct.quantity}` : ""}
-          </p>
-          {firstProduct?.product?.sku && (
-            <p className="mt-1 truncate text-xs text-gray-500">
-              SKU: {firstProduct.product.sku}
-            </p>
-          )}
-          {extraCount > 0 && (
-            <p className="mt-1 text-xs text-gray-500">+{extraCount} more item(s)</p>
-          )}
-        </div>
-
-        <div className="mt-3 min-w-0 text-sm text-gray-600">
-          <p className="truncate font-medium">{order.user?.name || "Unknown"}</p>
-          <p className="truncate text-xs text-gray-500">
-            {order.user?.email || "No email"}
-          </p>
-        </div>
-      </button>
-
-      <div className="mt-4 border-t border-gray-100 pt-3">
-        <OrderActions order={order} fetchOrders={fetchOrders} compact />
-      </div>
-    </div>
-  );
-}
-
-function OrderActions({ order, fetchOrders, compact = false }) {
+function OrderActions({ order, fetchOrders }) {
   const { syncOneOrder, retryShipment } = useAdminOrdersStore();
 
   // 🧩 If order is pickup, don't show shipment controls
   if (order.paymentMode === "pickup") {
     return (
-      <div className={`flex flex-col gap-1 ${compact ? "items-start" : "items-center"}`}>
+      <div className="flex flex-col items-center gap-1">
         <p className="text-[11px] text-blue-700 font-medium">
           Pickup from Store
         </p>
@@ -452,7 +360,7 @@ function OrderActions({ order, fetchOrders, compact = false }) {
 
   // 🧩 For normal shipped orders
   return (
-    <div className={`flex flex-col gap-1 ${compact ? "items-start" : "items-center"}`}>
+    <div className="flex flex-col items-center gap-1">
       {order.trackingId && (
         <a
           href={`https://www.delhivery.com/tracking?waybill=${order.trackingId}`}
@@ -472,7 +380,7 @@ function OrderActions({ order, fetchOrders, compact = false }) {
       <Button
         size="sm"
         variant="outline"
-        className={`${compact ? "h-8 w-full justify-center" : ""} text-xs mt-1`}
+        className="text-xs mt-1"
         onClick={async () => {
           const res = await syncOneOrder(order._id);
           if (res.success) {
@@ -488,7 +396,7 @@ function OrderActions({ order, fetchOrders, compact = false }) {
         <Button
           size="sm"
           variant="destructive"
-          className={`${compact ? "h-8 w-full justify-center" : ""} text-xs mt-1`}
+          className="text-xs mt-1"
           onClick={async () => {
             const res = await retryShipment(order._id);
             if (res.success) {
